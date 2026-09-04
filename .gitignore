@@ -1,0 +1,26 @@
+# Secrets / env
+.env
+backend/.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Models (large binaries)
+models/
+*.gguf
+
+# Node / Next.js
+node_modules/
+.next/
+frontend/out/
+
+# OS / editor
+.DS_Store
+*.log

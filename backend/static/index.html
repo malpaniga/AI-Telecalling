@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voice Agent — Realtime</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto;
+           padding: 0 16px; background: #0f1115; color: #e6e6e6; }
+    h1 { font-size: 20px; font-weight: 600; }
+    #status { font-size: 13px; color: #9aa0a6; margin-bottom: 8px; }
+    #state { font-size: 12px; margin-bottom: 16px; display: flex; gap: 12px;
+             flex-wrap: wrap; align-items: center; }
+    #stage { background: #1e3a8a; color: #dbeafe; padding: 3px 10px; border-radius: 999px;
+             font-weight: 600; text-transform: capitalize; }
+    .slot { background: #1f2937; color: #cbd5e1; padding: 3px 10px; border-radius: 999px; }
+    .slot.filled { background: #14342b; color: #86efac; }
+    #call { width: 100%; padding: 18px; font-size: 16px; border: none; border-radius: 12px;
+            background: #2563eb; color: white; cursor: pointer; }
+    #call.active { background: #dc2626; }
+    #mic { font-size: 12px; color: #9aa0a6; margin-top: 8px; height: 16px; }
+    #mic.speaking { color: #86efac; }
+    #log { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px;
+           line-height: 1.4; white-space: pre-wrap; }
+    .user { background: #1f2937; align-self: flex-end; }
+    .agent { background: #14342b; align-self: flex-start; }
+    .info { color: #9aa0a6; font-size: 12px; align-self: center; }
+  </style>
+</head>
+<body>
+  <h1>Real Estate Voice Agent — Sprint 4 (Realtime)</h1>
+  <div id="status">Idle.</div>
+  <div id="state">
+    <span id="stage">stage: —</span>
+    <span id="slots"></span>
+  </div>
+  <button id="call">Start call</button>
+  <div id="mic"></div>
+  <div id="log"></div>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const callBtn = document.getElementById("call");
+    const micEl = document.getElementById("mic");
+    const logEl = document.getElementById("log");
+    const stageEl = document.getElementById("stage");
+    const slotsEl = document.getElementById("slots");
+
+    const TARGET_SR = 16000;
+    const SLOT_KEYS = ["budget", "timeline", "city", "property_type"];
+
+    let ws, audioCtx, micStream, processor, source;
+    let active = false;
+    let nextTime = 0;
+    let sources = [];
+
+    function addMsg(text, cls) {
+      const d = document.createElement("div");
+      d.className = "msg " + cls;
+      d.textContent = text;
+      logEl.appendChild(d);
+      d.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function renderState(stage, slots) {
+      stageEl.textContent = "stage: " + stage;
+      slotsEl.innerHTML = "";
+      SLOT_KEYS.forEach((k) => {
+        const v = slots[k];
+        const s = document.createElement("span");
+        s.className = "slot" + (v ? " filled" : "");
+        s.textContent = k.replace("_", " ") + ": " + (v || "—");
+        slotsEl.appendChild(s);
+      });
+    }
+
+    // ---- streamed Web Audio playback ([4-byte LE sr][int16 pcm]) ----
+    function playPcmChunk(data) {
+      if (!audioCtx) return;
+      const sr = new DataView(data).getUint32(0, true);
+      const pcm = new Int16Array(data, 4);
+      if (!pcm.length) return;
+      const buffer = audioCtx.createBuffer(1, pcm.length, sr);
+      const ch = buffer.getChannelData(0);
+      for (let i = 0; i < pcm.length; i++) ch[i] = pcm[i] / 0x8000;
+      const src = audioCtx.createBufferSource();
+      src.buffer = buffer;
+      src.connect(audioCtx.destination);
+      const start = Math.max(audioCtx.currentTime, nextTime);
+      src.start(start);
+      nextTime = start + buffer.duration;
+      sources.push(src);
+      src.onended = () => { sources = sources.filter((s) => s !== src); };
+    }
+    function stopPlayback() {
+      sources.forEach((s) => { try { s.stop(); } catch (e) {} });
+      sources = [];
+      nextTime = 0;
+    }
+
+    // ---- downsample Float32 @ inRate -> Int16 @ 16k ----
+    function downsampleTo16k(input, inRate) {
+      if (inRate === TARGET_SR) {
+        const out = new Int16Array(input.length);
+        for (let i = 0; i < input.length; i++)
+          out[i] = Math.max(-1, Math.min(1, input[i])) * 0x7fff;
+        return out;
+      }
+      const ratio = inRate / TARGET_SR;
+      const outLen = Math.floor(input.length / ratio);
+      const out = new Int16Array(outLen);
+      for (let i = 0; i < outLen; i++) {
+        const s = Math.max(-1, Math.min(1, input[Math.floor(i * ratio)]));
+        out[i] = s * 0x7fff;
+      }
+      return out;
+    }
+
+    async function startCall() {
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      source = audioCtx.createMediaStreamSource(micStream);
+      processor = audioCtx.createScriptProcessor(4096, 1, 1);
+
+      const proto = location.protocol === "https:" ? "wss" : "ws";
+      ws = new WebSocket(`${proto}://${location.host}/ws/call`);
+      ws.binaryType = "arraybuffer";
+
+      ws.onopen = () => { statusEl.textContent = "Connected. Ava is greeting you…"; };
+      ws.onclose = () => { statusEl.textContent = "Call ended."; };
+      ws.onerror = () => { statusEl.textContent = "Connection error."; };
+      ws.onmessage = (ev) => {
+        if (typeof ev.data !== "string") {
+          playPcmChunk(ev.data);
+          return;
+        }
+        const msg = JSON.parse(ev.data);
+        if (msg.type === "agent") addMsg(msg.text, "agent");
+        else if (msg.type === "user") { micEl.textContent = ""; addMsg(msg.text, "user"); }
+        else if (msg.type === "info") addMsg(msg.text, "info");
+        else if (msg.type === "state") renderState(msg.stage, msg.slots);
+        else if (msg.type === "interrupt") stopPlayback();
+        else if (msg.type === "ready") statusEl.textContent = "Listening — just talk. You can interrupt anytime.";
+      };
+
+      processor.onaudioprocess = (e) => {
+        if (!active || !ws || ws.readyState !== WebSocket.OPEN) return;
+        // Half-duplex: don't capture while Kavya is speaking (prevents echo).
+        if (audioCtx.currentTime < nextTime + 0.15) return;
+        const pcm = downsampleTo16k(e.inputBuffer.getChannelData(0), audioCtx.sampleRate);
+        ws.send(pcm.buffer);
+      };
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
+
+      active = true;
+      callBtn.textContent = "End call";
+      callBtn.classList.add("active");
+    }
+
+    function endCall() {
+      active = false;
+      stopPlayback();
+      if (processor) processor.disconnect();
+      if (source) source.disconnect();
+      if (micStream) micStream.getTracks().forEach((t) => t.stop());
+      if (audioCtx) audioCtx.close();
+      if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+      callBtn.textContent = "Start call";
+      callBtn.classList.remove("active");
+      statusEl.textContent = "Idle.";
+      micEl.textContent = "";
+    }
+
+    callBtn.addEventListener("click", () => {
+      if (active) endCall();
+      else startCall().catch((err) => { statusEl.textContent = "Mic error: " + err.message; });
+    });
+  </script>
+</body>
+</html>

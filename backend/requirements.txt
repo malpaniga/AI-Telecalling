@@ -1,0 +1,35 @@
+# ---- Web / API ----
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+websockets==14.1
+python-multipart==0.0.20
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# ---- LLM / agent ----
+groq==0.15.0
+langgraph==0.2.60
+langchain-core==0.3.28
+
+# ---- Data ----
+sqlalchemy==2.0.36
+alembic==1.14.0
+psycopg[binary]==3.2.3
+redis==5.2.1
+
+# ---- Audio / TTS / VAD ----
+numpy==2.2.1
+soundfile==0.12.1
+webrtcvad-wheels==2.0.14
+onnxruntime==1.27.0  # Silero VAD (neural, noise-robust) — no torch needed
+# Orpheus runs via llama-cpp-python with CUDA. Install with:
+#   CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python==0.3.5
+# (kept commented so plain `pip install -r` doesn't fail without CUDA toolkit)
+# llama-cpp-python==0.3.5
+
+# ---- Telephony ----
+twilio==9.4.1
+
+# ---- Utils ----
+python-dotenv==1.0.1
+httpx==0.28.1
