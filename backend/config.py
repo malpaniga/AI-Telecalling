@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     stt_no_speech_threshold: float = 0.8  # drop if no_speech_prob above this
     stt_min_avg_logprob: float = -1.5  # drop if avg_logprob below this
     groq_llm_model: str = "openai/gpt-oss-20b"  # conversation (quality)
-    groq_extraction_model: str = "llama-3.1-8b-instant"  # slot extraction (speed)
+    groq_extraction_model: str = "openai/gpt-oss-20b"  # slot extraction (speed)
     # STT routing: English uses Groq Whisper (fast); Indian languages use Sarvam
     # Saaras (Indic-tuned, code-mixing aware). "codemix" keeps English words in
     # English and Hindi in Devanagari — ideal for Hinglish.

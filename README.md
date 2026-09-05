@@ -245,7 +245,7 @@ Lives in `backend/.env` (git-ignored). Key settings:
 GROQ_API_KEY=gsk_...
 GROQ_STT_MODEL=whisper-large-v3-turbo
 GROQ_LLM_MODEL=openai/gpt-oss-20b
-GROQ_EXTRACTION_MODEL=llama-3.1-8b-instant
+GROQ_EXTRACTION_MODEL=openai/gpt-oss-20b
 GROQ_REASONING_EFFORT=low
 
 # Sarvam (TTS + Indic STT) — one key
