@@ -2,9 +2,10 @@
 
 from fastapi import APIRouter
 
-from backend.api.v1 import organizations, users
+from backend.api.v1 import auth, organizations, users
 
 router = APIRouter(prefix="/api/v1")
 
+router.include_router(auth.router)
 router.include_router(organizations.router)
 router.include_router(users.router)

@@ -2,12 +2,98 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M1 PASS — MongoDB Foundation Complete  
-**Next checkpoint:** M2 — Auth + Multi-Tenancy + RBAC  
+**Current checkpoint:** M2 PASS — Auth + Multi-Tenancy + RBAC Complete  
+**Next checkpoint:** M3 — Plans + Subscriptions
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M2 — AUTH + MULTI-TENANCY + RBAC
+
+```
+Checkpoint: M2
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: JWT authentication, signup/login/logout/refresh, org-scoped RBAC,
+           tenant isolation enforcement. Org A must never access Org B data.
+
+Implementation:
+  - backend/core/auth.py — JWT create/decode (access + refresh tokens), 
+    CurrentUser dataclass, get_current_user/get_optional_user FastAPI deps,
+    refresh token revocation via Redis (refresh_revoked:{jti})
+  - backend/core/rbac.py — role hierarchy, OrgContext, require_role(),
+    require_platform(), require_org_access(), assert_org_access()
+  - backend/api/v1/auth.py — POST /signup (org + owner user in one step),
+    POST /login, POST /logout, POST /refresh, GET /me
+  - backend/api/v1/organizations.py — full RBAC guards on all routes;
+    viewer can read own org, org_admin can update, platform can list all
+  - backend/api/v1/users.py — invite, list, get, update, deactivate;
+    all endpoints enforcing org isolation and role minimums
+  - backend/api/v1/__init__.py — auth router added
+
+Key security properties verified by tests:
+  - JWT tamper detection
+  - Access vs refresh token type enforcement
+  - Login brute-force lockout (5 attempts → 15-min lock)
+  - User enumeration prevention (same 401 for wrong pw vs nonexistent user)
+  - Org A cannot read Org B (HTTP 403 enforced)
+  - Viewer cannot update or invite (403)
+  - Platform roles cannot be assigned via org invite (400)
+  - Unauthenticated requests return 401
+  - Refresh token revocation on logout
+
+Files changed:
+  - backend/core/auth.py (new)
+  - backend/core/rbac.py (new)
+  - backend/api/v1/auth.py (new)
+  - backend/api/v1/organizations.py (updated — added RBAC)
+  - backend/api/v1/users.py (updated — added RBAC)
+  - backend/api/v1/__init__.py (updated — added auth router)
+  - backend/tests/test_m2_auth_rbac.py (new)
+
+API changes:
+  - POST /api/v1/auth/signup
+  - POST /api/v1/auth/login
+  - POST /api/v1/auth/logout
+  - POST /api/v1/auth/refresh
+  - GET  /api/v1/auth/me
+  - All /api/v1/organizations/* — now require auth
+  - All /api/v1/users/* — now require auth
+
+Environment variables:
+  - SECRET_KEY (required — JWT signing key)
+  - JWT_ALGORITHM (default: HS256)
+  - ACCESS_TOKEN_EXPIRE_MINUTES (default: 60)
+  - REFRESH_TOKEN_EXPIRE_DAYS (default: 30)
+
+Tests:
+  - backend/tests/test_m2_auth_rbac.py — 45 tests
+  - Regression (M1): 39 tests
+
+Tests passed: 84 total (45 new + 39 regression)
+Tests failed: 0
+
+Manual verification:
+  - PASS: Org A cannot access Org B (critical tenant isolation test)
+  - PASS: Viewer gets 403 on org admin actions
+  - PASS: Unauthenticated requests get 401
+  - PASS: Logout revokes refresh token
+
+Known issues:
+  - python-jose uses deprecated datetime.utcnow() internally — cosmetic warning only
+  - No email verification flow in MVP (deferred)
+
+Remaining work:
+  - None for M2
+
+Next checkpoint: M3
+
+Git commit: (see below)
+```
 
 ---
 
@@ -260,7 +346,7 @@ Git commit: (see below)
 |---|---|---|---|
 | M0 | Repository Audit | **PASS** | — |
 | M1 | MongoDB Foundation | **PASS** | M0 |
-| M2 | Auth + Multi-Tenancy + RBAC | TODO | M1 |
+| M2 | Auth + Multi-Tenancy + RBAC | **PASS** | M1 |
 | M3 | Plans + Subscriptions | TODO | M2 |
 | M4 | Razorpay | TODO | M3 |
 | M5 | Calling Packs + Wallet | TODO | M4 |

@@ -9,6 +9,7 @@
 |---|---|---|---|---|
 | M0 | PASS | 2 | 0 | Audit + startup verification |
 | M1 | PASS | 39 | 0 | MongoDB models, repos, health, config |
+| M2 | PASS | 45 | 0 | JWT auth, RBAC, tenant isolation, signup/login |
 
 ---
 
