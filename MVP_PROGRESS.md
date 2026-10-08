@@ -2,12 +2,102 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M3 PASS — Plans + Subscriptions Complete  
-**Next checkpoint:** M4 — Razorpay
+**Current checkpoint:** M4 PASS — Razorpay Payment Integration Complete  
+**Next checkpoint:** M5 — Calling Packs + Wallet
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M4 — RAZORPAY PAYMENT INTEGRATION
+
+```
+Checkpoint: M4
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: Server-authoritative Razorpay payment flow, webhook verification with
+           idempotency, mock provider for tests, orders/payments/invoices in MongoDB.
+
+Implementation:
+  - backend/providers/base.py — PaymentProvider abstract interface
+  - backend/providers/payment/razorpay.py — Razorpay adapter:
+    create_order (amount from DB, never frontend), verify_payment (HMAC-SHA256),
+    refund, fetch_payment, verify_webhook_signature
+  - backend/providers/payment/mock.py — Mock adapter for tests/DEMO_MODE:
+    deterministic signatures, configurable failure mode, reset() for test isolation
+  - backend/models/billing.py — Order, Payment (immutable), Invoice, WebhookEvent;
+    all amounts in INTEGER PAISE, amount_inr is computed property (not stored)
+  - backend/repositories/billing_repo.py — OrderRepository (status FSM),
+    PaymentRepository (record_refund with partial tracking),
+    InvoiceRepository (sequential INV-YYYY-NNNNNN numbering),
+    WebhookEventRepository (idempotency: find-then-insert guards duplicates)
+  - backend/services/payment_service.py — PaymentService orchestrates:
+    create_subscription_order (amount looked up from plan, NEVER from frontend),
+    verify_and_fulfill (sig check → payment record → invoice → subscription activation),
+    refund_payment, process_webhook (sig verify → idempotency check → dispatch)
+  - backend/api/v1/billing.py — POST /orders/subscription, POST /verify,
+    POST /webhook (no auth, sig-verified), POST /refund/{id}, GET /orders,
+    GET /payments, GET /invoices, GET /invoices/{id}
+  - backend/api/v1/__init__.py — billing router added
+
+Key security properties:
+  - Amount NEVER from frontend: backend looks up plan price from MongoDB
+  - Payment sig verified via HMAC-SHA256 before any fulfillment
+  - Webhook sig verified before any processing
+  - Webhook idempotency via (provider, event_id) uniqueness check
+  - Duplicate payment attempt returns already_paid (not error, not double-fulfill)
+  - Invoice tenant isolation: org A cannot read org B invoice (403)
+  - Only billing_admin/platform_admin can issue refunds
+
+Fixed during M4:
+  - razorpay SDK 1.4.2 needs setuptools (pkg_resources); installed
+  - mongomock doesn't raise DuplicateKeyError on unique indexes: switched
+    WebhookEventRepository to find-then-insert for idempotency
+  - nested run() inside async: refactored _seed_plan to inline await
+
+Files changed:
+  - backend/models/billing.py (new)
+  - backend/providers/__init__.py (new)
+  - backend/providers/base.py (new)
+  - backend/providers/payment/__init__.py (new)
+  - backend/providers/payment/razorpay.py (new)
+  - backend/providers/payment/mock.py (new)
+  - backend/repositories/billing_repo.py (new)
+  - backend/services/payment_service.py (new)
+  - backend/api/v1/billing.py (new)
+  - backend/api/v1/__init__.py (updated)
+  - backend/tests/test_m4_payment.py (new)
+
+API changes:
+  - POST /api/v1/billing/orders/subscription
+  - POST /api/v1/billing/verify
+  - POST /api/v1/billing/webhook
+  - POST /api/v1/billing/refund/{payment_id}
+  - GET  /api/v1/billing/orders
+  - GET  /api/v1/billing/payments
+  - GET  /api/v1/billing/invoices
+  - GET  /api/v1/billing/invoices/{id}
+
+Database changes:
+  - orders collection
+  - payments collection
+  - invoices collection (sequential numbering INV-YYYY-NNNNNN)
+  - webhook_events collection (idempotency key: provider+event_id)
+
+Tests:
+  - backend/tests/test_m4_payment.py — 43 tests
+  - Regression (M1+M2+M3): 126 tests
+
+Tests passed: 169 total (43 new + 126 regression)
+Tests failed: 0
+
+Next checkpoint: M5
+
+Git commit: (see below)
+```
 
 ---
 
@@ -430,7 +520,7 @@ Git commit: (see below)
 | M1 | MongoDB Foundation | **PASS** | M0 |
 | M2 | Auth + Multi-Tenancy + RBAC | **PASS** | M1 |
 | M3 | Plans + Subscriptions | **PASS** | M2 |
-| M4 | Razorpay | TODO | M3 |
+| M4 | Razorpay | **PASS** | M3 |
 | M5 | Calling Packs + Wallet | TODO | M4 |
 | M6 | Credit Reservation + Settlement | TODO | M5 |
 | M7 | Phone Number Inventory | TODO | M6 |
