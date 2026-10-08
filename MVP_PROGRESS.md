@@ -2,12 +2,41 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M8 PASS — Provider Abstraction Complete
-**Next checkpoint:** M9 — AI Voice Profiles
+**Current checkpoint:** M9 PASS — AI Voice Profiles Complete
+**Next checkpoint:** M10 — Provider Router
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M9 — AI VOICE PROFILES
+
+```
+Checkpoint: M9
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: Implement customer-safe AI voice profiles and immutable internal route versions.
+
+Implementation so far:
+  - Added voice profiles, version repositories, tenant-safe service, and customer/admin APIs.
+  - Customer responses redact all provider route, model, ID, metadata, and cost details.
+  - Versions are immutable and active profiles reference a pinned version.
+
+Tests:
+  - backend/tests/test_m9_voice_profiles.py — 4 tests
+  - Regression: 289 tests across M1–M9
+
+Tests passed: 289 total
+Tests failed: 0
+Manual verification: PASS — customer view excludes all internal provider route data.
+Known issues: Existing third-party asyncio/JWT/TestClient deprecation warnings remain non-blocking.
+Remaining work: Provider route selection and failover are deferred to M10.
+Next checkpoint: M10
+Git commit: HEAD (checkpoint: M9 voice profiles)
+```
 
 ---
 

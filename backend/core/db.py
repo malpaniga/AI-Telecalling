@@ -178,7 +178,7 @@ async def _ensure_indexes(db: AsyncIOMotorDatabase) -> None:
 
     # voice_profile_versions
     await db["voice_profile_versions"].create_indexes([
-        IndexModel([("voice_profile_id", ASCENDING), ("version", DESCENDING)]),
+        IndexModel([("voice_profile_id", ASCENDING), ("version", DESCENDING)], unique=True),
         IndexModel([("voice_profile_id", ASCENDING), ("is_published", ASCENDING)]),
     ])
 

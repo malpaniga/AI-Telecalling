@@ -16,6 +16,7 @@
 | M6 | PASS | 32 | 0 | Reserve/release/settle, 10-concurrent no double-spend |
 | M7 | PASS | 40 | 0 | Number inventory, atomic assignment, tenant isolation, provider redaction |
 | M8 | PASS | 5 | 0 | Provider contracts, live adapter normalization, mock demo registry |
+| M9 | PASS | 4 | 0 | Immutable voice versions, provider redaction, tenant isolation, HTTP RBAC |
 
 ---
 
