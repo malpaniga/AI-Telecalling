@@ -1,20 +1,19 @@
-"""REST API backing the Next.js dashboard.
+"""Legacy REST API — dashboard routes.
 
-All routes are read-only and namespaced under /api. Data comes from the same
-Postgres the call loop writes to.
+Updated to use MongoDB. Same endpoints, same response shapes, so the existing
+Next.js frontend continues to work during migration.
 """
 
 import uuid
 from datetime import datetime
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.db.database import get_session
 from backend.memory import repository as repo
 
-router = APIRouter(prefix="/api", tags=["dashboard"])
+router = APIRouter(prefix="/api", tags=["dashboard-legacy"])
 
 
 # ---- response schemas ----
@@ -24,7 +23,7 @@ class Stats(BaseModel):
     booked: int
     qualified: int
     avg_score: float
-    avg_latency_ms: int | None
+    avg_latency_ms: Optional[int]
     outcomes: dict[str, int]
 
 
@@ -32,63 +31,63 @@ class CallRow(BaseModel):
     id: str
     direction: str
     status: str
-    outcome: str | None
-    started_at: datetime | None
-    ended_at: datetime | None
-    duration_s: int | None
-    avg_latency_ms: int | None
-    lead_city: str | None
-    lead_budget: str | None
-    lead_score: int | None
-    lead_status: str | None
+    outcome: Optional[str]
+    started_at: Optional[datetime]
+    ended_at: Optional[datetime]
+    duration_s: Optional[int]
+    avg_latency_ms: Optional[int]
+    lead_city: Optional[str]
+    lead_budget: Optional[str]
+    lead_score: Optional[int]
+    lead_status: Optional[str]
 
 
 class TurnOut(BaseModel):
     role: str
     text: str
-    stage: str | None
-    latency_ms: int | None
-    ts: datetime | None
+    stage: Optional[str]
+    latency_ms: Optional[int]
+    ts: Optional[datetime]
 
 
 class CallDetail(BaseModel):
     id: str
     direction: str
     status: str
-    outcome: str | None
-    started_at: datetime | None
-    ended_at: datetime | None
-    duration_s: int | None
-    avg_latency_ms: int | None
+    outcome: Optional[str]
+    started_at: Optional[datetime]
+    ended_at: Optional[datetime]
+    duration_s: Optional[int]
+    avg_latency_ms: Optional[int]
     turns: list[TurnOut]
 
 
 class LeadOut(BaseModel):
     id: str
-    phone: str | None
-    city: str | None
-    budget: str | None
-    timeline: str | None
-    property_type: str | None
+    phone: Optional[str]
+    city: Optional[str]
+    budget: Optional[str]
+    timeline: Optional[str]
+    property_type: Optional[str]
     score: int
     status: str
-    created_at: datetime | None
+    created_at: Optional[datetime]
 
 
 # ---- routes ----
 @router.get("/stats", response_model=Stats)
-async def stats(session: AsyncSession = Depends(get_session)):
-    return await repo.get_stats(session)
+async def stats():
+    return await repo.get_stats()
 
 
 @router.get("/calls", response_model=list[CallRow])
-async def calls(limit: int = 50, session: AsyncSession = Depends(get_session)):
-    return await repo.list_calls_with_leads(session, limit)
+async def calls(limit: int = 50):
+    return await repo.list_calls_with_leads(limit)
 
 
 @router.get("/calls/{call_id}", response_model=CallDetail)
-async def call_detail(call_id: uuid.UUID, session: AsyncSession = Depends(get_session)):
-    call = await repo.get_call(session, call_id)
+async def call_detail(call_id: str):
+    call = await repo.get_call(call_id)
     if call is None:
         raise HTTPException(status_code=404, detail="call not found")
     return CallDetail(
@@ -108,8 +107,8 @@ async def call_detail(call_id: uuid.UUID, session: AsyncSession = Depends(get_se
 
 
 @router.get("/leads", response_model=list[LeadOut])
-async def leads(limit: int = 100, session: AsyncSession = Depends(get_session)):
-    rows = await repo.list_leads(session, limit)
+async def leads(limit: int = 100):
+    rows = await repo.list_leads(limit)
     return [
         LeadOut(
             id=str(lead.id),
@@ -124,3 +123,15 @@ async def leads(limit: int = 100, session: AsyncSession = Depends(get_session)):
         )
         for lead in rows
     ]
+
+
+@router.get("/languages")
+async def languages():
+    from backend.languages import DEFAULT_LANGUAGE, LANGUAGES
+    return {
+        "default": DEFAULT_LANGUAGE,
+        "languages": [
+            {"code": code, "name": info["name"], "native": info["native"]}
+            for code, info in LANGUAGES.items()
+        ],
+    }

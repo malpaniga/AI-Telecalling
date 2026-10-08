@@ -8,6 +8,32 @@
 | Checkpoint | Status | Tests Passed | Tests Failed | Notes |
 |---|---|---|---|---|
 | M0 | PASS | 2 | 0 | Audit + startup verification |
+| M1 | PASS | 39 | 0 | MongoDB models, repos, health, config |
+
+---
+
+## M1 — MongoDB Foundation
+
+**Date:** 2026-10-08  
+**Status:** PASS
+
+### Tests Run
+
+| Test | Result | Notes |
+|---|---|---|
+| TestModels (7 tests) | PASS | Organization, User, AuditLog models |
+| TestPasswordHashing (4 tests) | PASS | bcrypt hash/verify, unique salts |
+| TestSlugGeneration (4 tests) | PASS | slugify, max length, special chars |
+| TestConfig (5 tests) | PASS | Settings load, Sarvam key fallback, Redis URL parse |
+| TestOrganizationRepository (7 tests) | PASS | CRUD, slug uniqueness, list |
+| TestUserRepository (6 tests) | PASS | Create, find, authenticate, lockout, deactivate |
+| TestAuditLogRepository (3 tests) | PASS | log, list_for_org isolation |
+| TestTenantIsolation (1 test) | PASS | Org A cannot see Org B users |
+| TestHealthCheck (2 tests) | PASS | healthy/degraded states |
+| **Total** | **39/39 PASS** | |
+
+### Known Issues at M1
+- Twilio router fails on Python 3.13 (`audioop` removed). Non-blocking — app still starts. Fix in M8.
 
 ---
 

@@ -2,12 +2,133 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M0 PASS — Repository Audit Complete  
-**Next checkpoint:** M1 — MongoDB Foundation  
+**Current checkpoint:** M1 PASS — MongoDB Foundation Complete  
+**Next checkpoint:** M2 — Auth + Multi-Tenancy + RBAC  
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M1 — MONGODB FOUNDATION
+
+```
+Checkpoint: M1
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: Replace PostgreSQL with MongoDB Atlas; implement Motor async client,
+           indexes, health check, organizations, users, audit logs.
+
+Implementation:
+  - Removed SQLAlchemy/psycopg3/Alembic dependencies
+  - Added Motor (async MongoDB), pymongo, pyjwt, bcrypt, python-slugify
+  - Created backend/core/db.py — Motor client, init_db/close_db/ping_db,
+    complete index creation for all 30+ planned collections (idempotent)
+  - Created backend/core/redis.py — Redis client factory using REDIS_URL
+  - Created backend/core/health.py — all-components health check
+  - Created backend/models/base.py — DocumentModel/TimestampedModel base classes
+  - Created backend/models/organization.py — Organization, OrganizationSettings,
+    OrganizationPublic, OrganizationCreate
+  - Created backend/models/user.py — User, UserPublic, UserCreate, TokenPair;
+    PLATFORM_ROLES / ORGANIZATION_ROLES constants
+  - Created backend/models/audit_log.py — AuditLog (immutable)
+  - Created backend/repositories/base.py — BaseRepository CRUD wrapper
+  - Created backend/repositories/organization_repo.py — create, find_by_id,
+    find_by_slug, find_by_email, list_all, slug uniqueness enforcement, suspend/reactivate
+  - Created backend/repositories/user_repo.py — create, authenticate,
+    bcrypt password hashing, lockout after 5 failed attempts, deactivate, reset token
+  - Created backend/repositories/audit_log_repo.py — log(), list_for_org(),
+    list_platform()
+  - Updated backend/config.py — MONGODB_URI, REDIS_URL, JWT settings,
+    all provider keys; removed postgres_* fields; legacy Sarvam key fallback
+  - Updated backend/main.py — MongoDB+Redis lifespan; health check uses core/health;
+    call pipeline conditional on key availability; versioned /api/v1 router
+  - Created backend/api/v1/__init__.py, organizations.py, users.py
+  - Updated backend/memory/repository.py — MongoDB-backed (replaces SQLAlchemy)
+  - Updated backend/memory/session.py — uses REDIS_URL from config
+  - Updated backend/db/database.py — stub pointing to core/db
+  - Updated backend/api/routes.py — MongoDB-backed legacy dashboard routes
+  - Updated backend/call_session.py — removed async_session() calls; uses new repo
+  - Updated docker-compose.yml — removed PostgreSQL service (keep Redis)
+  - Updated .env.example — MongoDB URI, all new vars
+  - Created backend/tests/test_m1_mongodb.py — 39 tests
+  - Created .venv (Python 3.13)
+
+Files changed:
+  - backend/requirements.txt
+  - backend/config.py
+  - backend/main.py
+  - backend/call_session.py
+  - backend/db/database.py
+  - backend/memory/repository.py
+  - backend/memory/session.py
+  - backend/api/routes.py
+  - backend/api/v1/__init__.py (new)
+  - backend/api/v1/organizations.py (new)
+  - backend/api/v1/users.py (new)
+  - backend/core/__init__.py (new)
+  - backend/core/db.py (new)
+  - backend/core/redis.py (new)
+  - backend/core/health.py (new)
+  - backend/models/__init__.py (new)
+  - backend/models/base.py (new)
+  - backend/models/organization.py (new)
+  - backend/models/user.py (new)
+  - backend/models/audit_log.py (new)
+  - backend/repositories/__init__.py (new)
+  - backend/repositories/base.py (new)
+  - backend/repositories/organization_repo.py (new)
+  - backend/repositories/user_repo.py (new)
+  - backend/repositories/audit_log_repo.py (new)
+  - backend/tests/__init__.py (new)
+  - backend/tests/test_m1_mongodb.py (new)
+  - docker-compose.yml
+  - .env.example
+
+Database changes:
+  - PostgreSQL removed
+  - MongoDB Atlas is now primary database
+  - 30+ collection indexes defined and created on startup (idempotent)
+  - Collections: organizations, users, audit_logs (and stubs for all future collections)
+
+API changes:
+  - /api/v1/organizations — POST (create), GET / (list), GET /{id}
+  - /api/v1/users — POST (create), GET /{id}
+  - /health — now checks MongoDB + Redis (not PostgreSQL)
+  - Legacy /api/stats, /api/calls, /api/leads — MongoDB-backed
+
+Environment variables:
+  - Added: MONGODB_URI, MONGODB_DATABASE, REDIS_URL, SECRET_KEY, APP_ENV,
+    DEMO_MODE, JWT settings, ELEVENLABS_API_KEY, OPENAI_API_KEY, OPENAI_BASE_URL,
+    RAZORPAY_*, EXOTEL_*, SARVAM_API_KEY
+  - Removed: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PORT,
+    DATABASE_URL
+
+Tests:
+  - backend/tests/test_m1_mongodb.py
+
+Tests passed: 39
+Tests failed: 0
+
+Manual verification:
+  - PASS: All 17 modules import cleanly
+  - PASS: FastAPI app imports and registers 18 routes
+  - PASS: No SQLAlchemy/psycopg3 references in core files
+
+Known issues:
+  - Twilio router fails to load on Python 3.13 (audioop removed from stdlib).
+    Non-blocking: app starts fine; fix deferred to M8 (provider abstraction).
+  - call_session.py still has real-estate specific GREETING text — generalized in M11.
+
+Remaining work:
+  - None for M1
+
+Next checkpoint: M2
+
+Git commit: (see below)
+```
 
 ---
 
@@ -138,7 +259,7 @@ Git commit: (see below)
 | Checkpoint | Title | Status | Dependency |
 |---|---|---|---|
 | M0 | Repository Audit | **PASS** | — |
-| M1 | MongoDB Foundation | TODO | M0 |
+| M1 | MongoDB Foundation | **PASS** | M0 |
 | M2 | Auth + Multi-Tenancy + RBAC | TODO | M1 |
 | M3 | Plans + Subscriptions | TODO | M2 |
 | M4 | Razorpay | TODO | M3 |

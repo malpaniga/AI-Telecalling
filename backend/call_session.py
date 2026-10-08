@@ -28,7 +28,6 @@ from backend.languages import resolve as resolve_language
 from backend.logging_setup import set_trace_id
 from backend.memory import repository as repo
 from backend.memory.session import SessionStore
-from backend.db.database import async_session
 
 log = logging.getLogger("call")
 
@@ -140,8 +139,7 @@ class CallSession:
         if self.call_id is None:
             return
         try:
-            async with async_session() as sess:
-                await repo.add_turn(sess, self.call_id, role, text, stage, latency_ms)
+            await repo.add_turn(self.call_id, role, text, stage, latency_ms)
         except Exception as exc:  # noqa: BLE001
             log.warning("failed to persist turn: %s", exc)
 
@@ -155,9 +153,8 @@ class CallSession:
     # ---- lifecycle ----
     async def start(self) -> None:
         try:
-            async with async_session() as sess:
-                call, lead = await repo.start_call(sess, direction=self.direction)
-                self.call_id, self.lead_id = call.id, lead.id
+            call, lead = await repo.start_call(direction=self.direction)
+            self.call_id, self.lead_id = call.id, lead.id
             log.info("call connected call=%s (%s)", self.call_id, self.direction)
         except Exception as exc:  # noqa: BLE001
             log.warning("failed to create call record (continuing unpersisted): %s", exc)
@@ -254,10 +251,9 @@ class CallSession:
         if self.call_id is not None and self.lead_id is not None:
             avg_latency = int(mean(self.latencies)) if self.latencies else None
             try:
-                async with async_session() as sess:
-                    score = await repo.finalize_call(
-                        sess, self.call_id, self.lead_id, self.state, avg_latency
-                    )
+                score = await repo.finalize_call(
+                    self.call_id, self.lead_id, self.state, avg_latency
+                )
                 await self.store.delete(str(self.call_id))
                 log.info("call %s finalized (score=%d)", self.call_id, score)
             except Exception as exc:  # noqa: BLE001
