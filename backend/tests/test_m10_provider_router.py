@@ -1,5 +1,14 @@
+import asyncio
 import pytest
 from backend.providers.registry import build_demo_registry
+
+
+def run(coro):
+    loop = asyncio.new_event_loop()
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
 
 def test_router_selects_healthy_capable_primary():
     from backend.providers.router import ProviderRouter
@@ -30,4 +39,4 @@ def test_router_persists_failover_event():
         await router.resolve_and_record({'provider':'primary','provider_type':'tts','fallback_provider':'mock'})
         event=await db['provider_failover_events'].find_one({})
         assert event['from_provider']=='primary' and event['to_provider']=='mock'
-    asyncio.run(scenario())
+    run(scenario())

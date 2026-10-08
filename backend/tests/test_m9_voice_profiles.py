@@ -1,8 +1,12 @@
 import asyncio
 import pytest
 
-def run(coro): return asyncio.run(coro)
-
+def run(coro):
+    loop = asyncio.new_event_loop()
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
 @pytest.mark.skipif(__import__('importlib').util.find_spec('mongomock_motor') is None, reason='mongomock_motor not installed')
 def test_customer_voice_profile_hides_provider_route_and_versions_are_immutable():
     import mongomock_motor

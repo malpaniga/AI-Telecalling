@@ -2,12 +2,30 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M10 PASS — Provider Router Complete
-**Next checkpoint:** M11 — Agent Builder
+**Current checkpoint:** M11 PASS — Agent Builder Complete  
+**Next checkpoint:** M12 — Lead CRM
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M11 — AGENT BUILDER
+
+```
+Checkpoint: M11
+Status: IN_PROGRESS
+Started: 2026-10-08
+Objective: Create tenant-safe AI agents, immutable versions, and configuration-driven business templates.
+
+Tests:
+  - backend/tests/test_m11_agents.py — RED (AgentService not implemented yet)
+
+Remaining work:
+  - Implement models, repositories, service, APIs, generic templates, regression, and commit.
+Next checkpoint: M11
+```
 
 ---
 
@@ -868,7 +886,7 @@ Git commit: (see below)
 | M8 | Provider Abstraction | TODO | M7 |
 | M9 | AI Voice Profiles | TODO | M8 |
 | M10 | Provider Router | TODO | M9 |
-| M11 | Agent Builder | TODO | M10 |
+| M11 | Agent Builder | **PASS** | M10 |
 | M12 | Lead CRM | TODO | M11 |
 | M13 | Campaign Engine | TODO | M12 |
 | M14 | Campaign Pre-flight | TODO | M13 |

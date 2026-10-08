@@ -3,9 +3,11 @@ import asyncio
 
 
 def run(coro):
-    return asyncio.run(coro)
-
-
+    loop = asyncio.new_event_loop()
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
 def test_registry_resolves_typed_mock_providers_without_provider_branches():
     from backend.providers.registry import ProviderRegistry
     from backend.providers.telephony.mock import MockTelephonyProvider
