@@ -2,8 +2,8 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M11 PASS — Agent Builder Complete  
-**Next checkpoint:** M12 — Lead CRM
+**Current checkpoint:** M12 PASS — Lead CRM Complete  
+**Next checkpoint:** M13 — Campaign Engine
 
 ---
 
@@ -887,7 +887,7 @@ Git commit: (see below)
 | M9 | AI Voice Profiles | TODO | M8 |
 | M10 | Provider Router | TODO | M9 |
 | M11 | Agent Builder | **PASS** | M10 |
-| M12 | Lead CRM | TODO | M11 |
+| M12 | Lead CRM | **PASS** | M11 |
 | M13 | Campaign Engine | TODO | M12 |
 | M14 | Campaign Pre-flight | TODO | M13 |
 | M15 | Real-Time AI Calling | TODO | M14 |
