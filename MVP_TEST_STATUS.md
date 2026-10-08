@@ -13,6 +13,7 @@
 | M3 | PASS | 42 | 0 | Plans, subscriptions, entitlements, config-driven pricing |
 | M4 | PASS | 43 | 0 | Razorpay, server-authoritative payment, webhook idempotency |
 | M5 | PASS | 39 | 0 | Calling packs, wallet ledger, credit lots, expiry, bonus |
+| M6 | PASS | 32 | 0 | Reserve/release/settle, 10-concurrent no double-spend |
 
 ---
 

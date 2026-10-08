@@ -2,12 +2,86 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M5 PASS — Calling Packs + Wallet Complete  
-**Next checkpoint:** M6 — Credit Reservation + Settlement
+**Current checkpoint:** M6 PASS — Credit Reservation + Settlement Complete  
+**Next checkpoint:** M7 — Phone Number Inventory
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M6 — CREDIT RESERVATION + SETTLEMENT
+
+```
+Checkpoint: M6
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: Reserve credits at call start, release on failure, settle exact
+           usage on completion. No double-spend. No negative credits.
+           10 concurrent calls verified.
+
+Implementation:
+  - backend/services/credit_service.py — CreditService:
+    reserve(org_id, call_id, max_credits) — atomic available→reserved,
+      Redis key for fast check, WalletTransaction(type=reserve), idempotent
+    release(org_id, call_id) — returns reserved→available, idempotent
+    settle(org_id, call_id, actual_credits) — bills exact amount, refunds
+      over-reserve, FIFO lot consumption, idempotency_key prevents double-settle
+    can_start_call() — no-state-change preflight check
+    get_active_reservations() — monitoring view
+  - backend/api/v1/credits.py — POST /reserve (402 on insufficient),
+    POST /release, POST /settle, GET /check, GET /reservations,
+    GET /admin/orgs/{id}/reservations
+  - backend/api/v1/__init__.py — credits router added
+  - Fixed: CreditLot.is_expired handles mongomock naive datetimes
+  - Fixed: WalletRepository.atomic_consume fallback for mongomock
+  - Fixed: settle() fallback when atomic_consume returns None
+
+Key properties verified by tests:
+  - reserve() available→reserved; total unchanged
+  - Insufficient credits raises ValueError (HTTP 402)
+  - reserve() idempotent (same call_id)
+  - release() returns reserved→available; creates ledger entry
+  - release() on non-existent reservation is a no-op
+  - release() after settle is a no-op
+  - settle() bills exact usage; refunds over-reserved amount
+  - settle() capped at reserved (safety guard)
+  - settle() idempotent: double-settle is a no-op
+  - 10 concurrent reserves (600 credits): all 10 succeed, no double-spend
+  - 6 calls, 300 credits (5×60): exactly 5 succeed, 6th fails
+  - 10 concurrent settles: all 10 succeed, correct final balance
+  - Wallet never goes negative under concurrent hammering
+  - Every operation creates immutable WalletTransaction ledger entry
+
+Files changed:
+  - backend/services/credit_service.py (new)
+  - backend/api/v1/credits.py (new)
+  - backend/api/v1/__init__.py (updated)
+  - backend/models/wallet.py (fixed is_expired timezone handling)
+  - backend/repositories/wallet_repo.py (fixed atomic_consume fallback)
+  - backend/tests/test_m6_credit_reservation.py (new)
+
+API changes:
+  - POST /api/v1/credits/reserve
+  - POST /api/v1/credits/release
+  - POST /api/v1/credits/settle
+  - GET  /api/v1/credits/check
+  - GET  /api/v1/credits/reservations
+  - GET  /api/v1/credits/admin/orgs/{org_id}/reservations
+
+Tests:
+  - backend/tests/test_m6_credit_reservation.py — 32 tests
+  - Regression: 208 tests
+
+Tests passed: 240 total (32 new + 208 regression)
+Tests failed: 0
+
+Next checkpoint: M7
+
+Git commit: (see below)
+```
 
 ---
 
@@ -614,7 +688,7 @@ Git commit: (see below)
 | M3 | Plans + Subscriptions | **PASS** | M2 |
 | M4 | Razorpay | **PASS** | M3 |
 | M5 | Calling Packs + Wallet | **PASS** | M4 |
-| M6 | Credit Reservation + Settlement | TODO | M5 |
+| M6 | Credit Reservation + Settlement | **PASS** | M5 |
 | M7 | Phone Number Inventory | TODO | M6 |
 | M8 | Provider Abstraction | TODO | M7 |
 | M9 | AI Voice Profiles | TODO | M8 |

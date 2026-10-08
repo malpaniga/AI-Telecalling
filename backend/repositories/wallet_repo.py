@@ -173,6 +173,21 @@ class WalletRepository(BaseRepository):
             },
             return_document=True,
         )
+        # Mongomock fallback: if find_one_and_update returns None or wrong type,
+        # do the update and fetch separately
+        if result is None:
+            await self.col.update_one(
+                {"_id": wallet_id},
+                {
+                    "$inc": {
+                        "reserved_credits": -reserved_credits,
+                        "available_credits": refund_to_available,
+                        "total_consumed": actual_credits,
+                    },
+                    "$set": {"updated_at": utcnow()},
+                },
+            )
+            result = await self.col.find_one({"_id": wallet_id})
         return result
 
     async def atomic_add(

@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from backend.api.v1 import auth, billing, organizations, subscriptions, users, wallet
+from backend.api.v1 import auth, billing, credits, organizations, subscriptions, users, wallet
 
 router = APIRouter(prefix="/api/v1")
 
@@ -12,3 +12,4 @@ router.include_router(users.router)
 router.include_router(subscriptions.router)
 router.include_router(billing.router)
 router.include_router(wallet.router)
+router.include_router(credits.router)
