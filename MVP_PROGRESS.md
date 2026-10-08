@@ -2,12 +2,41 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M9 PASS — AI Voice Profiles Complete
-**Next checkpoint:** M10 — Provider Router
+**Current checkpoint:** M10 PASS — Provider Router Complete
+**Next checkpoint:** M11 — Agent Builder
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M10 — PROVIDER ROUTER
+
+```
+Checkpoint: M10
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: Resolve primary/fallback providers by health, capability, and language without customer configuration changes.
+
+Implementation so far:
+  - Added ProviderRouter and ResolvedProvider internal selection boundary.
+  - Rejects unhealthy providers and unsupported languages; logs fallback decisions.
+  - Persists failover events in MongoDB for provider operations review.
+
+Tests:
+  - backend/tests/test_m10_provider_router.py — 4 tests
+  - Regression: 293 tests across M1–M10
+
+Tests passed: 293 total
+Tests failed: 0
+Manual verification: PASS — primary, fallback, capability, language, and durable failover behavior.
+Known issues: Provider health signals are injected until M26 adds active health monitoring.
+Remaining work: None for M10.
+Next checkpoint: M11
+Git commit: HEAD (checkpoint: M10 provider router)
+```
 
 ---
 

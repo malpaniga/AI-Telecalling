@@ -188,6 +188,8 @@ async def _ensure_indexes(db: AsyncIOMotorDatabase) -> None:
         IndexModel([("provider_type", ASCENDING), ("provider_name", ASCENDING)]),
     ])
 
+    await db["provider_failover_events"].create_index([("created_at", DESCENDING)])
+
     # agents
     await db["agents"].create_indexes([
         IndexModel([("organization_id", ASCENDING)]),
