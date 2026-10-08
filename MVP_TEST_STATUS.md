@@ -12,6 +12,7 @@
 | M2 | PASS | 45 | 0 | JWT auth, RBAC, tenant isolation, signup/login |
 | M3 | PASS | 42 | 0 | Plans, subscriptions, entitlements, config-driven pricing |
 | M4 | PASS | 43 | 0 | Razorpay, server-authoritative payment, webhook idempotency |
+| M5 | PASS | 39 | 0 | Calling packs, wallet ledger, credit lots, expiry, bonus |
 
 ---
 

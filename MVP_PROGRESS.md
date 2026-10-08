@@ -2,12 +2,104 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M4 PASS — Razorpay Payment Integration Complete  
-**Next checkpoint:** M5 — Calling Packs + Wallet
+**Current checkpoint:** M5 PASS — Calling Packs + Wallet Complete  
+**Next checkpoint:** M6 — Credit Reservation + Settlement
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M5 — CALLING PACKS + WALLET
+
+```
+Checkpoint: M5
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: Calling pack purchase flow, wallet with immutable ledger, credit lots
+           with expiry, bonus, admin adjustment. Every credit movement has a
+           WalletTransaction entry. Wallet never goes negative.
+
+Implementation:
+  - backend/models/wallet.py — CallingPack (integer credits/paise, bonus),
+    Wallet (available + reserved, non-negative), WalletTransaction (immutable
+    ledger, typed operations), CreditLot (expiry, FIFO, available_from_lot)
+  - backend/repositories/wallet_repo.py — CallingPackRepository,
+    WalletRepository (atomic $inc ops: atomic_reserve, atomic_release,
+    atomic_consume, atomic_add, atomic_expire; prevent negative via query guards),
+    WalletTransactionRepository (find-before-insert idempotency for mongomock),
+    CreditLotRepository (FIFO consume_from_lots, deactivate_expired)
+  - backend/services/wallet_service.py — WalletService: purchase_credits
+    (idempotency checked before wallet update), grant_bonus, admin_adjustment
+    (deduction raises if insufficient), process_expiry (backdates lots, creates
+    expiry ledger entries), get_wallet_summary, get_balance;
+    seed_default_packs() (Trial/Starter/Growth/Pro)
+  - backend/services/payment_service.py — calling_pack order fulfillment wired;
+    create_calling_pack_order() added
+  - backend/api/v1/wallet.py — GET/wallet, GET/transactions, GET/lots, GET/packs,
+    POST/packs/{id}/order, admin bonus, admin adjust, admin create/update packs
+  - backend/api/v1/__init__.py — wallet router added
+  - backend/main.py — seed_default_packs() added to lifespan
+
+Key properties verified by tests:
+  - Buy 2000 credits → wallet=2000, ledger=+2000, lot=2000 (the M5 acceptance test)
+  - Bonus credits add both to wallet and to ledger
+  - Every movement has immutable WalletTransaction entry
+  - Admin deduction beyond balance raises ValueError (wallet stays positive)
+  - Expired lots are removed from wallet with ledger entry
+  - Purchase idempotency: same key cannot double-grant
+  - Seed packs are idempotent
+  - All prices/credits are integer types
+
+Bugs fixed:
+  - Missing utcnow import in wallet_service.py
+  - Nested run() in tests: refactored to async helpers
+  - Idempotency check moved before atomic wallet update (prevents double-grant)
+
+Files changed:
+  - backend/models/wallet.py (new)
+  - backend/repositories/wallet_repo.py (new)
+  - backend/services/wallet_service.py (new)
+  - backend/services/payment_service.py (updated — calling_pack fulfillment)
+  - backend/api/v1/wallet.py (new)
+  - backend/api/v1/__init__.py (updated)
+  - backend/main.py (updated — pack seeding)
+  - backend/tests/test_m5_wallet.py (new)
+
+API changes:
+  - GET  /api/v1/wallet
+  - GET  /api/v1/wallet/transactions
+  - GET  /api/v1/wallet/lots
+  - GET  /api/v1/wallet/packs
+  - GET  /api/v1/wallet/packs/{id}
+  - POST /api/v1/wallet/packs/{id}/order
+  - POST /api/v1/wallet/admin/bonus
+  - POST /api/v1/wallet/admin/adjust
+  - GET  /api/v1/wallet/admin/orgs/{org_id}
+  - POST /api/v1/wallet/admin/packs
+  - PATCH /api/v1/wallet/admin/packs/{id}
+  - POST /api/v1/wallet/admin/expire
+
+Database changes:
+  - calling_packs collection
+  - wallets collection (one per org)
+  - wallet_transactions collection (immutable ledger)
+  - credit_lots collection (expiry tracking)
+  - Default packs seeded: Trial (free), Starter (₹999), Growth (₹3,999), Pro (₹6,999)
+
+Tests:
+  - backend/tests/test_m5_wallet.py — 39 tests
+  - Regression: 169 tests
+
+Tests passed: 208 total (39 new + 169 regression)
+Tests failed: 0
+
+Next checkpoint: M6
+
+Git commit: (see below)
+```
 
 ---
 
@@ -521,7 +613,7 @@ Git commit: (see below)
 | M2 | Auth + Multi-Tenancy + RBAC | **PASS** | M1 |
 | M3 | Plans + Subscriptions | **PASS** | M2 |
 | M4 | Razorpay | **PASS** | M3 |
-| M5 | Calling Packs + Wallet | TODO | M4 |
+| M5 | Calling Packs + Wallet | **PASS** | M4 |
 | M6 | Credit Reservation + Settlement | TODO | M5 |
 | M7 | Phone Number Inventory | TODO | M6 |
 | M8 | Provider Abstraction | TODO | M7 |

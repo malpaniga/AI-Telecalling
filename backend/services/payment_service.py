@@ -67,6 +67,61 @@ class PaymentService:
 
     # ---- Order creation ----
 
+    async def create_calling_pack_order(
+        self,
+        organization_id: str,
+        calling_pack_id: str,
+        created_by: Optional[str] = None,
+    ) -> dict:
+        """
+        Create a server-side order for a calling pack purchase.
+        Amount is looked up from the pack — frontend never determines it.
+        """
+        pack = await self.db["calling_packs"].find_one({"_id": calling_pack_id})
+        if pack is None:
+            raise ValueError(f"CallingPack {calling_pack_id} not found")
+        if not pack.get("is_active", True):
+            raise ValueError("This calling pack is no longer available")
+
+        amount_paise = pack["price_paise"]
+        if amount_paise == 0:
+            raise ValueError("This pack has no charge — request it via admin grant")
+
+        order = await self.order_repo.create(
+            organization_id=organization_id,
+            order_type="calling_pack",
+            amount_paise=amount_paise,
+            description=f"{pack['name']} ({pack['credits'] + pack.get('bonus_credits', 0)} credits)",
+            provider=self.provider.provider_name,
+            calling_pack_id=calling_pack_id,
+            currency="INR",
+            created_by=created_by,
+        )
+
+        provider_result = await self.provider.create_order(
+            amount_paise=amount_paise,
+            currency="INR",
+            receipt=order.id[:40],
+            notes={"pack_slug": pack.get("slug", ""), "org_id": organization_id},
+        )
+
+        await self.order_repo.set_provider_order(
+            order.id, provider_result["provider_order_id"], metadata=provider_result
+        )
+
+        log.info("calling_pack order created org=%s pack=%s amount_paise=%d",
+                 organization_id, calling_pack_id, amount_paise)
+
+        return {
+            "order_id": order.id,
+            "provider_order_id": provider_result["provider_order_id"],
+            "amount_paise": amount_paise,
+            "amount_inr": amount_paise / 100,
+            "currency": "INR",
+            "description": order.description,
+            "key_id": settings.razorpay_key_id if not settings.demo_mode else "rzp_test_mock",
+        }
+
     async def create_subscription_order(
         self,
         organization_id: str,
@@ -237,8 +292,20 @@ class PaymentService:
                 )
                 return {"subscription_id": sub.id, "plan_slug": sub.plan_slug}
         elif order.order_type == "calling_pack":
-            # Credits added in M5
-            return {"credits_granted": 0, "note": "credits processed in M5"}
+            if order.calling_pack_id:
+                from backend.services.wallet_service import WalletService
+                wallet_svc = WalletService(self.db)
+                wallet_result = await wallet_svc.purchase_credits(
+                    organization_id=order.organization_id,
+                    calling_pack_id=order.calling_pack_id,
+                    order_id=order.id,
+                    idempotency_key=f"purchase:{order.id}",
+                )
+                return {
+                    "credits_granted": wallet_result["credits_granted"],
+                    "new_balance": wallet_result["new_balance"],
+                }
+            return {"credits_granted": 0, "note": "no calling_pack_id on order"}
         return {}
 
     # ---- Refund ----

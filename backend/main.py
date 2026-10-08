@@ -45,12 +45,16 @@ async def lifespan(app: FastAPI):
     try:
         from backend.core.db import get_db
         from backend.services.subscription_service import seed_default_plans
+        from backend.services.wallet_service import seed_default_packs
         db = get_db()
-        seeded = await seed_default_plans(db)
-        if seeded:
-            log.info("seeded %d default subscription plans", len(seeded))
+        seeded_plans = await seed_default_plans(db)
+        seeded_packs = await seed_default_packs(db)
+        if seeded_plans:
+            log.info("seeded %d default subscription plans", len(seeded_plans))
+        if seeded_packs:
+            log.info("seeded %d default calling packs", len(seeded_packs))
     except Exception as exc:  # noqa: BLE001
-        log.warning("plan seeding failed (non-fatal): %s", exc)
+        log.warning("seeding failed (non-fatal): %s", exc)
 
     # Audio/call pipeline (only if keys are available or demo mode)
     if settings.demo_mode or settings.groq_api_key or settings.effective_sarvam_key:
