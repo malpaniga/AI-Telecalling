@@ -2,8 +2,8 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M18 PASS — Appointments Complete  
-**Next checkpoint:** M19 — Knowledge Base
+**Current checkpoint:** M19 PASS — Knowledge Base Complete  
+**Next checkpoint:** M20 — Post-Call Processing
 
 ---
 
@@ -894,7 +894,7 @@ Git commit: (see below)
 | M16 | Barge-In + Latency | **PASS** | M15 |
 | M17 | Tools + Human Handoff | **PASS** | M16 |
 | M18 | Appointments | **PASS** | M17 |
-| M19 | Knowledge Base | TODO | M18 |
+| M19 | Knowledge Base | **PASS** | M18 |
 | M20 | Post-Call Processing | TODO | M19 |
 | M21 | Usage + Cost | TODO | M20 |
 | M22 | Customer Dashboard | TODO | M21 |
