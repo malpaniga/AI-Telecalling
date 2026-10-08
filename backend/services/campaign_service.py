@@ -152,8 +152,9 @@ class CampaignService:
         self,
         campaign_id: str,
         organization_id: str,
+        skip_preflight: bool = False,
     ) -> Campaign:
-        """Transition draft/scheduled → running."""
+        """Transition draft/scheduled → running. Runs pre-flight validation first."""
         campaign = await self.repo.get_for_org(campaign_id, organization_id)
         if campaign is None:
             raise ValueError("Campaign not found")
@@ -162,6 +163,19 @@ class CampaignService:
                 f"Cannot start campaign in status '{campaign.status}'. "
                 "Must be draft or scheduled."
             )
+
+        # Pre-flight validation (skip_preflight=True only for tests/admin override)
+        if not skip_preflight:
+            from backend.services.preflight_service import PreflightService
+            preflight = PreflightService(self.db, redis=self._get_redis())
+            result = await preflight.run(campaign, skip_calling_hours=False)
+            if not result.all_passed:
+                failed = [f"{c.name}: {c.message}" for c in result.failed_checks]
+                raise ValueError(
+                    f"Campaign pre-flight failed ({len(result.failed_checks)} check(s)): "
+                    + "; ".join(failed)
+                )
+
         now = utcnow()
         ok = await self.repo.transition_status(
             campaign_id, organization_id, "running",

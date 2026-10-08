@@ -252,7 +252,7 @@ class TestCampaignStateMachine:
         async def _t():
             svc = self._svc()
             c = await self._create()
-            started = await svc.start_campaign(c.id, "org-1")
+            started = await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             assert started.status == "running"
             assert started.started_at is not None
         run(_t())
@@ -261,16 +261,16 @@ class TestCampaignStateMachine:
         async def _t():
             svc = self._svc()
             c = await self._create()
-            await svc.start_campaign(c.id, "org-1")  # running
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)  # running
             with pytest.raises(ValueError, match="Cannot start"):
-                await svc.start_campaign(c.id, "org-1")  # already running
+                await svc.start_campaign(c.id, "org-1", skip_preflight=True)  # already running
         run(_t())
 
     def test_pause_running_campaign(self):
         async def _t():
             svc = self._svc()
             c = await self._create()
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             paused = await svc.pause_campaign(c.id, "org-1")
             assert paused.status == "paused"
         run(_t())
@@ -279,7 +279,7 @@ class TestCampaignStateMachine:
         async def _t():
             svc = self._svc()
             c = await self._create()
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             paused = await svc.pause_campaign(c.id, "org-1", reason="low_credits")
             assert paused.status == "paused_low_credits"
         run(_t())
@@ -297,7 +297,7 @@ class TestCampaignStateMachine:
         async def _t():
             svc = self._svc()
             c = await self._create()
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             await svc.pause_campaign(c.id, "org-1")
             resumed = await svc.resume_campaign(c.id, "org-1")
             assert resumed.status == "running"
@@ -307,7 +307,7 @@ class TestCampaignStateMachine:
         async def _t():
             svc = self._svc()
             c = await self._create()
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             await svc.pause_campaign(c.id, "org-1", reason="low_credits")
             resumed = await svc.resume_campaign(c.id, "org-1")
             assert resumed.status == "running"
@@ -317,7 +317,7 @@ class TestCampaignStateMachine:
         async def _t():
             svc = self._svc()
             c = await self._create()
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             with pytest.raises(ValueError, match="Cannot resume"):
                 await svc.resume_campaign(c.id, "org-1")
         run(_t())
@@ -334,7 +334,7 @@ class TestCampaignStateMachine:
         async def _t():
             svc = self._svc()
             c = await self._create()
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             cancelled = await svc.cancel_campaign(c.id, "org-1")
             assert cancelled.status == "cancelled"
         run(_t())
@@ -343,7 +343,7 @@ class TestCampaignStateMachine:
         async def _t():
             svc = self._svc()
             c = await self._create()
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             await svc.complete_campaign(c.id, "org-1")
             with pytest.raises(ValueError, match="terminal"):
                 await svc.cancel_campaign(c.id, "org-1")
@@ -355,7 +355,7 @@ class TestCampaignStateMachine:
             svc = self._svc()
             c = await self._create()
             assert c.status == "draft"
-            c = await svc.start_campaign(c.id, "org-1")
+            c = await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             assert c.status == "running"
             c = await svc.pause_campaign(c.id, "org-1")
             assert c.status == "paused"
@@ -371,7 +371,7 @@ class TestCampaignStateMachine:
             svc = self._svc()
             c = await self._create(org="org-A")
             with pytest.raises(ValueError, match="not found"):
-                await svc.start_campaign(c.id, "org-B")
+                await svc.start_campaign(c.id, "org-B", skip_preflight=True)
         run(_t())
 
 
@@ -395,7 +395,7 @@ class TestConcurrencyGate:
                 organization_id="org-1",
                 **{**_CAMPAIGN_DEFAULTS, "max_concurrent_calls": 3}
             )
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             assert await svc.acquire_call_slot(c.id) is True
             assert await svc.acquire_call_slot(c.id) is True
             assert await svc.acquire_call_slot(c.id) is True
@@ -410,7 +410,7 @@ class TestConcurrencyGate:
                 organization_id="org-1",
                 **{**_CAMPAIGN_DEFAULTS, "max_concurrent_calls": 2}
             )
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             ok1 = await svc.acquire_call_slot(c.id)
             ok2 = await svc.acquire_call_slot(c.id)
             ok3 = await svc.acquire_call_slot(c.id)  # exceeds limit
@@ -428,7 +428,7 @@ class TestConcurrencyGate:
                 organization_id="org-1",
                 **{**_CAMPAIGN_DEFAULTS, "max_concurrent_calls": 1}
             )
-            await svc.start_campaign(c.id, "org-1")
+            await svc.start_campaign(c.id, "org-1", skip_preflight=True)
             assert await svc.acquire_call_slot(c.id) is True   # fills the 1 slot
             assert await svc.acquire_call_slot(c.id) is False  # no slot
             await svc.release_call_slot(c.id)                  # release
@@ -443,7 +443,7 @@ class TestConcurrencyGate:
                 organization_id="org-conc",
                 **{**_CAMPAIGN_DEFAULTS, "max_concurrent_calls": 5}
             )
-            await svc.start_campaign(c.id, "org-conc")
+            await svc.start_campaign(c.id, "org-conc", skip_preflight=True)
             results = await asyncio.gather(
                 *[svc.acquire_call_slot(c.id) for _ in range(10)]
             )
@@ -461,7 +461,7 @@ class TestConcurrencyGate:
                 organization_id="org-check",
                 **{**_CAMPAIGN_DEFAULTS, "max_concurrent_calls": 2}
             )
-            await svc.start_campaign(c.id, "org-check")
+            await svc.start_campaign(c.id, "org-check", skip_preflight=True)
             check = await svc.can_start_call(c.id, "org-check")
             assert check["allowed"] is True
             # Fill slots
@@ -479,7 +479,7 @@ class TestConcurrencyGate:
                 organization_id="org-paused",
                 **{**_CAMPAIGN_DEFAULTS}
             )
-            await svc.start_campaign(c.id, "org-paused")
+            await svc.start_campaign(c.id, "org-paused", skip_preflight=True)
             await svc.pause_campaign(c.id, "org-paused")
             check = await svc.can_start_call(c.id, "org-paused")
             assert check["allowed"] is False
@@ -584,7 +584,7 @@ class TestCampaignHTTP:
         r = self.client.post("/api/v1/campaigns", json=self._create_body(),
                              headers=self._auth(self.token_a))
         cid = r.json()["id"]
-        resp = self.client.post(f"/api/v1/campaigns/{cid}/start",
+        resp = self.client.post(f"/api/v1/campaigns/{cid}/start?skip_preflight=true",
                                 headers=self._auth(self.token_a))
         assert resp.status_code == 200
         assert resp.json()["status"] == "running"
@@ -593,7 +593,7 @@ class TestCampaignHTTP:
         r = self.client.post("/api/v1/campaigns", json=self._create_body(),
                              headers=self._auth(self.token_a))
         cid = r.json()["id"]
-        self.client.post(f"/api/v1/campaigns/{cid}/start",
+        self.client.post(f"/api/v1/campaigns/{cid}/start?skip_preflight=true",
                          headers=self._auth(self.token_a))
         resp = self.client.post(f"/api/v1/campaigns/{cid}/pause",
                                 headers=self._auth(self.token_a))
@@ -604,7 +604,7 @@ class TestCampaignHTTP:
         r = self.client.post("/api/v1/campaigns", json=self._create_body(),
                              headers=self._auth(self.token_a))
         cid = r.json()["id"]
-        self.client.post(f"/api/v1/campaigns/{cid}/start",
+        self.client.post(f"/api/v1/campaigns/{cid}/start?skip_preflight=true",
                          headers=self._auth(self.token_a))
         self.client.post(f"/api/v1/campaigns/{cid}/pause",
                          headers=self._auth(self.token_a))
@@ -636,7 +636,7 @@ class TestCampaignHTTP:
         r = self.client.post("/api/v1/campaigns", json=self._create_body(),
                              headers=self._auth(self.token_a))
         cid = r.json()["id"]
-        self.client.post(f"/api/v1/campaigns/{cid}/start",
+        self.client.post(f"/api/v1/campaigns/{cid}/start?skip_preflight=true",
                          headers=self._auth(self.token_a))
         resp = self.client.get(f"/api/v1/campaigns/{cid}/stats",
                                headers=self._auth(self.token_a))
@@ -650,7 +650,7 @@ class TestCampaignHTTP:
         r = self.client.post("/api/v1/campaigns", json=self._create_body(),
                              headers=self._auth(self.token_a))
         cid = r.json()["id"]
-        resp = self.client.post(f"/api/v1/campaigns/{cid}/start",
+        resp = self.client.post(f"/api/v1/campaigns/{cid}/start?skip_preflight=true",
                                 headers=self._auth(self.token_b))
         assert resp.status_code == 400  # not found for org-B
 
@@ -663,7 +663,7 @@ class TestCampaignHTTP:
                              json=self._create_body(name="C1"),
                              headers=self._auth(self.token_a))
         cid = r.json()["id"]
-        self.client.post(f"/api/v1/campaigns/{cid}/start",
+        self.client.post(f"/api/v1/campaigns/{cid}/start?skip_preflight=true",
                          headers=self._auth(self.token_a))
         self.client.post("/api/v1/campaigns",
                          json=self._create_body(name="C2"),

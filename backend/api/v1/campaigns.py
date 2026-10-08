@@ -177,15 +177,35 @@ async def update_campaign(
     return _campaign_response(updated)
 
 
+@router.get("/{campaign_id}/preflight")
+async def preflight_campaign(
+    campaign_id: str,
+    skip_calling_hours: bool = False,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Run pre-flight validation without starting the campaign."""
+    org_id = _require_org(user)
+    svc = CampaignService(get_db())
+    campaign = await svc.get_campaign(campaign_id, org_id)
+    if campaign is None:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    from backend.services.preflight_service import PreflightService
+    preflight = PreflightService(get_db())
+    result = await preflight.run(campaign, skip_calling_hours=skip_calling_hours)
+    return result.to_dict()
+
+
 @router.post("/{campaign_id}/start")
 async def start_campaign(
     campaign_id: str,
+    skip_preflight: bool = False,
     user: CurrentUser = Depends(get_current_user),
 ):
     org_id = _require_org(user)
     svc = CampaignService(get_db())
     try:
-        campaign = await svc.start_campaign(campaign_id, org_id)
+        campaign = await svc.start_campaign(campaign_id, org_id,
+                                            skip_preflight=skip_preflight)
     except (ValueError, RuntimeError) as e:
         raise HTTPException(status_code=400, detail=str(e))
     return _campaign_response(campaign)
