@@ -2,8 +2,8 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M14 PASS — Campaign Pre-flight Complete  
-**Next checkpoint:** M15 — Real-Time AI Calling
+**Current checkpoint:** M15 PASS — Real-Time AI Calling Complete  
+**Next checkpoint:** M16 — Barge-In + Latency
 
 ---
 
@@ -890,7 +890,7 @@ Git commit: (see below)
 | M12 | Lead CRM | **PASS** | M11 |
 | M13 | Campaign Engine | **PASS** | M12 |
 | M14 | Campaign Pre-flight | **PASS** | M13 |
-| M15 | Real-Time AI Calling | TODO | M14 |
+| M15 | Real-Time AI Calling | **PASS** | M14 |
 | M16 | Barge-In + Latency | TODO | M15 |
 | M17 | Tools + Human Handoff | TODO | M16 |
 | M18 | Appointments | TODO | M17 |
