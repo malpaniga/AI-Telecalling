@@ -15,6 +15,31 @@
 | M5 | PASS | 39 | 0 | Calling packs, wallet ledger, credit lots, expiry, bonus |
 | M6 | PASS | 32 | 0 | Reserve/release/settle, 10-concurrent no double-spend |
 | M7 | PASS | 40 | 0 | Number inventory, atomic assignment, tenant isolation, provider redaction |
+| M8 | PASS | 5 | 0 | Provider contracts, live adapter normalization, mock demo registry |
+
+---
+
+## M8 — Provider Abstraction
+
+**Date:** 2026-10-08
+**Status:** PASS
+
+### Tests Run
+
+| Test | Result | Notes |
+|---|---|---|
+| Typed provider registry | PASS | Registration, lookup, duplicate, and unknown-provider protections |
+| Mock provider flow | PASS | Offline telephony, STT, TTS, LLM, and number provisioning |
+| Demo registry bootstrap | PASS | Registers a mock for every runtime category |
+| Live adapter normalization | PASS | Exotel, ElevenLabs, and OpenAI-compatible HTTP contract tests with fake clients |
+| M1–M3 regression | PASS | 126 tests |
+| M4–M8 regression | PASS | 159 tests |
+| **Total** | **285/285 PASS** | |
+
+### Known Issues at M8
+
+- Live provider credentials and external-provider accounts are intentionally not
+  required for automated tests; request contracts are isolated behind fake clients.
 
 ---
 

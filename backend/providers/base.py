@@ -10,10 +10,74 @@ Provider-specific IDs/keys are stored as:
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from typing import Any, Optional
 
 
-class PaymentProvider(ABC):
+class Provider(ABC):
+    @property
+    @abstractmethod
+    def provider_name(self) -> str: ...
+
+    def get_capabilities(self) -> dict[str, Any]:
+        return {}
+
+
+class TelephonyProvider(Provider):
+    @abstractmethod
+    async def initiate_call(self, to: str, from_number: str, **kwargs: Any) -> dict: ...
+    @abstractmethod
+    async def hangup_call(self, provider_resource_id: str) -> None: ...
+    @abstractmethod
+    async def get_call_status(self, provider_resource_id: str) -> dict: ...
+    async def transfer_call(self, provider_resource_id: str, to: str) -> None: raise NotImplementedError
+    async def get_recording(self, provider_resource_id: str) -> dict: return {}
+    async def stream_audio(self, provider_resource_id: str) -> AsyncIterator[bytes]:
+        if False: yield b""
+    async def handle_webhook(self, payload: dict) -> dict: return payload
+
+
+class STTProvider(Provider):
+    @abstractmethod
+    async def transcribe(self, audio: bytes, **kwargs: Any) -> str: ...
+    async def stream_transcribe(self, audio: AsyncIterator[bytes], **kwargs: Any) -> AsyncIterator[str]:
+        chunks = [chunk async for chunk in audio]
+        yield await self.transcribe(b"".join(chunks), **kwargs)
+    async def stop(self) -> None: return None
+    async def get_languages(self) -> list[str]: return []
+    async def get_models(self) -> list[str]: return []
+    async def estimate_cost(self, **kwargs: Any) -> int: return 0
+
+
+class TTSProvider(Provider):
+    @abstractmethod
+    async def synthesize(self, text: str, **kwargs: Any) -> dict: ...
+    async def stream(self, text: str, **kwargs: Any) -> AsyncIterator[dict]: yield await self.synthesize(text, **kwargs)
+    async def stop(self) -> None: return None
+    async def get_voices(self) -> list[dict]: return []
+    async def get_models(self) -> list[str]: return []
+    async def get_languages(self) -> list[str]: return []
+    async def estimate_cost(self, **kwargs: Any) -> int: return 0
+
+
+class LLMProvider(Provider):
+    @abstractmethod
+    async def generate(self, messages: list[dict], **kwargs: Any) -> str: ...
+    async def stream(self, messages: list[dict], **kwargs: Any) -> AsyncIterator[str]: yield await self.generate(messages, **kwargs)
+    async def get_models(self) -> list[str]: return []
+    async def estimate_cost(self, **kwargs: Any) -> int: return 0
+
+
+class PhoneNumberProvider(Provider):
+    @abstractmethod
+    async def provision_number(self, country_code: str, **kwargs: Any) -> dict: ...
+    async def search_numbers(self, country_code: str, **kwargs: Any) -> list[dict]: return []
+    async def reserve_number(self, provider_resource_id: str) -> dict: return {"provider_resource_id": provider_resource_id}
+    async def release_number(self, provider_resource_id: str) -> None: return None
+    async def get_number(self, provider_resource_id: str) -> dict: return {"provider_resource_id": provider_resource_id}
+
+
+class PaymentProvider(Provider):
     """Abstract payment provider. Razorpay, Stripe, etc. implement this."""
 
     @property

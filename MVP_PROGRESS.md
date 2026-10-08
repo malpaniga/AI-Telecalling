@@ -2,12 +2,59 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M7 PASS — Phone Number Inventory Complete
-**Next checkpoint:** M8 — Provider Abstraction
+**Current checkpoint:** M8 PASS — Provider Abstraction Complete
+**Next checkpoint:** M9 — AI Voice Profiles
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M8 — PROVIDER ABSTRACTION
+
+```
+Checkpoint: M8
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: Move telephony, STT, TTS, LLM, payment, and phone-number integrations
+           behind typed provider contracts and a provider registry.
+
+Implementation so far:
+  - Added typed TelephonyProvider, STTProvider, TTSProvider, LLMProvider, and
+    PhoneNumberProvider contracts alongside the existing PaymentProvider.
+  - Added ProviderRegistry and offline mock implementations for every provider
+    category.
+  - Wrapped existing Twilio and Sarvam capabilities behind adapter boundaries.
+  - Added concrete Exotel, ElevenLabs, and OpenAI-compatible HTTP adapters.
+  - Added a demo registry bootstrap that supplies mock providers for every
+    runtime provider category without paid credentials.
+
+Tests:
+  - backend/tests/test_m8_provider_abstraction.py — 5 tests
+  - Regression: 280 tests across M1–M7
+
+Tests passed: 285 total
+Tests failed: 0
+
+Manual verification:
+  - PASS: registry resolves only typed provider contracts and rejects unknown or
+    duplicate registrations.
+  - PASS: provider request/response normalization is tested without network I/O.
+  - PASS: demo registry provides complete offline telephony, STT, TTS, LLM, and
+    phone-number workflows.
+
+Known issues:
+  - Concrete live API calls require configured provider credentials and are not
+    exercised against external accounts in CI.
+
+Remaining work:
+  - Route selection belongs to M10; voice-profile configuration belongs to M9.
+
+Next checkpoint: M9
+Git commit: HEAD (checkpoint: M8 provider abstraction)
+```
 
 ---
 
