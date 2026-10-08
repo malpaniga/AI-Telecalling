@@ -107,10 +107,20 @@ class VADEndpointer:
         backend = settings.vad_backend.lower()
 
         if backend == "silero":
-            self._clf = SileroVAD(settings.silero_model_path, self.sample_rate)
-            self.window = SileroVAD.WINDOW
-            self.speech_prob = settings.vad_speech_prob
-        else:
+            import os
+            model_path = settings.silero_model_path
+            if not os.path.exists(model_path):
+                log.warning(
+                    "Silero VAD model not found at %s — falling back to webrtc backend",
+                    model_path,
+                )
+                backend = "webrtc"
+            else:
+                self._clf = SileroVAD(model_path, self.sample_rate)
+                self.window = SileroVAD.WINDOW
+                self.speech_prob = settings.vad_speech_prob
+
+        if backend != "silero":
             self._clf = _WebRTCVAD(self.sample_rate, settings.vad_aggressiveness)
             self.window = self._clf.window
             self.speech_prob = 0.5
