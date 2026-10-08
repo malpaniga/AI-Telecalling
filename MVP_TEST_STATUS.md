@@ -14,6 +14,34 @@
 | M4 | PASS | 43 | 0 | Razorpay, server-authoritative payment, webhook idempotency |
 | M5 | PASS | 39 | 0 | Calling packs, wallet ledger, credit lots, expiry, bonus |
 | M6 | PASS | 32 | 0 | Reserve/release/settle, 10-concurrent no double-spend |
+| M7 | PASS | 40 | 0 | Number inventory, atomic assignment, tenant isolation, provider redaction |
+
+---
+
+## M7 — Phone Number Inventory
+
+**Date:** 2026-10-08
+**Status:** PASS
+
+### Tests Run
+
+| Test | Result | Notes |
+|---|---|---|
+| Phone-number models and response views | PASS | 5 tests; customer views redact all provider and rental fields |
+| Inventory repository | PASS | 5 tests; atomic reservation and lifecycle transitions |
+| Inventory service | PASS | 11 tests; assignment history, tenant isolation, and stats |
+| Concurrent assignment | PASS | 2 tests; exactly one winner for one number |
+| Demo inventory seed | PASS | 3 tests; idempotent seeding |
+| HTTP API / RBAC | PASS | 14 tests; auth, customer scope, platform-only administration |
+| M1–M3 regression | PASS | 126 tests |
+| M4–M5 regression | PASS | 82 tests |
+| M6–M7 regression | PASS | 72 tests |
+| **Total** | **280/280 PASS** | |
+
+### Known Issues at M7
+
+- Existing third-party deprecation warnings from asyncio event-loop lookup,
+  python-jose, and Starlette TestClient remain non-blocking.
 
 ---
 

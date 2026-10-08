@@ -2,12 +2,82 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M6 PASS — Credit Reservation + Settlement Complete  
-**Next checkpoint:** M7 — Phone Number Inventory
+**Current checkpoint:** M7 PASS — Phone Number Inventory Complete
+**Next checkpoint:** M8 — Provider Abstraction
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M7 — PHONE NUMBER INVENTORY
+
+```
+Checkpoint: M7
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: Build platform-owned phone number inventory with provider details
+           hidden from customers, assignment lifecycle management, immutable
+           assignment history, and concurrency-safe reservations.
+
+Implementation:
+  - backend/models/phone_number.py — PhoneNumber and immutable
+    PhoneNumberAssignment documents. Provider data and rental cost remain
+    internal-only.
+  - backend/repositories/phone_number_repo.py — inventory querying, unique
+    E.164 number lookup, and MongoDB atomic available -> reserved -> assigned
+    transition; only one concurrent request can reserve a number.
+  - backend/services/phone_number_service.py — add, assign, release, suspend,
+    reactivate, tenant-scoped lookup, inventory statistics, and idempotent demo
+    inventory seeding. Customer views redact provider data.
+  - backend/api/v1/phone_numbers.py — authenticated customer inventory and
+    assigned-number routes, plus platform-only management routes.
+  - backend/api/v1/__init__.py — phone-number router registered.
+  - backend/tests/test_m7_phone_numbers.py — lifecycle, tenant isolation,
+    concurrency, redaction, seed, and HTTP authorization coverage.
+
+Database changes:
+  - phone_numbers collection (unique number, organization, status, provider indexes)
+  - phone_number_assignments collection (number history and organization indexes)
+
+API changes:
+  - GET  /api/v1/phone-numbers/available
+  - GET  /api/v1/phone-numbers/my
+  - GET  /api/v1/phone-numbers/my/{phone_number_id}
+  - GET  /api/v1/phone-numbers/admin
+  - POST /api/v1/phone-numbers/admin
+  - POST /api/v1/phone-numbers/admin/{phone_number_id}/assign
+  - POST /api/v1/phone-numbers/admin/{phone_number_id}/release
+  - POST /api/v1/phone-numbers/admin/{phone_number_id}/suspend
+  - POST /api/v1/phone-numbers/admin/{phone_number_id}/reactivate
+  - GET  /api/v1/phone-numbers/admin/stats
+
+Tests:
+  - backend/tests/test_m7_phone_numbers.py — 40 tests
+  - Regression: 280 tests across M1–M7
+
+Tests passed: 280 total
+Tests failed: 0
+
+Manual verification:
+  - PASS: exactly one of five concurrent organizations can claim one number.
+  - PASS: organization A cannot retrieve organization B's number.
+  - PASS: customer-facing responses exclude provider, provider_resource_id,
+    provider_metadata, and rental_paise_per_month.
+  - PASS: customer tokens receive 403 from platform inventory endpoints.
+
+Known issues:
+  - Existing third-party asyncio/JWT/TestClient deprecation warnings remain;
+    no test failures result from them.
+
+Remaining work:
+  - Provider provisioning adapters are intentionally deferred to M8.
+
+Next checkpoint: M8
+Git commit: HEAD (checkpoint: M7 phone number inventory)
+```
 
 ---
 
