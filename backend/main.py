@@ -41,6 +41,17 @@ async def lifespan(app: FastAPI):
     await init_db()
     await init_redis()
 
+    # Seed default subscription plans (idempotent)
+    try:
+        from backend.core.db import get_db
+        from backend.services.subscription_service import seed_default_plans
+        db = get_db()
+        seeded = await seed_default_plans(db)
+        if seeded:
+            log.info("seeded %d default subscription plans", len(seeded))
+    except Exception as exc:  # noqa: BLE001
+        log.warning("plan seeding failed (non-fatal): %s", exc)
+
     # Audio/call pipeline (only if keys are available or demo mode)
     if settings.demo_mode or settings.groq_api_key or settings.effective_sarvam_key:
         try:

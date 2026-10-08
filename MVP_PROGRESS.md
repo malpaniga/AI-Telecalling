@@ -2,12 +2,94 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M2 PASS — Auth + Multi-Tenancy + RBAC Complete  
-**Next checkpoint:** M3 — Plans + Subscriptions
+**Current checkpoint:** M3 PASS — Plans + Subscriptions Complete  
+**Next checkpoint:** M4 — Razorpay
 
 ---
 
 ## CHECKPOINT HISTORY
+
+---
+
+### M3 — PLANS + SUBSCRIPTIONS
+
+```
+Checkpoint: M3
+Status: PASS
+Started: 2026-10-08
+Completed: 2026-10-08
+Objective: Database-driven subscription plans and entitlements. Changing plan
+           configuration in DB changes behaviour without code changes.
+
+Implementation:
+  - backend/models/subscription.py — SubscriptionPlan (integer paise prices),
+    Subscription (org-scoped, plan snapshot at subscribe time), EntitlementCheck
+  - backend/repositories/subscription_repo.py — SubscriptionPlanRepository
+    (CRUD, list_public, update_price, update_limits, set_active),
+    SubscriptionRepository (create_for_org with snapshot, find_active, cancel,
+    upgrade, mark_renewed, count_by_plan)
+  - backend/services/subscription_service.py — SubscriptionService with
+    entitlement checks (campaign, agent, concurrent calls, features, leads,
+    team members), activate_plan, cancel_subscription, change_plan,
+    get_entitlements; seed_default_plans() for Starter/Growth/Pro
+  - backend/api/v1/subscriptions.py — public plan listing (no auth),
+    customer /my/* endpoints, admin /admin/* endpoints (platform-only)
+  - backend/main.py — plan seeding added to lifespan
+  - backend/api/v1/__init__.py — subscriptions router wired in
+
+Key design properties verified by tests:
+  - All prices are integer paise (never float)
+  - price_monthly_inr is a computed property, not stored in MongoDB
+  - Plan snapshot at subscription time: changing plan DB record does NOT
+    retroactively affect existing subscribers
+  - New subscriptions pick up updated plan limits
+  - One active subscription per org enforced
+  - Upgrade/downgrade updates snapshot immediately
+  - Feature gates (knowledge_base_enabled, api_access, etc.) from plan config
+  - Customers cannot access admin plan creation endpoints (403)
+  - Default plans (Starter/Growth/Pro) seeded idempotently on startup
+
+Files changed:
+  - backend/models/subscription.py (new)
+  - backend/repositories/subscription_repo.py (new)
+  - backend/services/__init__.py (new)
+  - backend/services/subscription_service.py (new)
+  - backend/api/v1/subscriptions.py (new)
+  - backend/api/v1/__init__.py (updated)
+  - backend/main.py (updated — plan seeding in lifespan)
+  - backend/tests/test_m3_subscriptions.py (new)
+
+API changes:
+  - GET  /api/v1/subscriptions/plans
+  - GET  /api/v1/subscriptions/plans/{slug}
+  - GET  /api/v1/subscriptions/my
+  - GET  /api/v1/subscriptions/my/entitlements
+  - POST /api/v1/subscriptions/my/cancel
+  - POST /api/v1/subscriptions/my/change
+  - GET  /api/v1/subscriptions/admin/plans
+  - POST /api/v1/subscriptions/admin/plans
+  - PATCH /api/v1/subscriptions/admin/plans/{plan_id}
+  - GET  /api/v1/subscriptions/admin/all
+  - POST /api/v1/subscriptions/admin/orgs/{org_id}/activate
+
+Database changes:
+  - subscription_plans collection — indexes on (slug unique, is_active, sort_order)
+  - subscriptions collection — index on (organization_id unique for active subs)
+  - Default plans seeded: starter (₹2,999/mo), growth (₹7,999/mo), pro (₹19,999/mo)
+
+Tests:
+  - backend/tests/test_m3_subscriptions.py — 42 tests
+  - Regression (M1+M2): 84 tests
+
+Tests passed: 126 total (42 new + 84 regression)
+Tests failed: 0
+
+Known issues: None
+
+Next checkpoint: M4
+
+Git commit: (see below)
+```
 
 ---
 
@@ -347,7 +429,7 @@ Git commit: (see below)
 | M0 | Repository Audit | **PASS** | — |
 | M1 | MongoDB Foundation | **PASS** | M0 |
 | M2 | Auth + Multi-Tenancy + RBAC | **PASS** | M1 |
-| M3 | Plans + Subscriptions | TODO | M2 |
+| M3 | Plans + Subscriptions | **PASS** | M2 |
 | M4 | Razorpay | TODO | M3 |
 | M5 | Calling Packs + Wallet | TODO | M4 |
 | M6 | Credit Reservation + Settlement | TODO | M5 |
