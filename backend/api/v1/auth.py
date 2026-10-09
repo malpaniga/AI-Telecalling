@@ -23,6 +23,7 @@ from backend.core.auth import (
     revoke_refresh_token,
 )
 from backend.core.db import get_db
+from backend.core.rate_limit import rate_limit_auth
 from backend.repositories.audit_log_repo import AuditLogRepository
 from backend.repositories.organization_repo import OrganizationRepository
 from backend.repositories.user_repo import UserRepository
@@ -128,6 +129,7 @@ async def signup(body: SignupRequest, request: Request):
     Create a new organization + organization_owner user in one atomic step.
     Returns a token pair immediately (no email verification required for MVP).
     """
+    await rate_limit_auth(request)
     db = get_db()
     user_repo = UserRepository(db)
     org_repo = OrganizationRepository(db)
@@ -184,6 +186,7 @@ async def signup(body: SignupRequest, request: Request):
 @router.post("/login")
 async def login(body: LoginRequest, request: Request):
     """Authenticate with email + password. Returns token pair."""
+    await rate_limit_auth(request)
     db = get_db()
     user_repo = UserRepository(db)
     audit = AuditLogRepository(db)

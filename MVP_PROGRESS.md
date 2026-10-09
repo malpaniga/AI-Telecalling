@@ -2,8 +2,8 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M27 PASS — Reconciliation Complete  
-**Next checkpoint:** M28 — Security Hardening
+**Current checkpoint:** M28 PASS — Security Hardening Complete  
+**Next checkpoint:** M29 — Automated Testing
 
 ---
 
@@ -903,7 +903,7 @@ Git commit: (see below)
 | M25 | Revenue + Margin Analytics | **PASS** | M24 |
 | M26 | Provider Operations | **PASS** | M25 |
 | M27 | Reconciliation | **PASS** | M26 |
-| M28 | Security Hardening | TODO | M27 |
+| M28 | Security Hardening | **PASS** | M27 |
 | M29 | Automated Testing | TODO | M28 |
 | M30 | Demo Mode | TODO | M29 |
 | M31 | Production Deployment | TODO | M30 |
