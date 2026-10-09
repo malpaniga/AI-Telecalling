@@ -53,6 +53,17 @@ async def lifespan(app: FastAPI):
             log.info("seeded %d default subscription plans", len(seeded_plans))
         if seeded_packs:
             log.info("seeded %d default calling packs", len(seeded_packs))
+
+        # Auto-seed demo environment in DEMO_MODE
+        if settings.demo_mode:
+            from backend.services.demo_seed_service import DemoSeedService
+            demo_svc = DemoSeedService(db)
+            if not await demo_svc.is_seeded():
+                result = await demo_svc.seed_all()
+                log.info("demo environment seeded: org=%s",
+                         result.get("organization_id"))
+            else:
+                log.info("demo environment already seeded")
     except Exception as exc:  # noqa: BLE001
         log.warning("seeding failed (non-fatal): %s", exc)
 
