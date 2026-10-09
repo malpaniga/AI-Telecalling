@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from backend.api.v1 import agents, appointments, auth, billing, calls, campaigns, credits, dashboard, knowledge, leads, organizations, phone_numbers, subscriptions, transcripts, usage, users, voice_profiles, wallet
+from backend.api.v1 import agents, appointments, auth, billing, billing_portal, calls, campaigns, credits, dashboard, knowledge, leads, organizations, phone_numbers, subscriptions, transcripts, usage, users, voice_profiles, wallet
 
 router = APIRouter(prefix="/api/v1")
 
@@ -11,6 +11,7 @@ router.include_router(organizations.router)
 router.include_router(users.router)
 router.include_router(subscriptions.router)
 router.include_router(billing.router)
+router.include_router(billing_portal.router)
 router.include_router(wallet.router)
 router.include_router(credits.router)
 router.include_router(phone_numbers.router)
