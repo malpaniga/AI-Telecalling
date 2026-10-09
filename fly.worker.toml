@@ -1,0 +1,26 @@
+# Fly.io configuration for the campaign worker process
+# Run separately: flyctl deploy --config fly.worker.toml
+#
+# The worker polls Redis for campaign tasks and initiates outbound calls.
+# It does NOT serve HTTP traffic.
+
+app = "ai-telecalling-saas-worker"
+primary_region = "bom"
+
+[build]
+  dockerfile = "Dockerfile.worker"
+
+[deploy]
+  strategy = "rolling"
+
+[env]
+  APP_ENV = "production"
+  LOG_LEVEL = "INFO"
+  WORKER_TYPE = "campaign"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# No HTTP service — worker only

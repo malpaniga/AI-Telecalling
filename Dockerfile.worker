@@ -1,0 +1,24 @@
+# AI Telecalling SaaS — Campaign Worker Dockerfile
+
+FROM python:3.13-slim
+
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY backend/requirements.txt requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+COPY backend/ backend/
+
+RUN mkdir -p /app/models/silero /app/models/piper
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# Worker entry point — runs campaign dialing loop
+CMD ["python", "-m", "backend.workers.campaign_worker"]

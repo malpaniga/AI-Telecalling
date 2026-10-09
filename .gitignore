@@ -1,26 +1,57 @@
-# Secrets / env
-.env
-backend/.env
-*.env
-!.env.example
-
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
 .venv/
 venv/
+env/
 *.egg-info/
-.pytest_cache/
+dist/
+build/
+.eggs/
 
-# Models (large binaries)
+# Environment
+backend/.env
+.env
+*.env
+*.env.*
+!.env.example
+
+# Models (large binary files — download separately)
 models/
-*.gguf
 
-# Node / Next.js
+# Secrets
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# PDFs (phone/bill scans)
+*.pdf
+
+# Node
 node_modules/
 .next/
+frontend/.next/
 frontend/out/
 
-# OS / editor
-.DS_Store
-*.log
+# Fly.io
+.fly/
+
+# Misc
+*.tmp
+*.bak

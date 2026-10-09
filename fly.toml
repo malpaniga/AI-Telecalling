@@ -1,0 +1,66 @@
+# Fly.io deployment configuration for AI Telecalling SaaS
+# https://fly.io/docs/reference/configuration/
+#
+# Architecture:
+#   app     — FastAPI/uvicorn (API + WebSocket)
+#   worker  — campaign worker process (separate machine)
+#   Redis   — Fly Redis (ephemeral coordination only)
+#   MongoDB — MongoDB Atlas (external, NOT on Fly.io)
+
+app = "ai-telecalling-saas"
+primary_region = "bom"  # Mumbai — closest to India
+
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  # Release command runs database indexes on every deploy
+  release_command = "python -m backend.scripts.ensure_indexes"
+  strategy = "rolling"
+
+[env]
+  APP_ENV = "production"
+  APP_PORT = "8080"
+  APP_HOST = "0.0.0.0"
+  LOG_LEVEL = "INFO"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+  # Health check — MongoDB + Redis + provider keys
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "15s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
+
+# WebSocket support for real-time calls
+[services.ports]
+  handlers = ["tls", "http"]
+  port = "443"
+
+[[services.ports]]
+  handlers = ["http"]
+  port = "80"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# Volumes for model files (Silero VAD, Piper TTS)
+# Mount to /app/models
+[[mounts]]
+  source = "models_data"
+  destination = "/app/models"
+  initial_size = "2gb"
