@@ -96,7 +96,7 @@ class TestReconciliationChecks:
     def test_payment_without_credits_pass(self):
         async def _t():
             svc = self._svc()
-            result = await svc.check_payment_without_credits(_now())
+            result = await svc.check_payment_without_credits(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "pass"
         run(_t())
 
@@ -109,7 +109,7 @@ class TestReconciliationChecks:
                 "status": "captured", "created_at": _now(),
             })
             svc = self._svc()
-            result = await svc.check_payment_without_credits(_now())
+            result = await svc.check_payment_without_credits(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "fail"
             assert result.count == 1
         run(_t())
@@ -117,7 +117,7 @@ class TestReconciliationChecks:
     def test_credits_without_payment_pass(self):
         async def _t():
             svc = self._svc()
-            result = await svc.check_credits_without_payment(_now())
+            result = await svc.check_credits_without_payment(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "pass"
         run(_t())
 
@@ -131,14 +131,14 @@ class TestReconciliationChecks:
                 "created_at": _now(),
             })
             svc = self._svc()
-            result = await svc.check_credits_without_payment(_now())
+            result = await svc.check_credits_without_payment(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "fail"
         run(_t())
 
     def test_duplicate_webhook_pass(self):
         async def _t():
             svc = self._svc()
-            result = await svc.check_duplicate_webhooks(_now())
+            result = await svc.check_duplicate_webhooks(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "pass"
         run(_t())
 
@@ -152,7 +152,7 @@ class TestReconciliationChecks:
                     "received_at": _now(),
                 })
             svc = self._svc()
-            result = await svc.check_duplicate_webhooks(_now())
+            result = await svc.check_duplicate_webhooks(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "fail"
             assert result.count == 1
         run(_t())
@@ -170,7 +170,7 @@ class TestReconciliationChecks:
                 "total_paise": 100, "issued_at": _now(),
             })
             svc = self._svc()
-            result = await svc.check_invoice_mismatch(_now())
+            result = await svc.check_invoice_mismatch(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "pass"
         run(_t())
 
@@ -187,7 +187,7 @@ class TestReconciliationChecks:
                 "total_paise": 100, "issued_at": _now(),
             })
             svc = self._svc()
-            result = await svc.check_invoice_mismatch(_now())
+            result = await svc.check_invoice_mismatch(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "fail"
         run(_t())
 
@@ -234,7 +234,7 @@ class TestReconciliationChecks:
                 "available_credits": 0, "reserved_credits": 0,
             })
             svc = self._svc()
-            result = await svc.check_usage_mismatch(_now())
+            result = await svc.check_usage_mismatch(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "pass"
         run(_t())
 
@@ -253,7 +253,7 @@ class TestReconciliationChecks:
                 "provider_cost_paise": 110, "created_at": _now(),
             })
             svc = self._svc()
-            result = await svc.check_provider_cost_mismatch(_now())
+            result = await svc.check_provider_cost_mismatch(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "pass"
         run(_t())
 
@@ -273,7 +273,7 @@ class TestReconciliationChecks:
                 "provider_cost_paise": 200, "created_at": _now(),
             })
             svc = self._svc()
-            result = await svc.check_provider_cost_mismatch(_now())
+            result = await svc.check_provider_cost_mismatch(datetime(2000,1,1,tzinfo=timezone.utc))
             assert result.status == "fail"
         run(_t())
 
