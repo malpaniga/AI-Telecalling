@@ -2,8 +2,8 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-08  
-**Current checkpoint:** M21 PASS — Usage + Cost Complete  
-**Next checkpoint:** M22 — Customer Dashboard
+**Current checkpoint:** M22 PASS — Customer Dashboard Complete  
+**Next checkpoint:** M23 — Customer Billing
 
 ---
 
@@ -897,7 +897,7 @@ Git commit: (see below)
 | M19 | Knowledge Base | **PASS** | M18 |
 | M20 | Post-Call Processing | **PASS** | M19 |
 | M21 | Usage + Cost | **PASS** | M20 |
-| M22 | Customer Dashboard | TODO | M21 |
+| M22 | Customer Dashboard | **PASS** | M21 |
 | M23 | Customer Billing | TODO | M22 |
 | M24 | Super Admin | TODO | M23 |
 | M25 | Revenue + Margin Analytics | TODO | M24 |
