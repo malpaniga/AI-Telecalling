@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/nav";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Ava Console — Voice Agent Dashboard",
-  description: "Real estate voice agent: calls, leads, analytics",
+  title: "VoiceAI — AI Voice Telecalling Platform",
+  description:
+    "AI-powered voice telecalling for Indian businesses. Automate outbound calls, manage leads, run campaigns and track analytics.",
 };
 
 export default function RootLayout({
@@ -13,12 +20,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-ink text-fg antialiased">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="grid-bg flex-1 overflow-x-hidden">{children}</main>
-        </div>
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-screen bg-background text-text-primary antialiased">
+        {children}
       </body>
     </html>
   );

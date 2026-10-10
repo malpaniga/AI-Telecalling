@@ -5,30 +5,38 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Groq-inspired dark palette
-        ink: "#08080a", // page background
-        panel: "#121215", // cards / panels
-        "panel-2": "#17171b", // nested surfaces
-        line: "#26262c", // borders
-        "line-strong": "#34343c", // hover / emphasized borders
-        fg: "#ededf0", // primary text
-        muted: "#8a8a92", // secondary text
-        faint: "#5c5c64", // tertiary text
-        accent: "#F55036", // Groq coral/orange
-        "accent-dim": "#7a2c1f",
-        good: "#3fb950",
-        warn: "#d29922",
-        bad: "#f85149",
+        // Light theme palette — all reference CSS variables
+        background: "var(--color-background)",
+        surface: "var(--color-surface)",
+        "surface-subtle": "var(--color-surface-subtle)",
+        "text-primary": "var(--color-text-primary)",
+        "text-secondary": "var(--color-text-secondary)",
+        "text-muted": "var(--color-text-muted)",
+        border: "var(--color-border)",
+        "border-strong": "var(--color-border-strong)",
+        accent: "var(--color-accent)",
+        "accent-hover": "var(--color-accent-hover)",
+        "accent-subtle": "var(--color-accent-subtle)",
+        success: "var(--color-success)",
+        warning: "var(--color-warning)",
+        danger: "var(--color-danger)",
+        info: "var(--color-info)",
       },
       borderRadius: {
-        // Sharp edges: keep radii tiny and crisp.
-        none: "0px",
-        sm: "2px",
-        DEFAULT: "3px",
+        sm: "var(--radius-sm)",
+        DEFAULT: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
       },
       fontFamily: {
-        sans: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        sans: [
+          "Inter",
+          "Noto Sans",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "sans-serif",
+        ],
       },
     },
   },
