@@ -952,6 +952,33 @@ export const api = {
       apiRequest<PhoneNumber[]>("GET", "/api/v1/phone-numbers/my"),
     available: () =>
       apiRequest<PhoneNumber[]>("GET", "/api/v1/phone-numbers/available"),
+    // Admin operations
+    addAdmin: (body: {
+      number: string;
+      provider: string;
+      provider_resource_id: string;
+      display_name?: string;
+      country_code?: string;
+      number_type?: string;
+      rental_paise_per_month?: number;
+    }) => apiRequest<PhoneNumber>("POST", "/api/v1/phone-numbers/admin", body),
+    assign: (phoneNumberId: string, organization_id: string) =>
+      apiRequest<PhoneNumber>(
+        "POST", `/api/v1/phone-numbers/admin/${phoneNumberId}/assign`,
+        { organization_id }
+      ),
+    release: (phoneNumberId: string) =>
+      apiRequest<PhoneNumber>(
+        "POST", `/api/v1/phone-numbers/admin/${phoneNumberId}/release`
+      ),
+    suspend: (phoneNumberId: string) =>
+      apiRequest<PhoneNumber>(
+        "POST", `/api/v1/phone-numbers/admin/${phoneNumberId}/suspend`
+      ),
+    reactivate: (phoneNumberId: string) =>
+      apiRequest<PhoneNumber>(
+        "POST", `/api/v1/phone-numbers/admin/${phoneNumberId}/reactivate`
+      ),
   },
 
   // ── Knowledge Base ────────────────────────────────────────────────────────
@@ -1133,6 +1160,16 @@ export const api = {
     voiceProfiles: {
       list: () =>
         apiRequest<VoiceProfile[]>("GET", "/api/v1/admin/voice-profiles"),
+      create: (body: {
+        display_name: string;
+        language: string;
+        organization_id?: string;
+        is_platform?: boolean;
+      }) => apiRequest<VoiceProfile>("POST", "/api/v1/voice-profiles/admin", body),
+      createVersion: (profileId: string, routes: Record<string, unknown>) =>
+        apiRequest<{ id: string; version: number; status: string }>(
+          "POST", `/api/v1/voice-profiles/admin/${profileId}/versions`, { routes }
+        ),
     },
     wallets: {
       get: (orgId: string) =>
@@ -1185,6 +1222,172 @@ export const api = {
     },
     systemHealth: () =>
       apiRequest<Record<string, unknown>>("GET", "/api/v1/admin/system-health"),
+
+    costs: (params?: { from_date?: string; to_date?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.from_date) q.set("from_date", params.from_date);
+      if (params?.to_date) q.set("to_date", params.to_date);
+      return apiRequest<{
+        total_provider_cost_paise: number;
+        total_provider_cost_inr: number;
+        provider_breakdown: Record<string, unknown>;
+      }>("GET", `/api/v1/admin/costs${q.toString() ? "?" + q : ""}`);
+    },
+
+    margins: (params?: { org_id?: string; from_date?: string; to_date?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.org_id) q.set("org_id", params.org_id);
+      if (params?.from_date) q.set("from_date", params.from_date);
+      if (params?.to_date) q.set("to_date", params.to_date);
+      return apiRequest<Record<string, unknown>>(
+        "GET", `/api/v1/admin/margins${q.toString() ? "?" + q : ""}`
+      );
+    },
+
+    grantBonus: (body: { organization_id: string; credits: number; description: string; validity_days?: number }) =>
+      apiRequest<{ status: string }>("POST", "/api/v1/wallet/admin/bonus", body),
+  },
+
+  // ── Analytics (admin) ─────────────────────────────────────────────────────
+  analytics: {
+    mrr: () =>
+      apiRequest<{
+        mrr_paise: number; mrr_inr: number;
+        arr_paise: number; arr_inr: number;
+        arpu_paise: number; arpu_inr: number;
+        active_subscriptions: number;
+      }>("GET", "/api/v1/analytics/mrr"),
+
+    mrrMovement: (from_date?: string, to_date?: string) => {
+      const q = new URLSearchParams();
+      if (from_date) q.set("from_date", from_date);
+      if (to_date) q.set("to_date", to_date);
+      return apiRequest<{
+        new_mrr_paise: number;
+        expansion_mrr_paise: number;
+        churn_mrr_paise: number;
+        net_new_mrr_paise: number;
+        [key: string]: unknown;
+      }>("GET", `/api/v1/analytics/mrr-movement${q.toString() ? "?" + q : ""}`);
+    },
+
+    revenue: (from_date?: string, to_date?: string) => {
+      const q = new URLSearchParams();
+      if (from_date) q.set("from_date", from_date);
+      if (to_date) q.set("to_date", to_date);
+      return apiRequest<{
+        subscription_revenue_paise: number;
+        calling_revenue_paise: number;
+        total_revenue_paise: number;
+        provider_cost_paise: number;
+        gross_profit_paise: number;
+        gross_margin_pct: number;
+        [key: string]: unknown;
+      }>("GET", `/api/v1/analytics/revenue${q.toString() ? "?" + q : ""}`);
+    },
+
+    daily: (days?: number, organization_id?: string) => {
+      const q = new URLSearchParams();
+      if (days) q.set("days", String(days));
+      if (organization_id) q.set("organization_id", organization_id);
+      return apiRequest<{
+        days: number;
+        data: Array<{
+          date: string;
+          calls: number;
+          credits_consumed: number;
+          revenue_paise: number;
+          provider_cost_paise: number;
+        }>;
+      }>("GET", `/api/v1/analytics/daily${q.toString() ? "?" + q : ""}`);
+    },
+
+    arpu: () =>
+      apiRequest<{ arpu_paise: number; arpu_inr: number; active_orgs: number }>(
+        "GET", "/api/v1/analytics/arpu"
+      ),
+  },
+
+  // ── Provider Operations (admin) ───────────────────────────────────────────
+  providerOps: {
+    health: (hours?: number) =>
+      apiRequest<{
+        overall_status: string;
+        providers: Array<{
+          provider: string;
+          provider_type: string;
+          status: string;
+          success_rate: number;
+          call_count: number;
+          avg_latency_ms: number;
+          [key: string]: unknown;
+        }>;
+        [key: string]: unknown;
+      }>("GET", `/api/v1/provider-ops/health${hours ? "?hours=" + hours : ""}`),
+
+    metrics: (hours?: number, provider_type?: string) => {
+      const q = new URLSearchParams();
+      if (hours) q.set("hours", String(hours));
+      if (provider_type) q.set("provider_type", provider_type);
+      return apiRequest<Array<{
+        provider: string;
+        provider_type: string;
+        success_rate: number;
+        avg_latency_ms: number;
+        call_count: number;
+        total_cost_paise: number;
+        [key: string]: unknown;
+      }>>("GET", `/api/v1/provider-ops/metrics${q.toString() ? "?" + q : ""}`);
+    },
+
+    latency: (hours?: number) =>
+      apiRequest<{
+        avg_latency_ms: number;
+        p50_ms: number;
+        p95_ms: number;
+        p99_ms: number;
+        [key: string]: unknown;
+      }>("GET", `/api/v1/provider-ops/latency${hours ? "?hours=" + hours : ""}`),
+
+    voiceProfiles: () =>
+      apiRequest<Array<{
+        profile_id: string;
+        display_name: string;
+        status: string;
+        [key: string]: unknown;
+      }>>("GET", "/api/v1/provider-ops/voice-profiles"),
+  },
+
+  // ── Reconciliation (admin) ────────────────────────────────────────────────
+  reconciliation: {
+    run: (hours?: number) =>
+      apiRequest<{
+        checks: Array<{
+          check_name: string;
+          status: string;
+          issues_found: number;
+          details: string;
+          [key: string]: unknown;
+        }>;
+        total_issues: number;
+        run_at: string;
+        [key: string]: unknown;
+      }>("GET", `/api/v1/reconciliation/run${hours ? "?hours=" + hours : ""}`),
+  },
+
+  // ── Transcripts ───────────────────────────────────────────────────────────
+  transcripts: {
+    get: (callId: string) =>
+      apiRequest<{
+        call_id: string;
+        turns: Array<{
+          role: string;
+          text: string;
+          stage: string | null;
+          latency_ms: number | null;
+          ts: string | null;
+        }>;
+      }>("GET", `/api/v1/transcripts/${callId}`),
   },
 };
 

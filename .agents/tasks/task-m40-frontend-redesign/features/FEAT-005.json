@@ -1,0 +1,41 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Integration, build verification, and documentation. Run the full build and lint. Fix any TypeScript errors surfaced during integration. Verify no dark-theme remnants. Update next.config.mjs. Write the verdict file to signal completion. Update MVP_PROGRESS.md.",
+  "status": "completed",
+  "steps": [
+    "1. Audit all new files for common TypeScript issues: missing 'use client' directives on pages using hooks, incorrect import paths, missing type annotations on function params, unused imports. Fix all issues found.",
+
+    "2. Ensure frontend/next.config.mjs is correct: export default { env: { NEXT_PUBLIC_API_BASE: process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000' }, async rewrites() { return [{ source: '/api/:path*', destination: 'http://localhost:8000/api/:path*' }] } }. This enables the frontend to proxy API calls in development.",
+
+    "3. Verify the Razorpay checkout integration in the credits page is properly set up. The flow: POST /api/v1/wallet/packs/{id}/order returns {order_id, razorpay_order_id, amount_paise, currency}. Load Razorpay script dynamically (not an npm package — use script tag). On payment success, call POST /api/v1/billing/verify with {order_id, provider_payment_id, provider_order_id, provider_signature}. The RAZORPAY_KEY_ID must come from an environment variable NEXT_PUBLIC_RAZORPAY_KEY_ID (add to next.config.mjs env block).",
+
+    "4. Verify that the Subscription billing flow works: POST /api/v1/billing/orders/subscription → Razorpay checkout → POST /api/v1/billing/verify. Same pattern as credits. Both billing and credits pages share the same payment verification logic — extract into a shared helper lib/razorpay.ts: function initiateRazorpayPayment(orderId, razorpayOrderId, amountPaise, userEmail, onSuccess, onFailure): void.",
+
+    "5. Run cd frontend && npm run build. Fix every TypeScript error that appears. Common issues to fix: (a) Pages using server-side patterns like params that need to be typed as {params: {id: string}}. (b) All dynamic route pages: [id]/page.tsx need to accept { params: { id: string } } as props. (c) Any place using router.push needs 'use client'. (d) Components using window.Razorpay need typeof window !== 'undefined' guard.",
+
+    "6. Run cd frontend && npm run lint. Fix every lint error. ESLint config is standard Next.js — common issues: missing key props, unescaped entities in JSX, no-unused-vars.",
+
+    "7. Verify all old dark-theme class names are gone from all new files: grep for 'bg-ink', 'bg-panel', 'text-fg', 'text-muted', 'text-faint', 'border-line', 'text-bad', 'text-good', 'text-warn', 'bg-accent' (without CSS variable). All color classes must use Tailwind extended classes that reference CSS variables: bg-background, bg-surface, text-text-primary, border-border, text-accent etc.",
+
+    "8. Write the final verdict file: create or update c:/Programs/saas/.agents/tasks/review.json with content: {\"verdict\": \"PENDING_REVIEW\", \"feat_completed\": \"FEAT-005\", \"build\": \"passing\", \"lint\": \"passing\"}. Do NOT write 'APPROVED' — the reviewer step does that.",
+
+    "9. Update FEAT-001, FEAT-002, FEAT-003, FEAT-004 status to 'completed' in their JSON files. Update task.json status to 'in_progress'.",
+
+    "10. Add a brief M40 section to MVP_PROGRESS.md documenting what was implemented: the complete frontend redesign with light theme, all customer pages, all admin pages, full API integration. Git commit: 'checkpoint: M40 complete frontend redesign light theme'."
+  ],
+  "acceptance_criteria": [
+    "cd frontend && npm run build completes with ZERO TypeScript errors",
+    "cd frontend && npm run lint completes with ZERO errors",
+    "grep -r 'bg-ink\\|text-fg\\|bg-panel\\|border-line\\|text-bad\\|text-good' frontend/app frontend/components returns no matches in new files",
+    "All 12 admin pages and 19 customer dashboard pages exist",
+    "Landing page at app/page.tsx is about AI voice telecalling (not real estate)",
+    "The verdict file c:/Programs/saas/.agents/tasks/review.json exists"
+  ],
+  "verification": [
+    "cd frontend && npm run build",
+    "cd frontend && npm run lint"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "All Super Admin pages. Implement the admin route group with admin-only guard, admin sidebar, and all platform-management pages: dashboard, organizations, subscriptions, calling packs, payments, phone numbers, voice profiles, providers, usage, analytics, and audit logs. These pages use the admin.* API methods and show data only available to platform roles.",
+  "status": "pending",
+  "steps": [
+    "1. Create frontend/app/(admin)/admin/dashboard/page.tsx: 'use client'. Calls GET /api/v1/admin/dashboard. Shows platform metric cards: Active Organizations (organizations.total_active), Total Subscriptions (subscriptions.active), Total Revenue (usage.total_charge_inr formatted as INR), Gross Profit (usage.gross_profit_paise/100 formatted). Recent Organizations table (organizations.recent). Subscription status breakdown (subscriptions.by_status). Usage stats (total_credits, total_events).",
+
+    "2. Create frontend/app/(admin)/admin/organizations/page.tsx: 'use client'. Lists all orgs via GET /api/v1/admin/organizations with pagination (skip/limit=50). Table columns: Name, Email, Status badge, Created At, Actions (View, Suspend, Reactivate). Status filter: active/suspended. Search by name (client-side filter for now). Each row links to /admin/organizations/{id}.",
+
+    "3. Create frontend/app/(admin)/admin/organizations/[id]/page.tsx: 'use client'. Organization detail. GET /api/v1/admin/organizations/{id}. Shows: org info card (name, email, slug, status, limits). Tabs: Overview / Subscription / Wallet / Users. Overview: basic org data. Subscription tab: fetch org's subscription from GET /api/v1/subscriptions/admin/all filtered (note: no direct per-org sub endpoint in admin, show from list). Wallet tab: GET /api/v1/admin/wallets/{org_id}. Adjust credits button: modal with credits_delta + reason → POST /api/v1/admin/wallets/{org_id}/adjust. Actions: Suspend (POST /api/v1/admin/organizations/{id}/suspend with reason), Reactivate.",
+
+    "4. Create frontend/app/(admin)/admin/subscriptions/page.tsx: 'use client'. Two tabs: Active Subscriptions / Plans. Active Subscriptions: GET /api/v1/admin/subscriptions (or GET /api/v1/subscriptions/admin/all). Table: Organization ID, Plan Slug, Billing Cycle, Status badge, Period End, Cancel At Period End. Plans tab: GET /api/v1/admin/plans. Plans table: Name, Slug, Monthly Price (INR), Yearly Price (INR), Status, Max Agents, Max Campaigns, Max Concurrent Calls, Actions (Edit). Edit plan: modal form with PATCH /api/v1/subscriptions/admin/plans/{id}. 'Activate Plan for Org' button: modal form (org_id, plan_id, billing_cycle) → POST /api/v1/subscriptions/admin/orgs/{org_id}/activate.",
+
+    "5. Create frontend/app/(admin)/admin/calling-packs/page.tsx: 'use client'. GET /api/v1/admin/calling-packs. Table: Name, Slug, Credits, Bonus Credits, Price (INR), Validity Days, Status, Actions. 'New Pack' button: modal form → POST /api/v1/wallet/admin/packs. 'Edit' button: modal → PATCH /api/v1/wallet/admin/packs/{id}. 'Grant Bonus' button: modal (org_id, credits, description, validity_days) → POST /api/v1/wallet/admin/bonus. 'Adjust Credits' button: modal (org_id, credits_delta, reason) → POST /api/v1/wallet/admin/adjust.",
+
+    "6. Create frontend/app/(admin)/admin/payments/page.tsx: 'use client'. Two tabs: Payments / Invoices. Payments: GET /api/v1/admin/payments with optional org_id filter. Table: Organization ID, Amount (INR), Status badge, Provider, Paid At. Invoices: GET /api/v1/admin/invoices. Table: Invoice Number, Organization, Total (INR), Status, Issued At. Click invoice → modal with full invoice detail.",
+
+    "7. Create frontend/app/(admin)/admin/phone-numbers/page.tsx: 'use client'. GET /api/v1/admin/phone-numbers with status/provider filters. Table includes provider details (since admin). Columns: Number, Provider, Status badge, Organization (if assigned), Country, Type, Rental/mo (INR), Actions (Assign, Release, Suspend, Reactivate). Stats card at top: GET /api/v1/admin/phone-numbers/stats (available/assigned/suspended/maintenance counts). 'Add Number' button: modal form (number, provider, provider_resource_id, display_name, country_code, number_type, rental_paise_per_month) → POST /api/v1/phone-numbers/admin. Assign: modal (organization_id) → POST /api/v1/phone-numbers/admin/{id}/assign.",
+
+    "8. Create frontend/app/(admin)/admin/voice-profiles/page.tsx: 'use client'. GET /api/v1/admin/voice-profiles. Table: Display Name, Language, Platform (is_platform badge), Status, Active Version, Organization (if org-specific). 'Create Profile' button: modal (display_name, language, organization_id optional) → POST /api/v1/voice-profiles/admin. 'Create Version' button for each profile → modal (routes object) → POST /api/v1/voice-profiles/admin/{id}/versions.",
+
+    "9. Create frontend/app/(admin)/admin/providers/page.tsx: 'use client'. Provider health overview. GET /api/v1/provider-ops/health. Shows health summary cards per provider type. GET /api/v1/provider-ops/metrics — table with provider, type, success_rate, avg_latency_ms, call_count, cost_paise. GET /api/v1/provider-ops/latency — latency stats card. GET /api/v1/provider-ops/voice-profiles — voice profile health table. Refresh button.",
+
+    "10. Create frontend/app/(admin)/admin/usage/page.tsx: 'use client'. Platform usage with date range filters (from_date, to_date). GET /api/v1/admin/usage. Shows: total credits consumed, total customer charge (INR), total provider cost (INR), gross profit (INR), gross margin %. Revenue breakdown: GET /api/v1/admin/revenue. Cost breakdown: GET /api/v1/admin/costs. Margins: GET /api/v1/admin/margins. All with date range filter. Table of usage by event type.",
+
+    "11. Create frontend/app/(admin)/admin/analytics/page.tsx: 'use client'. Revenue analytics dashboard. GET /api/v1/analytics/mrr — MRR/ARR/ARPU cards. GET /api/v1/analytics/mrr-movement — new/expansion/churn MRR cards. GET /api/v1/analytics/revenue — subscription vs calling revenue bar chart (Recharts). GET /api/v1/analytics/daily?days=30 — daily revenue/calls chart. Period selector (7/30/90 days).",
+
+    "12. Create frontend/app/(admin)/admin/audit-logs/page.tsx: 'use client'. GET /api/v1/admin/audit-logs with optional org_id filter. Table: Action, Organization, User Email, User Role, Resource Type, Resource ID, Status badge, IP Address, Created At. Pagination (skip/limit=100). Filter by org_id input."
+  ],
+  "acceptance_criteria": [
+    "All 12 admin page files exist and compile without TypeScript errors",
+    "None of the admin pages are accessible without a platform-level role (guarded by (admin)/layout.tsx from FEAT-002)",
+    "Admin pages display provider details (unlike customer pages which must hide them)",
+    "No admin page references the old dark theme classes",
+    "npm run build passes"
+  ],
+  "verification": [
+    "cd frontend && npm run build (zero TypeScript errors)",
+    "cd frontend && npm run lint (no errors)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

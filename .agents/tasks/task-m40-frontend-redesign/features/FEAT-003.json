@@ -1,0 +1,59 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "All customer dashboard pages. Implement the full authenticated customer section: dashboard overview, AI agents, campaigns, leads, calls, appointments, phone numbers, credits/wallet, billing, knowledge base, analytics, team, and settings. Each page fetches from the real backend API using the api.* client from FEAT-001.",
+  "status": "pending",
+  "steps": [
+    "1. Create frontend/app/(dashboard)/dashboard/page.tsx: 'use client'. Calls GET /api/v1/dashboard on mount. Shows metric cards for: Total Calls (calls.total), Connected Rate (calls.connected_rate_pct%), Active Campaigns (campaigns.running), Total Leads (leads.total), Available Credits (credits.available_credits). Below: two columns — Recent Calls table (to_number, status badge, outcome badge, duration, score, link to call detail) and Upcoming Appointments list. Bottom: Running Campaigns mini-list. Uses MetricCard, Table, Badge, EmptyState. Loading skeleton while data loads. Error state.",
+
+    "2. Create frontend/app/(dashboard)/agents/page.tsx: 'use client'. Lists agents via GET /api/v1/agents. Table columns: Name, Template, Voice Profile, Active Version, Status badge, Created At, Actions (View/Delete). Empty state: 'No agents yet — create your first agent'. Top right: 'New Agent' button (→/agents/new). Uses @tanstack/react-table.",
+
+    "3. Create frontend/app/(dashboard)/agents/new/page.tsx: 'use client'. Multi-step form:\n   Step 1: Basic Info — name (required), template_slug (select from GET /api/v1/agents/templates), description.\n   Step 2: Voice Profile — voice_profile_id + voice_profile_version (fetch from GET /api/v1/voice-profiles, show display_name and language).\n   Step 3: Configuration — JSON editor or form fields for goal, tone (select: warm_professional/formal/casual/energetic), greeting text, primary_language (select: en-IN, hi-IN, mr-IN, gu-IN, ta-IN, te-IN, kn-IN, ml-IN), qualification_schema (dynamic slot list).\n   On submit: POST /api/v1/agents then POST /api/v1/agents/{id}/versions with auto_activate:true. Redirects to /agents/{id} on success.",
+
+    "4. Create frontend/app/(dashboard)/agents/[id]/page.tsx: 'use client'. Agent detail page. Fetches GET /api/v1/agents/{id} and GET /api/v1/agents/{id}/versions. Shows agent info card. Versions table with status badges. 'Edit Draft' button (PATCH version). 'Publish' button (POST publish). 'Create New Version' button. Shows current active configuration in read-only view. Knowledge base associations section (links to knowledge page).",
+
+    "5. Create frontend/app/(dashboard)/campaigns/page.tsx: 'use client'. Lists campaigns via GET /api/v1/campaigns. Table columns: Name, Status badge, Agent, Total Leads, Dialed, Connected, Started At, Actions. Status filter tabs (All / Draft / Running / Paused / Completed). For running campaigns: show progress bar (leads_dialed / total_leads). Actions: View, Start (draft→running), Pause, Resume, Cancel.",
+
+    "6. Create frontend/app/(dashboard)/campaigns/new/page.tsx: 'use client'. Create campaign form:\n   - Name, description.\n   - Agent (select from /api/v1/agents — active agents only) + auto-populate agent_version from active_version.\n   - Voice Profile (auto-populated from agent's voice_profile_id/version, read-only display).\n   - Phone Number (select from GET /api/v1/phone-numbers/my — org's assigned numbers).\n   - Max Concurrent Calls (number, 1-10).\n   - Timezone (select — default Asia/Kolkata).\n   - Calling Hours: start_time, end_time, days_of_week checkboxes.\n   - Retry Policy: max_attempts, retry_delay_minutes.\n   - Scheduled At (optional datetime).\n   Submit: POST /api/v1/campaigns. Redirect to /campaigns/{id}.",
+
+    "7. Create frontend/app/(dashboard)/campaigns/[id]/page.tsx: 'use client'. Campaign detail with tabs:\n   - Overview: config summary, status, runtime counters, progress bars.\n   - Leads: table of campaign's leads (GET /api/v1/leads?campaign_id=X), status filter.\n   - Calls: table of campaign's calls (GET /api/v1/calls?campaign_id=X).\n   - Stats: GET /api/v1/campaigns/{id}/stats — outcome pie chart, connection rate card, avg duration.\n   Action buttons: Start / Pause / Resume / Cancel (conditionally visible by status). Preflight button (GET /api/v1/campaigns/{id}/preflight) opens modal with pass/fail checks.",
+
+    "8. Create frontend/app/(dashboard)/leads/page.tsx: 'use client'. Lists leads via GET /api/v1/leads with pagination. Table columns: Name, Phone, Email, Status badge, Score bar, Source, Last Contact, Tags, Actions (view, edit). Filter: status dropdown, campaign_id filter. Top actions: 'Add Lead' (inline modal), 'Import Leads' (→/leads/import), 'DNC List' tab. DNC tab shows GET /api/v1/leads/dnc list with remove button.",
+
+    "9. Create frontend/app/(dashboard)/leads/import/page.tsx: 'use client'. File upload page. Accepts CSV, XLSX, JSON. Shows drag-and-drop zone. After file selection, shows column mapping UI (map file columns to phone, name, email, custom_fields). Optional tags input, optional campaign_id select. Submit: POST /api/v1/leads/import (multipart form). Shows result: imported count, skipped, errors table.",
+
+    "10. Create frontend/app/(dashboard)/calls/page.tsx: 'use client'. Lists calls via GET /api/v1/calls. Table columns: To Number, Status badge, Outcome badge, Duration (formatted), Score, Campaign, Started At, View link. Filters: status, campaign_id. Pagination using skip/limit (50 per page).",
+
+    "11. Create frontend/app/(dashboard)/calls/[id]/page.tsx: 'use client'. Call detail page. Fetches GET /api/v1/calls/{id}. Shows: call metadata card (numbers, status, duration, latency, credits consumed). Qualification data (score bar, qualification dict key-value table). Summary text. Transcript section (GET /api/v1/transcripts/{call_id} if exists — show as chat bubbles with role/text/stage/latency).",
+
+    "12. Create frontend/app/(dashboard)/appointments/page.tsx: 'use client'. Tabs: Upcoming / All. Upcoming: GET /api/v1/appointments/upcoming. All: GET /api/v1/appointments with status filter. Table columns: Title, Type, Scheduled At (formatted with timezone), Lead Name, Status badge, Duration, Actions (Confirm, Cancel, Reschedule, Complete). Summary widget at top from GET /api/v1/appointments/summary.",
+
+    "13. Create frontend/app/(dashboard)/phone-numbers/page.tsx: 'use client'. Two sections: 'My Numbers' (GET /api/v1/phone-numbers/my) and 'Available Numbers' (GET /api/v1/phone-numbers/available). My Numbers table: number, status badge, display_name, assigned at. Available Numbers: browse/filter by country_code, number_type — show number, type, monthly rental (if available). Note: customer cannot self-serve request a number — show info: 'Contact support to assign a number to your organization'.",
+
+    "14. Create frontend/app/(dashboard)/credits/page.tsx: 'use client'. Wallet page. Top: credit balance card (GET /api/v1/wallet) — available_credits, reserved_credits, is_low warning banner. Calling Packs section: GET /api/v1/wallet/packs — cards for each pack (name, credits + bonus, price in INR). 'Buy' button: calls POST /api/v1/wallet/packs/{id}/order → gets {order_id, amount_paise, razorpay_order_id} → opens Razorpay checkout (window.Razorpay) → on success calls POST /api/v1/billing/verify. Recent Transactions: GET /api/v1/wallet/transactions — table with type, delta, balance_after, date. Active Lots: GET /api/v1/wallet/lots — table with credits remaining, source, expiry.",
+
+    "15. Create frontend/app/(dashboard)/billing/page.tsx: 'use client'. Tabs: Subscription / Invoices / Payments. Subscription tab: GET /api/v1/subscriptions/my — shows plan name, billing cycle, status, renewal date, limits. 'Change Plan' button: shows plan comparison modal with GET /api/v1/subscriptions/plans, initiates payment flow for selected plan. 'Cancel' button. Invoices tab: GET /api/v1/billing/invoices — table with invoice number, amount, status, date, download link. Payments tab: GET /api/v1/billing/payments — table with amount, status, payment date.",
+
+    "16. Create frontend/app/(dashboard)/knowledge/page.tsx: 'use client'. Knowledge Base list: GET /api/v1/knowledge. Cards for each KB: name, description, document count, tags. 'New KB' button: modal form (name, description, tags). Click KB card → shows documents list inline or navigates to detail. Document list shows title, type, version, date. 'Add Document' button: modal form (title, content textarea, type select, keywords). 'Edit' button for existing docs (PUT). 'Delete' button.",
+
+    "17. Create frontend/app/(dashboard)/analytics/page.tsx: 'use client'. Calls GET /api/v1/dashboard/analytics with days selector (7/30/90). Shows: line chart (daily calls + qualified calls) using Recharts. Summary cards: total calls, qualified rate, credits consumed. Outcome breakdown bar chart. Period selector buttons.",
+
+    "18. Create frontend/app/(dashboard)/team/page.tsx: 'use client'. Team management. Lists users via GET /api/v1/users/org/{org_id}. Table: name, email, role badge, status, last login, actions. 'Invite Member' button: modal form (email, password, role select — only org roles: organization_admin/manager/agent/viewer, first_name, last_name). Submit: POST /api/v1/users/org/{org_id}/invite. Deactivate user button. Edit role button.",
+
+    "19. Create frontend/app/(dashboard)/settings/page.tsx: 'use client'. Organization settings form. Shows org name, email, phone. Currently read-only (no update org endpoint in v1 API). Also shows: current plan summary, account info. User profile section: GET /api/v1/auth/me → shows current user info. PATCH /api/v1/users/{user_id} to update first_name, last_name, phone."
+  ],
+  "acceptance_criteria": [
+    "All 19 dashboard page files exist and compile without TypeScript errors",
+    "Each page imports from lib/api.ts (the new API client) and NOT from the old api.ts patterns",
+    "No page references the old dark theme classes (ink, panel, fg, muted, faint, line, accent-dim, good, warn, bad)",
+    "No page hard-codes provider names (Sarvam, ElevenLabs, Exotel, Twilio, etc.)",
+    "The credits page includes the Razorpay payment flow skeleton",
+    "npm run build passes"
+  ],
+  "verification": [
+    "cd frontend && npm run build (zero TypeScript errors)",
+    "cd frontend && npm run lint (no errors)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

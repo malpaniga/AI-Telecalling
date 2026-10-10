@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "App shell, routing, auth pages, and landing page. Update app/layout.tsx with Inter font + AuthProvider + light theme. Create Next.js route groups (auth), (dashboard), (admin). Build login, signup pages. Build the public landing page for AI voice telecalling SaaS (not real estate). Replace the existing single-layout dark shell.",
+  "status": "pending",
+  "steps": [
+    "1. Update frontend/app/layout.tsx: import Inter from 'next/font/google'. Set html lang='en'. Wrap body with AuthProvider from contexts/auth-context.tsx. Remove Sidebar import (it moves to (dashboard) layout). Add Toaster from react-hot-toast. Update metadata: title to 'VoiceAI — AI Voice Telecalling for Indian Businesses', description relevant. Body class: min-h-screen bg-[var(--color-background)] text-[var(--color-text-primary)] antialiased. Apply Inter font variable.",
+    "2. Create frontend/app/(auth)/layout.tsx: Simple centered layout for login/signup pages. No sidebar. Background: bg-[var(--color-background)]. Center content vertically and horizontally. Show brand logo/name at top.",
+    "3. Create frontend/app/(auth)/login/page.tsx: 'use client'. Login form with email + password fields using Input component. Submit calls api.auth.login(email, password) → stores tokens via setTokens() → calls auth context login → redirects to /dashboard via useRouter. Shows loading state on submit. Shows error toast on failure. Link to /signup. Clean card layout: white card, centered, max-w-md. Title: 'Welcome back'. Subtitle: 'Sign in to your account'.",
+    "4. Create frontend/app/(auth)/signup/page.tsx: 'use client'. Signup form: org_name, org_email, email, password, first_name (optional), last_name (optional). Submit calls api.auth.signup(body) → stores tokens → redirects to /dashboard. Shows field-level validation errors. Link to /login. Title: 'Create your account'. Subtitle: 'Start your AI voice calling journey'.",
+    "5. Create frontend/app/(dashboard)/layout.tsx: Server-side layout wrapping AppShell (Sidebar + Topbar + main area). Import AppShell from components/layout/. This layout is NOT a client component — the AppShell internal handles client-side auth. Actually make this a 'use client' layout because it needs to check auth: on mount, if !isLoggedIn() redirect to /login using useRouter. Shows LoadingScreen while auth initializes (auth context loading state).",
+    "6. Create frontend/app/(admin)/layout.tsx: Similar to dashboard layout but uses AdminSidebar. Checks that user.role is one of 'platform_owner', 'platform_admin', 'support', 'billing_admin'. If not, redirects to /dashboard. Shows appropriate admin app shell.",
+    "7. Replace frontend/app/page.tsx with the public landing page for AI Voice Telecalling SaaS. This is NOT a real-estate page. Sections:\n   - Hero: Large heading 'Scale Your Sales with AI Voice Calls'. Subheading about Indian businesses. Two CTAs: 'Start Free Trial' (→/signup) and 'See How It Works' (→#how-it-works). Warm background with subtle orange-blue gradient accent.\n   - Features grid (6 cards): AI Voice Profiles in Indian Languages, Automated Outbound Campaigns, Real-time Lead Qualification, Smart Appointment Booking, Credit-based Billing, Full Analytics Dashboard.\n   - How It Works (3 steps): 1. Create AI Agent 2. Upload Leads 3. Launch Campaign.\n   - Pricing teaser: Three tier cards (Starter ₹2,999/mo, Growth ₹7,999/mo, Pro ₹19,999/mo) with key limits. CTA to signup.\n   - CTA section: 'Ready to transform your sales calls?' with signup button.\n   - Footer: product name, copyright.\n   Full light theme. No dark styling. Minimal gradients only on hero. Use Inter font.",
+    "8. Delete or replace the old frontend/app/call/ directory (the browser WebSocket test call page is irrelevant to the new SaaS). Create a placeholder redirect or 404.",
+    "9. Delete or replace frontend/app/calls/ and frontend/app/leads/ (old dark-theme versions — new ones come in FEAT-003). Create minimal stubs that redirect to the new dashboard routes.",
+    "10. Update frontend/components/nav.tsx to be empty/stub or delete it — all nav is now in components/layout/sidebar.tsx and components/layout/topbar.tsx. Replace contents with a comment 'Nav moved to components/layout/'.",
+    "11. Update frontend/components/ui.tsx similarly — stub it out or re-export from components/ui/index.ts for backward compat. The old Panel, Metric, Badge, Score components are replaced."
+  ],
+  "acceptance_criteria": [
+    "Visiting / shows the light-theme landing page about AI voice telecalling (not real estate, not dark)",
+    "Visiting /login shows the login form",
+    "Visiting /signup shows the signup form",
+    "The login form submits to POST /api/v1/auth/login and on success redirects to /dashboard",
+    "The signup form submits to POST /api/v1/auth/signup and on success redirects to /dashboard",
+    "Visiting /dashboard without being logged in redirects to /login",
+    "Visiting /admin/dashboard without admin role redirects to /dashboard",
+    "npm run build passes without TypeScript errors"
+  ],
+  "verification": [
+    "cd frontend && npm run build (must pass with zero TypeScript errors)",
+    "cd frontend && npm run lint (no errors)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

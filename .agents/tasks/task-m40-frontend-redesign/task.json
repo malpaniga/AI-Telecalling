@@ -1,0 +1,13 @@
+{
+  "task_id": "task-m40-frontend-redesign",
+  "task_description": "Complete frontend redesign and backend integration for the AI Voice Telecalling SaaS. Replace the existing real-estate dark-themed demo with a premium light-theme multi-tenant SaaS frontend. Implement all customer and super-admin pages connected to the actual backend API.",
+  "status": "in_progress",
+  "feature_order": [
+    "FEAT-001",
+    "FEAT-002",
+    "FEAT-003",
+    "FEAT-004",
+    "FEAT-005"
+  ],
+  "blocked_reason": null
+}

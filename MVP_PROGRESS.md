@@ -1,15 +1,88 @@
 # MVP_PROGRESS.md
 # AI Telecalling SaaS — Development Progress
 
-**Last updated:** 2026-10-08  
-**Current checkpoint:** M33 PASS — Final E2E Acceptance Complete — **MVP COMPLETE**  
-**Next checkpoint:** NONE — MVP is complete
+**Last updated:** 2026-10-09  
+**Current checkpoint:** M40 PASS — Complete Frontend Redesign — Super Admin Dashboard + Customer Pages  
+**Next checkpoint:** NONE — MVP frontend complete
 
 ---
 
 ## CHECKPOINT HISTORY
 
 ---
+
+### M40 — COMPLETE FRONTEND REDESIGN
+
+```
+Checkpoint: M40
+Status: PASS
+Started: 2026-10-09
+Completed: 2026-10-09
+Objective: Replace dark real-estate demo with production-quality light-theme SaaS frontend.
+           Implement complete customer dashboard (22 pages) and super admin dashboard (12 pages).
+
+Implementation:
+  - Design system: CSS variables (--color-background #FAF9F6, --color-accent #E9814D, etc.)
+  - Component library: Button, Badge, Card, Input, Modal, Table, Pagination, Spinner, EmptyState, MetricCard
+  - Layout components: Sidebar, AdminSidebar (dark panel for admin context), Topbar, AppShell
+  - API client (lib/api.ts): all backend endpoints, JWT auth with token-refresh, all TypeScript interfaces
+  - Auth context (contexts/auth-context.tsx): JWT decode, login/logout/refresh
+  - Landing page: AI Voice Telecalling SaaS (replaces real-estate demo)
+
+  Customer pages (22):
+    /dashboard, /agents, /agents/new, /agents/[id], /campaigns, /campaigns/new,
+    /campaigns/[id], /leads, /leads/import, /calls, /calls/[id], /appointments,
+    /phone-numbers, /credits (Razorpay), /billing, /knowledge, /analytics, /team, /settings
+
+  Admin pages (12):
+    /admin/dashboard    — platform overview (orgs, subs, revenue, usage)
+    /admin/organizations — list + suspend/reactivate
+    /admin/organizations/[id] — 4 tabs: overview, subscription, wallet (adjust credits), users
+    /admin/subscriptions — 2 tabs: active subscriptions + plans management (edit modal)
+    /admin/calling-packs — create packs + grant bonus + adjust credits
+    /admin/payments     — 2 tabs: payments + invoices, org filter
+    /admin/phone-numbers — inventory with stats + add/assign/release/suspend/reactivate
+    /admin/voice-profiles — list + create profile + create version (routes JSON)
+    /admin/providers    — provider health + metrics + latency + voice profile health
+    /admin/usage        — platform usage, revenue breakdown, gross margin
+    /admin/analytics    — MRR/ARR/ARPU, MRR movement, revenue charts, daily charts
+    /admin/audit-logs   — read-only paginated audit trail with org filter
+
+  Auth guard:
+    - (admin)/layout.tsx: platform_owner | platform_admin | billing_admin only
+    - (dashboard)/layout.tsx: any authenticated user (org roles)
+    - Unauthorized redirects to /login or /dashboard
+
+  API additions in lib/api.ts:
+    - api.analytics.* (mrr, mrrMovement, revenue, daily, arpu)
+    - api.providerOps.* (health, metrics, latency, voiceProfiles)
+    - api.reconciliation.* (run)
+    - api.admin.costs(), api.admin.margins(), api.admin.grantBonus()
+    - api.phoneNumbers.addAdmin/assign/release/suspend/reactivate
+    - api.admin.voiceProfiles.create/createVersion
+    - api.transcripts.get()
+
+Build results:
+  - npm run build: PASS (0 TypeScript errors)
+  - npm run lint: PASS (0 ESLint errors)
+  - 35 routes total (33 app routes + 2 system)
+
+Artifacts:
+  - .agents/tasks/task-m40-frontend-redesign/api-ui-mapping.md
+  - .agents/tasks/task-m40-frontend-redesign/admin-ui-plan.md
+
+Known gaps (non-blocking):
+  - Calling pack edit modal not wired (create-only)
+  - Refund action in payments page not surfaced (api.admin.payments.refund exists)
+  - Reconciliation page not in sidebar
+  - Org subscription activate action not in UI
+  
+Next checkpoint: NONE
+Git commit: checkpoint: M40 complete frontend redesign light theme
+```
+
+---
+
 
 ### M11 — AGENT BUILDER
 
