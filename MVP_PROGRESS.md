@@ -909,3 +909,48 @@ Git commit: (see below)
 | M31 | Production Deployment | **PASS** | M30 |
 | M32 | Documentation | **PASS** | M31 |
 | M33 | Final E2E Acceptance | **PASS** | M32 |
+
+---
+
+## M40 — FRONTEND REDESIGN + INTEGRATION
+
+**Started:** 2026-10-09
+**Status:** IN_PROGRESS
+
+### FEAT-001 — Design Foundations (COMPLETE — commit e04ec2d)
+- Light theme CSS tokens, Tailwind config
+- API client (lib/api.ts) with JWT Bearer + 401 refresh
+- Auth context (contexts/auth-context.tsx)
+- UI component library: Button, Badge, Card, Input, Modal, Table, Pagination, Spinner, EmptyState, MetricCard
+- Layout components: Sidebar, Topbar, AppShell, AdminSidebar
+
+### FEAT-002 — Customer Application (COMPLETE — see commit after M40)
+- /login, /signup pages with full auth flow
+- /dashboard — live metrics from /api/v1/dashboard
+- /agents — list, create, delete; /agents/[id] — versions, publish
+- /leads — list with filters, pagination, CSV import, delete
+- /campaigns — list, create, start/pause/resume/cancel; /campaigns/[id] — detail + progress
+- /calls — list with status filter; /calls/[id] — detail + summary
+- /appointments — list, create, confirm, cancel
+- /phone-numbers — org's assigned numbers
+- /credits — wallet, transactions, buy pack modal
+- /knowledge — KB list + docs CRUD
+- /analytics — call volume + credit charts via Recharts
+- /team — invite, list, deactivate members
+- /billing — subscription, plans, invoices, payments
+- /settings — profile update
+
+### FEAT-003/004 — Admin Application (COMPLETE)
+- /admin/dashboard — platform overview
+- /admin/organizations — list, suspend, reactivate, [id] detail
+- /admin/subscriptions — all subs
+- /admin/calling-packs — list + create
+- /admin/payments — all payments
+- /admin/phone-numbers — full inventory
+- /admin/voice-profiles — all profiles
+- /admin/usage — platform usage + revenue
+- /admin/audit-logs — full audit trail
+
+### Build
+- `npm run build` — 30 routes, 0 TypeScript errors
+- `npm run lint` — no warnings or errors

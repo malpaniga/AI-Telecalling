@@ -30,6 +30,8 @@ export interface User {
   last_name: string | null;
   is_active: boolean;
   is_email_verified: boolean;
+  last_login_at: string | null;
+  created_at: string;
 }
 
 export interface Organization {
@@ -317,10 +319,14 @@ export interface KnowledgeBase {
 
 export interface KnowledgeDocument {
   id: string;
-  kb_id: string;
+  knowledge_base_id: string;
   title: string;
-  content_type: string;
-  status: string;
+  content: string;
+  document_type: string;
+  version: number;
+  keywords: string[];
+  tags: string[];
+  is_active: boolean;
   created_at: string;
 }
 
@@ -954,6 +960,40 @@ export const api = {
       apiRequest<KnowledgeBase[]>("GET", "/api/v1/knowledge"),
     get: (id: string) =>
       apiRequest<KnowledgeBase>("GET", `/api/v1/knowledge/${id}`),
+    create: (name: string, description?: string, tags?: string[]) =>
+      apiRequest<KnowledgeBase>("POST", "/api/v1/knowledge", { name, description: description ?? "", tags }),
+    deleteKb: (id: string) =>
+      apiRequest<void>("DELETE", `/api/v1/knowledge/${id}`),
+    listDocuments: (kbId: string, params?: { limit?: number; skip?: number }) => {
+      const q = new URLSearchParams();
+      if (params?.limit != null) q.set("limit", String(params.limit));
+      if (params?.skip != null) q.set("skip", String(params.skip));
+      return apiRequest<KnowledgeDocument[]>(
+        "GET", `/api/v1/knowledge/${kbId}/documents${q.toString() ? "?" + q : ""}`
+      );
+    },
+    addDocument: (kbId: string, title: string, content: string, document_type?: string, keywords?: string[], tags?: string[]) =>
+      apiRequest<KnowledgeDocument>("POST", `/api/v1/knowledge/${kbId}/documents`, {
+        title, content, document_type: document_type ?? "general", keywords, tags,
+      }),
+    deleteDocument: (kbId: string, docId: string) =>
+      apiRequest<void>("DELETE", `/api/v1/knowledge/${kbId}/documents/${docId}`),
+    search: (query: string, knowledge_base_ids?: string[], limit?: number) =>
+      apiRequest<KnowledgeDocument[]>("POST", "/api/v1/knowledge/search", { query, knowledge_base_ids, limit }),
+  },
+
+  // ── Users / Team ──────────────────────────────────────────────────────────
+  users: {
+    listOrg: (orgId: string) =>
+      apiRequest<User[]>("GET", `/api/v1/users/org/${orgId}`),
+    invite: (orgId: string, body: { email: string; password: string; role: string; first_name?: string; last_name?: string }) =>
+      apiRequest<User>("POST", `/api/v1/users/org/${orgId}/invite`, body),
+    get: (userId: string) =>
+      apiRequest<User>("GET", `/api/v1/users/${userId}`),
+    update: (userId: string, body: { first_name?: string; last_name?: string; role?: string }) =>
+      apiRequest<User>("PATCH", `/api/v1/users/${userId}`, body),
+    deactivate: (userId: string) =>
+      apiRequest<{ status: string; user_id: string }>("DELETE", `/api/v1/users/${userId}`),
   },
 
   // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -1040,6 +1080,13 @@ export const api = {
           "GET",
           `/api/v1/admin/calling-packs${include_inactive ? "?include_inactive=true" : ""}`
         ),
+      create: (body: {
+        name: string; slug: string; credits: number; price_paise: number;
+        description?: string; validity_days?: number; bonus_credits?: number;
+        is_public?: boolean; sort_order?: number;
+      }) => apiRequest<CallingPack>("POST", "/api/v1/wallet/admin/packs", body),
+      update: (packId: string, updates: Partial<CallingPack>) =>
+        apiRequest<CallingPack>("PATCH", `/api/v1/wallet/admin/packs/${packId}`, updates),
     },
     payments: {
       list: (params?: { org_id?: string; limit?: number; skip?: number }) => {
