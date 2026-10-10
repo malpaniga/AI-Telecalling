@@ -190,6 +190,24 @@ async def _ensure_indexes(db: AsyncIOMotorDatabase) -> None:
 
     await db["provider_failover_events"].create_index([("created_at", DESCENDING)])
 
+    # ai_model_catalogue (M41)
+    await db["ai_model_catalogue"].create_indexes([
+        IndexModel([("provider_name", ASCENDING), ("model_id", ASCENDING)], unique=True),
+        IndexModel([("capability", ASCENDING), ("implementation_status", ASCENDING)]),
+    ])
+
+    # provider_configurations (M41)
+    await db["provider_configurations"].create_indexes([
+        IndexModel([("capability", ASCENDING), ("is_active", ASCENDING)]),
+        IndexModel([("provider_name", ASCENDING)]),
+    ])
+
+    # provider_credentials (M41) — non-unique to allow rotation history
+    await db["provider_credentials"].create_indexes([
+        IndexModel([("provider_name", ASCENDING)]),
+        IndexModel([("provider_name", ASCENDING), ("rotated_at", ASCENDING)]),
+    ])
+
     # agents
     await db["agents"].create_indexes([
         IndexModel([("organization_id", ASCENDING)]),
@@ -215,10 +233,9 @@ async def _ensure_indexes(db: AsyncIOMotorDatabase) -> None:
     # leads
     await db["leads"].create_indexes([
         IndexModel([("organization_id", ASCENDING), ("created_at", DESCENDING)]),
-        IndexModel([("organization_id", ASCENDING), ("phone", ASCENDING)]),
+        IndexModel([("organization_id", ASCENDING), ("phone", ASCENDING)], unique=True, sparse=True),
         IndexModel([("organization_id", ASCENDING), ("status", ASCENDING)]),
         IndexModel([("campaign_id", ASCENDING)], sparse=True),
-        IndexModel([("organization_id", ASCENDING), ("phone", ASCENDING)], unique=True, sparse=True),
     ])
 
     # dnc_entries

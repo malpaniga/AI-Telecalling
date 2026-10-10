@@ -46,6 +46,7 @@ async def lifespan(app: FastAPI):
         from backend.core.db import get_db
         from backend.services.subscription_service import seed_default_plans
         from backend.services.wallet_service import seed_default_packs
+        from backend.services.model_catalogue_seed import seed_model_catalogue
         db = get_db()
         seeded_plans = await seed_default_plans(db)
         seeded_packs = await seed_default_packs(db)
@@ -53,6 +54,7 @@ async def lifespan(app: FastAPI):
             log.info("seeded %d default subscription plans", len(seeded_plans))
         if seeded_packs:
             log.info("seeded %d default calling packs", len(seeded_packs))
+        await seed_model_catalogue(db)
 
         # Auto-seed demo environment in DEMO_MODE
         if settings.demo_mode:

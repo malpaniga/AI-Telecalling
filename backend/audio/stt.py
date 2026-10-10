@@ -150,6 +150,34 @@ class STTRouter:
         return await self.groq.transcribe(audio_bytes, filename, language)
 
 
+# ---------------------------------------------------------------------------
+# faster-whisper stub — experimental, not yet integrated into call pipeline
+# ---------------------------------------------------------------------------
+
+class FasterWhisperSTT:
+    """Stub for faster-whisper local runtime.
+
+    Status: experimental. Raises NotImplementedError until the adapter is
+    implemented. Install with: pip install faster-whisper
+    See https://github.com/SYSTRAN/faster-whisper
+    """
+
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            "faster-whisper adapter not yet implemented. Status: experimental."
+        )
+
+    async def transcribe(
+        self,
+        audio_bytes: bytes,
+        filename: str = "audio.wav",
+        language: str | None = None,
+    ) -> str:  # pragma: no cover
+        raise NotImplementedError(
+            "faster-whisper adapter not yet implemented. Status: experimental."
+        )
+
+
 async def _smoke_test(path: str) -> None:
     logging.basicConfig(level="INFO")
     with open(path, "rb") as f:

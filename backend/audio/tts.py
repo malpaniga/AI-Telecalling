@@ -211,6 +211,79 @@ class OrpheusEngine(TTSEngine):
         raise NotImplementedError
 
 
+# ---------------------------------------------------------------------------
+# AI4Bharat / IndicF5 stubs — experimental, not yet integrated
+# ---------------------------------------------------------------------------
+
+class AI4BharatTTSEngine(TTSEngine):
+    """Stub for AI4Bharat Indic-TTS self-hosted server.
+
+    Status: experimental. Raises NotImplementedError until the adapter is
+    implemented. See https://github.com/AI4Bharat/Indic-TTS for deployment.
+    """
+
+    sample_rate = 22050
+
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            "AI4Bharat TTS adapter not yet implemented. Status: experimental."
+        )
+
+    async def synthesize(
+        self, text: str, language: str | None = None
+    ) -> tuple[bytes, int]:  # pragma: no cover
+        raise NotImplementedError(
+            "AI4Bharat TTS adapter not yet implemented. Status: experimental."
+        )
+
+
+class IndicF5Engine(TTSEngine):
+    """Stub for AI4Bharat IndicF5 self-hosted server.
+
+    Status: experimental. Raises NotImplementedError until the adapter is
+    implemented. See https://github.com/AI4Bharat/IndicF5 for deployment.
+    """
+
+    sample_rate = 22050
+
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            "AI4Bharat TTS adapter not yet implemented. Status: experimental."
+        )
+
+    async def synthesize(
+        self, text: str, language: str | None = None
+    ) -> tuple[bytes, int]:  # pragma: no cover
+        raise NotImplementedError(
+            "AI4Bharat TTS adapter not yet implemented. Status: experimental."
+        )
+
+
+class OllamaTTSEngine(TTSEngine):
+    """Stub: Ollama does not offer a TTS capability.
+
+    Raises NotImplementedError to clearly communicate the misrouting.
+    """
+
+    sample_rate = 22050
+
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            "Ollama TTS not a standard capability. Use LLM capability."
+        )
+
+    async def synthesize(
+        self, text: str, language: str | None = None
+    ) -> tuple[bytes, int]:  # pragma: no cover
+        raise NotImplementedError(
+            "Ollama TTS not a standard capability. Use LLM capability."
+        )
+
+
+# ---------------------------------------------------------------------------
+# Process-wide singleton
+# ---------------------------------------------------------------------------
+
 _engine: TTSEngine | None = None
 
 

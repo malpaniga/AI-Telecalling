@@ -167,6 +167,73 @@ class LLMClient:
         return {}
 
 
+# ---------------------------------------------------------------------------
+# Ollama local runtime client
+# ---------------------------------------------------------------------------
+
+class OllamaLLMClient:
+    """Async client for a locally-running Ollama server.
+
+    Ollama must be started separately (ollama serve) and have the target model
+    pulled (ollama pull llama3.2). Connectivity is checked before inference so
+    a clear error is returned when the runtime is not running.
+    """
+
+    def __init__(
+        self,
+        base_url: str = "http://localhost:11434",
+        model: str = "llama3.2",
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.model = model
+
+    async def is_runtime_reachable(self) -> bool:
+        """Return True if the Ollama server is responding on /api/tags."""
+        import httpx
+
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                resp = await client.get(f"{self.base_url}/api/tags")
+                return resp.status_code == 200
+        except Exception:  # noqa: BLE001
+            return False
+
+    async def generate(
+        self,
+        messages: list[Message],
+        system_prompt: str | None = None,
+    ) -> str:
+        """Call /api/chat with the configured model and messages.
+
+        Raises RuntimeError if the Ollama runtime is not reachable.
+        """
+        import httpx
+
+        if not await self.is_runtime_reachable():
+            raise RuntimeError(
+                f"Ollama runtime not reachable at {self.base_url}. "
+                "Run 'ollama serve' and ensure the model is pulled."
+            )
+
+        api_messages: list[Message] = []
+        if system_prompt:
+            api_messages.append({"role": "system", "content": system_prompt})
+        api_messages.extend(messages)
+
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                f"{self.base_url}/api/chat",
+                json={
+                    "model": self.model,
+                    "messages": api_messages,
+                    "stream": False,
+                },
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("message", {}).get("content", "")
+
+
 async def _smoke_test() -> None:
     logging.basicConfig(level="INFO")
     client = LLMClient()
