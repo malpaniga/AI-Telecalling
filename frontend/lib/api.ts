@@ -453,6 +453,75 @@ export interface DashboardData {
   generated_at: string;
 }
 
+// ---------------------------------------------------------------------------
+// AI Model Directory interfaces
+// ---------------------------------------------------------------------------
+
+export interface AIModelCatalogue {
+  id: string;
+  provider_name: string;
+  model_id: string;
+  capability: "tts" | "stt" | "llm";
+  hosting_mode: "managed_api" | "local_runtime" | "self_hosted";
+  supported_languages: string[];
+  streaming_supported: boolean;
+  credential_requirements: string[];
+  setup_requirements: string | null;
+  license_spdx: string | null;
+  commercial_use_allowed: boolean | null;
+  free_tier_info: string | null;
+  free_tier_verified_date: string | null;
+  pricing_per_minute_usd: number | null;
+  doc_url: string | null;
+  model_card_url: string | null;
+  implementation_status: "supported" | "experimental" | "unavailable";
+  notes: string | null;
+}
+
+export interface ProviderConfiguration {
+  id: string;
+  capability: "tts" | "stt" | "llm";
+  provider_name: string;
+  model_id: string;
+  is_active: boolean;
+  is_fallback: boolean;
+  voice: string | null;
+  language: string | null;
+  extra_params: Record<string, unknown> | null;
+  last_tested_at: string | null;
+  last_test_result: "ok" | "error" | null;
+  last_test_latency_ms: number | null;
+  activated_at: string | null;
+  created_at: string;
+}
+
+export interface ProviderCredentialMeta {
+  provider_name: string;
+  key_hint: string | null;
+  created_at: string | null;
+  rotated_at: string | null;
+}
+
+export interface ConnectProviderRequest {
+  provider_name: string;
+  model_id: string;
+  capability: "tts" | "stt" | "llm";
+  credential_plaintext?: string;
+  voice?: string;
+  language?: string;
+  extra_params?: Record<string, unknown>;
+  is_fallback?: boolean;
+}
+
+export interface TestResult {
+  status: "ok" | "error";
+  latency_ms: number | null;
+  error?: string | null;
+  sample_output_b64?: string | null;
+  transcript?: string | null;
+  response?: string | null;
+}
+
 export interface AdminDashboard {
   organizations: {
     total_active: number;
@@ -1388,6 +1457,67 @@ export const api = {
           ts: string | null;
         }>;
       }>("GET", `/api/v1/transcripts/${callId}`),
+  },
+
+  // ── Model Directory (admin) ───────────────────────────────────────────────
+  modelDirectory: {
+    catalogue: (params?: { capability?: string; status?: string; search?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.capability) q.set("capability", params.capability);
+      if (params?.status) q.set("status", params.status);
+      if (params?.search) q.set("search", params.search);
+      return apiRequest<AIModelCatalogue[]>(
+        "GET", `/api/v1/model-directory/catalogue${q.toString() ? "?" + q : ""}`
+      );
+    },
+    getModel: (modelId: string) =>
+      apiRequest<AIModelCatalogue>("GET", `/api/v1/model-directory/catalogue/${modelId}`),
+    listConfigs: (capability?: string) => {
+      const q = new URLSearchParams();
+      if (capability) q.set("capability", capability);
+      return apiRequest<ProviderConfiguration[]>(
+        "GET", `/api/v1/model-directory/configurations${q.toString() ? "?" + q : ""}`
+      );
+    },
+    getConfig: (configId: string) =>
+      apiRequest<ProviderConfiguration>(
+        "GET", `/api/v1/model-directory/configurations/${configId}`
+      ),
+    connect: (body: ConnectProviderRequest) =>
+      apiRequest<ProviderConfiguration>(
+        "POST", "/api/v1/model-directory/configurations", body
+      ),
+    testConfig: (configId: string) =>
+      apiRequest<TestResult>(
+        "POST", `/api/v1/model-directory/configurations/${configId}/test`
+      ),
+    activateConfig: (configId: string) =>
+      apiRequest<ProviderConfiguration>(
+        "POST", `/api/v1/model-directory/configurations/${configId}/activate`
+      ),
+    setFallback: (configId: string, fallbackConfigId: string) =>
+      apiRequest<ProviderConfiguration>(
+        "POST", `/api/v1/model-directory/configurations/${configId}/fallback`,
+        { fallback_config_id: fallbackConfigId }
+      ),
+    deleteConfig: (configId: string) =>
+      apiRequest<void>(
+        "DELETE", `/api/v1/model-directory/configurations/${configId}`
+      ),
+    listCredentials: (providerName: string) =>
+      apiRequest<ProviderCredentialMeta[]>(
+        "GET", `/api/v1/model-directory/credentials/${encodeURIComponent(providerName)}`
+      ),
+    rotateCredential: (providerName: string, newPlaintext: string) =>
+      apiRequest<ProviderCredentialMeta>(
+        "POST",
+        `/api/v1/model-directory/credentials/${encodeURIComponent(providerName)}/rotate`,
+        { credential_plaintext: newPlaintext }
+      ),
+    deleteCredential: (providerName: string) =>
+      apiRequest<void>(
+        "DELETE", `/api/v1/model-directory/credentials/${encodeURIComponent(providerName)}`
+      ),
   },
 };
 

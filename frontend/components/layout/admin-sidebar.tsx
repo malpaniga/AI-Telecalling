@@ -19,6 +19,10 @@ import {
   LogOut,
   X,
   Shield,
+  BrainCircuit,
+  Volume2,
+  AudioWaveform,
+  Bot,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -35,6 +39,10 @@ const ADMIN_LINKS = [
   { href: "/admin/phone-numbers", label: "Phone Numbers", icon: Hash },
   { href: "/admin/voice-profiles", label: "Voice Profiles", icon: Mic2 },
   { href: "/admin/providers", label: "Providers", icon: Plug },
+  { href: "/admin/models", label: "AI Models", icon: BrainCircuit },
+  { href: "/admin/providers/tts", label: "TTS Config", icon: Volume2 },
+  { href: "/admin/providers/stt", label: "STT Config", icon: AudioWaveform },
+  { href: "/admin/providers/llm", label: "LLM Config", icon: Bot },
   { href: "/admin/usage", label: "Usage", icon: Activity },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart2 },
   { href: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText },
