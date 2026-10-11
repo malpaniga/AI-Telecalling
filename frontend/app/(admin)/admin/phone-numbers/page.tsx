@@ -178,7 +178,7 @@ export default function AdminPhoneNumbersPage() {
                   {label as string}
                 </p>
                 <p className={`text-2xl font-semibold mt-1 ${cls as string}`}>
-                  {(value as number).toLocaleString("en-IN")}
+                  {((value as number) ?? 0).toLocaleString("en-IN")}
                 </p>
               </CardBody>
             </Card>

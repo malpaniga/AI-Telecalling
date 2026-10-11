@@ -1470,8 +1470,11 @@ export const api = {
         "GET", `/api/v1/model-directory/catalogue${q.toString() ? "?" + q : ""}`
       );
     },
-    getModel: (modelId: string) =>
-      apiRequest<AIModelCatalogue>("GET", `/api/v1/model-directory/catalogue/${modelId}`),
+    getModel: (providerName: string, modelId: string) =>
+      apiRequest<AIModelCatalogue>(
+        "GET",
+        `/api/v1/model-directory/catalogue/${encodeURIComponent(providerName)}/${encodeURIComponent(modelId)}`
+      ),
     listConfigs: (capability?: string) => {
       const q = new URLSearchParams();
       if (capability) q.set("capability", capability);
@@ -1512,7 +1515,7 @@ export const api = {
       apiRequest<ProviderCredentialMeta>(
         "POST",
         `/api/v1/model-directory/credentials/${encodeURIComponent(providerName)}/rotate`,
-        { credential_plaintext: newPlaintext }
+        { new_plaintext: newPlaintext }
       ),
     deleteCredential: (providerName: string) =>
       apiRequest<void>(

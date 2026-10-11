@@ -21,9 +21,8 @@ log = logging.getLogger("redis_client")
 _redis: Optional[aioredis.Redis] = None
 
 
-def get_redis() -> aioredis.Redis:
-    if _redis is None:
-        raise RuntimeError("Redis not initialized. Call init_redis() first.")
+def get_redis() -> Optional[aioredis.Redis]:
+    """Return the Redis client, or None if Redis is unavailable (dev only)."""
     return _redis
 
 
@@ -37,9 +36,15 @@ async def init_redis() -> None:
         retry_on_timeout=True,
         max_connections=50,
     )
-    # Verify connectivity
-    await _redis.ping()
-    log.info("Redis connected: %s", settings.redis_url.split("@")[-1])
+    # Verify connectivity — fatal in production, warning in development
+    try:
+        await _redis.ping()
+        log.info("Redis connected: %s", settings.redis_url.split("@")[-1])
+    except Exception as exc:
+        if settings.app_env == "production":
+            raise
+        log.warning("Redis unavailable (%s) — running without Redis (rate limiting, call sessions, and campaign workers will not work)", exc)
+        _redis = None
 
 
 async def close_redis() -> None:
