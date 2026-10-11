@@ -1,9 +1,122 @@
 # MVP_PROGRESS.md
 # AI Telecalling SaaS — Development Progress
 
-**Last updated:** 2026-10-09  
-**Current checkpoint:** M40 PASS — Complete Frontend Redesign — Super Admin Dashboard + Customer Pages  
-**Next checkpoint:** NONE — MVP frontend complete
+**Last updated:** 2026-10-12  
+**Current checkpoint:** M41 PASS — AI Models Directory + One-Click Provider Setup  
+**Next checkpoint:** NONE — M41 complete
+
+---
+
+## CHECKPOINT HISTORY
+
+---
+
+### M41 — AI MODELS DIRECTORY + ONE-CLICK PROVIDER SETUP
+
+```
+Checkpoint: M41
+Status: PASS
+Started: 2026-10-11
+Completed: 2026-10-12
+Objective: Super Admin provider management with AI Models Directory (TTS/STT/LLM),
+           free-tier APIs, open-source models, one-click connection, model testing,
+           activation, and fallback configuration.
+
+Backend (commit fb2e4d7):
+  - backend/models/model_directory.py — AIModelCatalogue, ProviderConfiguration,
+    ProviderCredential (Fernet-encrypted)
+  - backend/repositories/model_directory_repo.py — AIModelCatalogueRepo,
+    ProviderConfigurationRepo, ProviderCredentialRepo with rotation history
+  - backend/core/secrets.py — CredentialStore (Fernet, key derived from SECRET_KEY)
+  - backend/services/model_catalogue_seed.py — 12 verified catalogue entries
+    (3 LLM, 4 STT, 5 TTS); upserts on startup
+  - backend/services/model_directory_service.py — orchestration: search, connect,
+    test, activate, fallback, credential rotation/deletion, rate limiting (10/hr),
+    audit logging every config change
+  - backend/services/model_test_service.py — real test adapters:
+    sarvam TTS (HTTPS), piper TTS (local), groq-whisper STT (Groq API),
+    sarvam STT (HTTPS), groq LLM (Groq API), ollama LLM (local HTTP);
+    unavailable stubs for unimplemented providers
+  - backend/audio/tts.py — OrpheusEngine, AI4BharatTTSEngine, IndicF5Engine,
+    OllamaTTSEngine stubs (all raise NotImplementedError with clear messages)
+  - backend/audio/stt.py — AI4Bharat IndicConformer stub, faster-whisper stub
+  - backend/agent/llm.py — OllamaLLMClient (local HTTP, connectivity check)
+  - backend/agent/__init__.py — minimal (no eager imports)
+  - backend/api/v1/model_directory.py — 12 REST endpoints under /model-directory:
+    GET/POST catalogue, GET/POST/DELETE configurations, test/activate/fallback,
+    GET/POST/DELETE credentials; all require platform_owner | platform_admin
+  - backend/api/v1/__init__.py — model_directory router registered
+  - backend/core/db.py — indexes for ai_model_catalogue, provider_configurations,
+    provider_credentials
+  - backend/main.py — seed_model_catalogue() called on startup
+
+Frontend (commits 3fefb25, e0fa2ce):
+  - frontend/lib/api.ts — 5 TypeScript interfaces (AIModelCatalogue,
+    ProviderConfiguration, ProviderCredentialMeta, ConnectProviderRequest,
+    TestResult) + api.modelDirectory namespace (12 methods)
+  - frontend/components/layout/admin-sidebar.tsx — 4 new nav links:
+    AI Models (BrainCircuit), TTS Config (Volume2), STT Config (AudioWaveform),
+    LLM Config (Bot)
+  - frontend/app/(admin)/admin/models/page.tsx — searchable directory:
+    300ms debounced search, capability tabs, status filter, responsive card grid,
+    free-tier staleness warning (>90 days), Connect/Configure Local action routing
+  - frontend/components/model-directory/ProviderConfigPanel.tsx — shared panel:
+    active config card, configurations table, per-row Test (inline spinner +
+    latency/error), Activate (disabled until test ok), Connect modal with masked
+    credential (type=password autoComplete=new-password), LLM JSON params editor,
+    collapsible credential section with Rotate/Delete
+  - frontend/app/(admin)/admin/providers/tts/page.tsx — TTS config page
+  - frontend/app/(admin)/admin/providers/stt/page.tsx — STT config page
+  - frontend/app/(admin)/admin/providers/llm/page.tsx — LLM config page
+  - frontend/app/(admin)/admin/providers/page.tsx — UNCHANGED
+
+Fixes (commit e0fa2ce):
+  - backend/agent/__init__.py — removed broken eager import of llm submodule
+  - frontend/lib/api.ts — getModel() path fixed to /catalogue/{providerName}/{modelId}
+  - frontend/lib/api.ts — rotateCredential() body field fixed: new_plaintext
+  - backend/core/redis.py — graceful Redis failure in non-production environments
+  - frontend/app/(admin)/admin/phone-numbers/page.tsx — null-safe toLocaleString
+
+Security:
+  - Credentials Fernet-encrypted at rest; never returned to browser; never logged
+  - key_hint (last 4 chars) only shown in UI
+  - platform_owner | platform_admin required on every /model-directory endpoint
+  - Org-level users get 403 (verified by test_customer_tenant_isolation)
+  - Test rate limit: 10 calls/provider/hour
+  - Audit log on every config change, test, activation, rotation, deletion
+
+Tests (commit b68880c):
+  - backend/tests/test_m41_model_directory.py — 15 tests
+  - All 15 PASS with root .venv (Python 3.13)
+  - 9 tests use mongomock_motor (full service-layer coverage)
+  - 3 tests use mocked HTTP (Ollama reachable/unreachable, TTS/STT/LLM mock)
+  - 1 test uses FastAPI TestClient (HTTP 403 tenant isolation)
+  - M8 + M10 regression: 9 tests PASS
+
+Catalogue (12 entries, all verified against official docs):
+  LLM:  gemini-2.0-flash-lite (supported), llama3.2/ollama (supported),
+        llama-3.3-70b-versatile/groq (supported)
+  STT:  indicconformer-multilingual/ai4bharat (experimental, self-hosted, MIT),
+        whisper-large-v3-turbo/groq-whisper (supported),
+        saaras-v3/sarvam (supported), faster-whisper-large-v3 (experimental)
+  TTS:  indicf5/ai4bharat-indicf5 (experimental, self-hosted, MIT),
+        indic-tts/ai4bharat-indic-tts (experimental, self-hosted, MIT),
+        en-us-lessac-medium/piper (supported),
+        bulbul-v3/sarvam (supported), multilingual-v2/elevenlabs (experimental)
+
+Remaining blockers (external — no code changes needed):
+  - Gemini adapter (LLMClient for Gemini API) — not implemented; catalogue status=supported
+    but test returns "unavailable" until adapter built
+  - AI4Bharat IndicConformer/IndicF5/Indic-TTS — self-hosted GPU required;
+    adapters raise NotImplementedError; catalogue status=experimental
+  - faster-whisper — local runtime; adapter stub not wired into call pipeline
+  - ElevenLabs TTS — status=experimental; API key needed; test adapter needed
+  - Real credentials (SARVAM_API_KEY, GROQ_API_KEY, GEMINI_API_KEY) needed for
+    live inference tests; all mock tests pass without them
+
+Next checkpoint: NONE (M41 complete)
+Git commits: fb2e4d7, b68880c, 3fefb25, e0fa2ce
+```
 
 ---
 
