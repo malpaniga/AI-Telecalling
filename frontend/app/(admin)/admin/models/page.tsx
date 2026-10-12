@@ -56,6 +56,21 @@ function isStale(dateStr: string | null): boolean {
   return verifiedDate < ninetyDaysAgo;
 }
 
+function formatFreeTierInfo(
+  freeTierInfo: AIModelCatalogue["free_tier_info"]
+): string {
+  if (!freeTierInfo) return "";
+  if (typeof freeTierInfo === "string") return freeTierInfo;
+
+  const values = Object.entries(freeTierInfo)
+    .filter(([, value]) => value !== null && value !== undefined && value !== "")
+    .map(([key, value]) => {
+      const label = key.replace(/_/g, " ");
+      return `${label}: ${String(value)}`;
+    });
+  return values.join(" · ");
+}
+
 // ---------------------------------------------------------------------------
 // ModelCard component
 // ---------------------------------------------------------------------------
@@ -75,6 +90,7 @@ function ModelCard({
 
   const freeTierStale =
     model.free_tier_info != null && isStale(model.free_tier_verified_date);
+  const freeTierInfo = formatFreeTierInfo(model.free_tier_info);
 
   const statusVariant =
     model.implementation_status === "supported"
@@ -135,7 +151,7 @@ function ModelCard({
         </div>
 
         {/* Free tier / pricing */}
-        {model.free_tier_info && (
+        {freeTierInfo && (
           <div
             className={`rounded-md px-3 py-2 text-xs ${
               freeTierStale
@@ -146,10 +162,10 @@ function ModelCard({
             {freeTierStale ? (
               <span className="flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3 shrink-0" />
-                Pricing data may be stale — {model.free_tier_info}
+                Pricing data may be stale — {freeTierInfo}
               </span>
             ) : (
-              model.free_tier_info
+              freeTierInfo
             )}
           </div>
         )}

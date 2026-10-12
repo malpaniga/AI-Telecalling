@@ -469,7 +469,7 @@ export interface AIModelCatalogue {
   setup_requirements: string | null;
   license_spdx: string | null;
   commercial_use_allowed: boolean | null;
-  free_tier_info: string | null;
+  free_tier_info: Record<string, unknown> | string | null;
   free_tier_verified_date: string | null;
   pricing_per_minute_usd: number | null;
   doc_url: string | null;
