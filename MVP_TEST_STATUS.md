@@ -19,6 +19,27 @@
 | M9 | PASS | 4 | 0 | Immutable voice versions, provider redaction, tenant isolation, HTTP RBAC |
 | M10 | PASS | 4 | 0 | Primary/fallback resolution, capability/language validation, persisted failover |
 | M41 | PASS | 15 | 0 | AI Models Directory: catalogue, configs, credentials, test, activate, isolation |
+| M42 | IN PROGRESS | 30 | 0 | Focused mocked cloud-adapter and runtime-selection tests |
+
+---
+
+## M42 — Cloud-Only Real AI Provider Integrations
+
+**Date:** 2026-10-12
+**Status:** IN PROGRESS
+**Focused command:** `cd backend && ..\\.venv\\Scripts\\python.exe -m pytest tests/test_m42_cloud_providers.py tests/test_m42_runtime_providers.py -q`
+
+| Area | Result | Evidence |
+|---|---|---|
+| Gemini and Groq LLM adapters | PASS | Official SDK request/response, streaming, and credential-redaction mocks |
+| ElevenLabs TTS and Google Cloud STT adapters | PASS | SDK response-normalization and credential-redaction mocks |
+| Cloud-only runtime guard | PASS | Local providers rejected by activation and by direct runtime loading |
+| Encrypted credential rotation | PASS | Runtime selects the current non-rotated credential only |
+| Live provider calls | NOT RUN | No credentials were supplied and live testing was not explicitly enabled |
+| Real-time telephony end-to-end | NOT VERIFIED | Media bridge does not yet select a pinned voice-profile route per call |
+
+The focused M42 suites currently report **30 passed**. The full-suite, frontend,
+and final diff checks remain to be recorded before M42 can be marked complete.
 
 ---
 

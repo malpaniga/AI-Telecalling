@@ -271,6 +271,12 @@ class ModelDirectoryService:
                 "Run a successful test first."
             )
 
+        from backend.services.provider_runtime import LOCAL_OR_SELF_HOSTED_PROVIDERS
+        if config.provider_name in LOCAL_OR_SELF_HOSTED_PROVIDERS:
+            raise ValueError(
+                f"Provider '{config.provider_name}' cannot be activated in cloud-only mode."
+            )
+
         # Deactivate any currently active config for this capability
         await self._config_repo.deactivate_all_for_capability(config.capability)
 

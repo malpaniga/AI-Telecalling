@@ -64,6 +64,16 @@ class Settings(BaseSettings):
 
     # ---- ElevenLabs ----
     elevenlabs_api_key: str = ""
+    elevenlabs_default_voice_id: str = ""  # Admin sets via provider config; this is a fallback
+
+    # ---- Gemini (M42) ----
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash-lite"
+
+    # ---- Google Cloud (M42) ----
+    # Path to service account JSON file, OR the raw JSON string
+    google_application_credentials: str = ""  # path to JSON file
+    google_cloud_project_id: str = ""
 
     # ---- OpenAI / OpenAI-compatible ----
     openai_api_key: str = ""

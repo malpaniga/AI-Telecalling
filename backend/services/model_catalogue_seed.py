@@ -66,10 +66,11 @@ _ENTRIES: list[dict] = [
         "pricing_per_minute_usd": 0.0,
         "doc_url": "https://ollama.com",
         "model_card_url": "https://huggingface.co/meta-llama/Llama-3.2-3B",
-        "implementation_status": "supported",
+        "implementation_status": "unavailable",
         "notes": (
-            "Requires Ollama runtime on port 11434. "
-            "Min 4 GB RAM for 3B model; 8 GB for 8B model."
+            "LOCAL-ONLY: Requires Ollama runtime on port 11434. "
+            "Cannot be activated in cloud-only deployment mode. "
+            "Use groq or gemini for managed cloud LLM inference."
         ),
     },
     {
@@ -310,36 +311,82 @@ _ENTRIES: list[dict] = [
         "pricing_per_minute_usd": None,
         "doc_url": "https://elevenlabs.io/docs",
         "model_card_url": None,
-        "implementation_status": "experimental",
+        "implementation_status": "supported",
         "notes": (
-            "ElevenLabsTTSProvider exists in backend/providers/tts/elevenlabs.py (M8) "
-            "but not wired into call pipeline TTS routing."
+            "ElevenLabsTTSProviderV2 implemented in M42 using official elevenlabs SDK. "
+            "Configure voice_id via admin provider config. "
+            "Admin must set a valid voice_id from their ElevenLabs account. "
+            "ELEVENLABS_API_KEY required."
+        ),
+    },
+]
+
+# ---------------------------------------------------------------------------
+# M42 additions — appended to keep seed idempotent with M41 data
+# ---------------------------------------------------------------------------
+_M42_ENTRIES: list[dict] = [
+    {
+        "provider_name": "google-cloud-stt",
+        "model_id": "chirp_2",
+        "capability": "stt",
+        "hosting_mode": "managed_api",
+        "supported_languages": [
+            "hi-IN", "mr-IN", "te-IN", "ta-IN", "kn-IN",
+            "gu-IN", "pa-IN", "bn-IN", "en-IN", "en-US",
+            "or-IN", "as-IN", "ur-IN", "ml-IN",
+        ],
+        "streaming_supported": False,
+        "credential_requirements": ["GOOGLE_APPLICATION_CREDENTIALS_JSON"],
+        "setup_requirements": (
+            "Create a Google Cloud service account with roles/speech.client. "
+            "Download JSON key, paste contents into admin credential store. "
+            "Enable Speech-to-Text API at console.cloud.google.com."
+        ),
+        "license_spdx": "Proprietary",
+        "commercial_use_allowed": True,
+        "free_tier_info": {
+            "hours_per_month": 1,
+            "note": (
+                "First 60 minutes/month free for Chirp 2 (verified 2025-Q3). "
+                "Subject to Google Cloud pricing changes."
+            ),
+        },
+        "free_tier_verified_date": "2025-09-01",
+        "pricing_per_minute_usd": 0.016,
+        "doc_url": "https://cloud.google.com/speech-to-text/v2/docs",
+        "model_card_url": None,
+        "implementation_status": "supported",
+        "notes": (
+            "M42: GoogleCloudSTTProvider implemented using google-cloud-speech SDK. "
+            "Batch transcription only; streaming STT over gRPC is a separate milestone. "
+            "Hindi (hi-IN) and Marathi (mr-IN) verified supported by Chirp 2. "
+            "Service account JSON stored encrypted via credential store."
         ),
     },
 ]
 
 
 async def seed_model_catalogue(db: AsyncIOMotorDatabase) -> None:
-    """Upsert all 12 catalogue entries. Safe to call on every startup."""
+    """Upsert the 12 M41 catalogue entries. Safe to call on every startup."""
     repo = AIModelCatalogueRepo(db)
     seeded = 0
-    skipped = 0
 
     for entry_data in _ENTRIES:
         doc = AIModelCatalogue(**entry_data)
-        existing = await repo.find_one(
-            {"provider_name": doc.provider_name, "model_id": doc.model_id}
-        )
-        if existing is None:
-            await repo.upsert_by_provider_model(doc)
-            seeded += 1
-        else:
-            # Still upsert to keep metadata current
-            await repo.upsert_by_provider_model(doc)
-            skipped += 1
+        await repo.upsert_by_provider_model(doc)
+        seeded += 1
 
-    log.info(
-        "model catalogue seed complete: %d upserted, %d already existed",
-        seeded,
-        skipped,
-    )
+    log.info("M41 model catalogue seed complete: %d upserted", seeded)
+
+
+async def seed_m42_catalogue(db: AsyncIOMotorDatabase) -> None:
+    """Upsert M42 additional catalogue entries (Google Cloud STT etc.)."""
+    repo = AIModelCatalogueRepo(db)
+    seeded = 0
+
+    for entry_data in _M42_ENTRIES:
+        doc = AIModelCatalogue(**entry_data)
+        await repo.upsert_by_provider_model(doc)
+        seeded += 1
+
+    log.info("M42 model catalogue seed complete: %d upserted", seeded)

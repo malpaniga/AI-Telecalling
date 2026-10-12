@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
         from backend.core.db import get_db
         from backend.services.subscription_service import seed_default_plans
         from backend.services.wallet_service import seed_default_packs
-        from backend.services.model_catalogue_seed import seed_model_catalogue
+        from backend.services.model_catalogue_seed import seed_model_catalogue, seed_m42_catalogue
         db = get_db()
         seeded_plans = await seed_default_plans(db)
         seeded_packs = await seed_default_packs(db)
@@ -55,6 +55,7 @@ async def lifespan(app: FastAPI):
         if seeded_packs:
             log.info("seeded %d default calling packs", len(seeded_packs))
         await seed_model_catalogue(db)
+        await seed_m42_catalogue(db)
 
         # Auto-seed demo environment in DEMO_MODE
         if settings.demo_mode:
@@ -69,34 +70,29 @@ async def lifespan(app: FastAPI):
     except Exception as exc:  # noqa: BLE001
         log.warning("seeding failed (non-fatal): %s", exc)
 
-    # Audio/call pipeline (only if keys are available or demo mode)
-    if settings.demo_mode or settings.groq_api_key or settings.effective_sarvam_key:
+    # Audio/call pipeline: active Super Admin configurations are the sole
+    # inference source. This intentionally does not fall back to Piper, Ollama,
+    # or any other local/self-hosted runtime in cloud-only deployments.
+    if not settings.demo_mode:
         try:
-            from backend.audio.stt import STTClient, SarvamSTT, STTRouter
-            from backend.audio.tts import get_tts_engine
             from backend.memory.session import SessionStore
             from backend.agent.engine import ConversationEngine
+            from backend.services.provider_runtime import CloudProviderRuntime
 
-            groq_stt = STTClient() if settings.groq_api_key else None
-            sarvam_stt = SarvamSTT() if settings.effective_sarvam_key else None
-
-            if groq_stt or sarvam_stt:
-                app.state.stt = STTRouter(groq_stt, sarvam_stt) if groq_stt else sarvam_stt
-            else:
-                app.state.stt = None
-
-            app.state.engine = ConversationEngine()
-            app.state.tts = get_tts_engine() if not settings.demo_mode else None
+            components = await CloudProviderRuntime(db).load_call_components()
+            app.state.stt = components.stt
+            app.state.engine = ConversationEngine(llm=components.llm)
+            app.state.tts = components.tts
             app.state.session_store = SessionStore()
-            log.info("call pipeline ready")
+            log.info("cloud call pipeline ready")
         except Exception as exc:  # noqa: BLE001
-            log.warning("call pipeline init failed (non-fatal in partial config): %s", exc)
+            log.warning("cloud call pipeline unavailable: %s", type(exc).__name__)
             app.state.stt = None
             app.state.engine = None
             app.state.tts = None
             app.state.session_store = None
     else:
-        log.info("call pipeline disabled (no API keys configured)")
+        log.info("call pipeline disabled in demo mode")
         app.state.stt = None
         app.state.engine = None
         app.state.tts = None

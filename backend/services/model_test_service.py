@@ -8,12 +8,14 @@ Never propagates raw exceptions to callers — all are caught and returned as
 
 Credentials injected here are decrypted by the service layer and passed in
 plaintext; they are never logged.
+
+[MOCK] labels indicate that a test uses patched/synthetic data.
+[LIVE]  labels indicate tests that make real API calls when credentials present.
 """
 
 import base64
 import io
 import logging
-import struct
 import time
 import wave
 
@@ -36,14 +38,23 @@ def _make_silent_wav(duration_ms: int = 10, sample_rate: int = 16000) -> bytes:
 
 _SILENT_WAV = _make_silent_wav()
 
-# Providers whose adapters raise NotImplementedError
-_TTS_UNAVAILABLE = {"ai4bharat-indicf5", "ai4bharat-indic-tts", "elevenlabs", "ollama"}
+# Providers whose adapters raise NotImplementedError (self-hosted, no cloud path)
+_TTS_UNAVAILABLE = {"ai4bharat-indicf5", "ai4bharat-indic-tts", "ollama"}
 _STT_UNAVAILABLE = {"ai4bharat", "faster-whisper"}
-_LLM_UNAVAILABLE = {"gemini"}  # Gemini LLMClient not implemented yet
+# No LLM providers are in _LLM_UNAVAILABLE any more — gemini now implemented
+_LLM_UNAVAILABLE: set[str] = set()
+
+# Local-only providers that must not be activated in cloud-only mode
+_LOCAL_ONLY_PROVIDERS = {"ollama", "piper", "faster-whisper", "ai4bharat-indicf5",
+                          "ai4bharat-indic-tts", "ai4bharat"}
 
 
 class ModelTestService:
-    """Fire-and-forget connectivity and inference tests per capability."""
+    """Fire-and-forget connectivity and inference tests per capability.
+
+    Methods labelled [LIVE] make real API calls when credentials are present.
+    Methods labelled [MOCK] use patched or fixture data.
+    """
 
     # ------------------------------------------------------------------
     # TTS
@@ -56,7 +67,7 @@ class ModelTestService:
         voice: str | None,
         language: str | None,
     ) -> dict:
-        """Test TTS provider connectivity by synthesizing a short phrase.
+        """[LIVE] Test TTS provider by synthesizing a short phrase.
 
         Returns {status, latency_ms} on success or {status, error} on failure.
         Never logs credential.
@@ -64,13 +75,18 @@ class ModelTestService:
         if provider_name in _TTS_UNAVAILABLE:
             return {
                 "status": "unavailable",
-                "error": f"Adapter for '{provider_name}' not yet implemented.",
+                "error": (
+                    f"Provider '{provider_name}' requires self-hosted infrastructure "
+                    "and cannot be activated in cloud-only mode."
+                ),
             }
 
         started = time.perf_counter()
         try:
             if provider_name == "sarvam":
                 audio = await self._test_sarvam_tts(credential, language)
+            elif provider_name == "elevenlabs":
+                audio = await self._test_elevenlabs_tts(credential, voice, model_id)
             elif provider_name == "piper":
                 audio = await self._test_piper_tts()
             else:
@@ -85,11 +101,11 @@ class ModelTestService:
                 "sample_output_b64": base64.b64encode(audio).decode() if audio else None,
             }
         except Exception as exc:  # noqa: BLE001
-            log.warning("TTS test failed for provider=%s: %s", provider_name, exc)
+            log.warning("TTS test failed for provider=%s: %s", provider_name, type(exc).__name__)
             return {"status": "error", "error": str(exc)}
 
     async def _test_sarvam_tts(self, credential: str | None, language: str | None) -> bytes:
-        """Test Sarvam TTS using an injected API key."""
+        """[LIVE] Test Sarvam TTS using an injected API key."""
         import httpx
 
         if not credential:
@@ -114,8 +130,29 @@ class ModelTestService:
                 raise RuntimeError("Sarvam returned no audio in test response")
             return base64.b64decode(audios[0])
 
+    async def _test_elevenlabs_tts(
+        self,
+        credential: str | None,
+        voice_id: str | None,
+        model_id: str,
+    ) -> bytes:
+        """[LIVE] Test ElevenLabs TTS using an injected API key."""
+        if not credential:
+            raise ValueError("ELEVENLABS_API_KEY is required for ElevenLabs TTS")
+        from backend.providers.tts.elevenlabs_v2 import (
+            ElevenLabsTTSProviderV2,
+            DEFAULT_VOICE_ID,
+        )
+        provider = ElevenLabsTTSProviderV2(
+            api_key=credential,
+            voice_id=voice_id or DEFAULT_VOICE_ID,
+            model=model_id or "eleven_multilingual_v2",
+        )
+        result = await provider.synthesize("Hello, this is a connectivity test.")
+        return result.get("audio", b"")
+
     async def _test_piper_tts(self) -> bytes:
-        """Test Piper TTS using the process-wide engine."""
+        """[LIVE] Test Piper TTS using the process-wide engine."""
         from backend.audio.tts import get_tts_engine
         engine = get_tts_engine()
         wav = await engine.synthesize_wav("Hello, this is a test.")
@@ -131,14 +168,17 @@ class ModelTestService:
         credential: str | None,
         language: str | None,
     ) -> dict:
-        """Test STT provider with a short silent WAV clip.
+        """[LIVE] Test STT provider with a short silent WAV clip.
 
         Returns {status, latency_ms, transcript} on success.
         """
         if provider_name in _STT_UNAVAILABLE:
             return {
                 "status": "unavailable",
-                "error": f"Adapter for '{provider_name}' not yet implemented.",
+                "error": (
+                    f"Provider '{provider_name}' requires self-hosted infrastructure "
+                    "and cannot be activated in cloud-only mode."
+                ),
             }
 
         started = time.perf_counter()
@@ -147,6 +187,8 @@ class ModelTestService:
                 transcript = await self._test_groq_stt(credential, language)
             elif provider_name == "sarvam":
                 transcript = await self._test_sarvam_stt(credential, language)
+            elif provider_name == "google-cloud-stt":
+                transcript = await self._test_google_cloud_stt(credential, language)
             else:
                 return {
                     "status": "unavailable",
@@ -155,11 +197,11 @@ class ModelTestService:
             latency_ms = int((time.perf_counter() - started) * 1000)
             return {"status": "ok", "latency_ms": latency_ms, "transcript": transcript}
         except Exception as exc:  # noqa: BLE001
-            log.warning("STT test failed for provider=%s: %s", provider_name, exc)
+            log.warning("STT test failed for provider=%s: %s", provider_name, type(exc).__name__)
             return {"status": "error", "error": str(exc)}
 
     async def _test_groq_stt(self, credential: str | None, language: str | None) -> str:
-        """Test Groq Whisper with the injected API key."""
+        """[LIVE] Test Groq Whisper with the injected API key."""
         from groq import AsyncGroq
         import io as _io
 
@@ -176,7 +218,7 @@ class ModelTestService:
         return str(resp).strip() if resp else ""
 
     async def _test_sarvam_stt(self, credential: str | None, language: str | None) -> str:
-        """Test Sarvam STT with the injected API key."""
+        """[LIVE] Test Sarvam STT with the injected API key."""
         import httpx
 
         if not credential:
@@ -197,6 +239,25 @@ class ModelTestService:
             resp.raise_for_status()
             return (resp.json().get("transcript") or "").strip()
 
+    async def _test_google_cloud_stt(
+        self,
+        credential: str | None,
+        language: str | None,
+    ) -> str:
+        """[LIVE] Test Google Cloud STT with a silent WAV clip.
+
+        credential: service account JSON string (from credential store),
+                    or None to use Application Default Credentials.
+        """
+        from backend.providers.stt.google_cloud import GoogleCloudSTTProvider
+        provider = GoogleCloudSTTProvider(
+            project_id="test-project",  # only used for resource names, not auth
+            language_code=language or "hi-IN",
+            credentials_json=credential,
+        )
+        transcript = await provider.transcribe(_SILENT_WAV, language=language or "hi-IN")
+        return transcript
+
     # ------------------------------------------------------------------
     # LLM
     # ------------------------------------------------------------------
@@ -206,7 +267,7 @@ class ModelTestService:
         model_id: str,
         credential: str | None,
     ) -> dict:
-        """Test LLM provider by requesting a one-sentence hello.
+        """[LIVE] Test LLM provider by requesting a one-sentence hello.
 
         Returns {status, latency_ms, response} on success.
         """
@@ -220,7 +281,11 @@ class ModelTestService:
         try:
             if provider_name == "groq":
                 response = await self._test_groq_llm(credential, model_id)
+            elif provider_name == "gemini":
+                response = await self._test_gemini_llm(credential, model_id)
             elif provider_name == "ollama":
+                # Ollama is local-only — test connectivity but return unavailable
+                # if the runtime is not reachable (cloud-only mode check happens at activation)
                 response = await self._test_ollama_llm(model_id)
             else:
                 return {
@@ -230,34 +295,46 @@ class ModelTestService:
             latency_ms = int((time.perf_counter() - started) * 1000)
             return {"status": "ok", "latency_ms": latency_ms, "response": response}
         except Exception as exc:  # noqa: BLE001
-            log.warning("LLM test failed for provider=%s: %s", provider_name, exc)
+            log.warning("LLM test failed for provider=%s: %s", provider_name, type(exc).__name__)
             return {"status": "error", "error": str(exc)}
 
     async def _test_groq_llm(self, credential: str | None, model_id: str) -> str:
-        """Test Groq LLM with the injected API key."""
-        from groq import AsyncGroq
-
+        """[LIVE] Test Groq LLM with the injected API key."""
         if not credential:
             raise ValueError("GROQ_API_KEY is required for Groq LLM")
-        client = AsyncGroq(api_key=credential)
-        stream = await client.chat.completions.create(
-            model=model_id,
-            messages=[{"role": "user", "content": "Say hello in one sentence."}],
-            max_tokens=50,
-            temperature=0.3,
-            stream=False,
+        from backend.providers.llm.groq import GroqLLMProvider
+        provider = GroqLLMProvider(api_key=credential, model=model_id or "llama-3.3-70b-versatile")
+        return await provider.generate(
+            [{"role": "user", "content": "Say hello in one sentence."}]
         )
-        return (stream.choices[0].message.content or "").strip()
+
+    async def _test_gemini_llm(self, credential: str | None, model_id: str) -> str:
+        """[LIVE] Test Gemini LLM with the injected API key."""
+        if not credential:
+            raise ValueError("GEMINI_API_KEY is required for Gemini LLM")
+        from backend.providers.llm.gemini import GeminiLLMProvider
+        provider = GeminiLLMProvider(
+            api_key=credential,
+            model=model_id or "gemini-2.0-flash-lite",
+        )
+        return await provider.generate(
+            [{"role": "user", "content": "Say hello in one sentence."}]
+        )
 
     async def _test_ollama_llm(self, model_id: str) -> str:
-        """Test Ollama by checking runtime reachability then calling /api/chat."""
-        from backend.agent.llm import OllamaLLMClient
+        """Test Ollama local runtime reachability then generate.
 
-        client = OllamaLLMClient(model=model_id)
+        NOTE: Ollama is a LOCAL-ONLY provider. This method exists to support
+        connectivity detection tests (M41). Ollama cannot be activated in
+        cloud-only deployment mode — that enforcement lives in activate_provider().
+        Raises RuntimeError when the runtime is not reachable.
+        """
+        from backend.agent.llm import OllamaLLMClient
+        client = OllamaLLMClient(model=model_id or "llama3.2")
         if not await client.is_runtime_reachable():
             raise RuntimeError(
                 "Ollama runtime not reachable on localhost:11434. "
-                "Run 'ollama serve' and ensure the model is pulled."
+                "Ollama is a local-only provider; use groq or gemini for cloud inference."
             )
         return await client.generate(
             [{"role": "user", "content": "Say hello in one sentence."}]

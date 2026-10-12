@@ -2,8 +2,24 @@
 # AI Telecalling SaaS — Development Progress
 
 **Last updated:** 2026-10-12  
-**Current checkpoint:** M41 PASS — AI Models Directory + One-Click Provider Setup  
-**Next checkpoint:** NONE — M41 complete
+**Current checkpoint:** M42 IN PROGRESS — Cloud-Only Real AI Provider Integrations
+**Last verified completed step:** M41 PASS at `8ba9d2d`; its 15 focused tests passed. The
+working tree contains uncommitted M42 adapters for Gemini, Groq, Google Cloud STT, and
+ElevenLabs plus focused mocked tests, but no M42 verification record yet.
+**First incomplete step:** Connect the configured, encrypted provider credentials to the
+real runtime provider registry and voice-profile/call execution path; adapters alone do
+not prove runtime selection or cloud-only enforcement.
+**Next concrete action:** Run the M42 focused test suite and audit the registry/router,
+voice-profile, and call-session integration points before adding the missing runtime
+wiring and regression tests.
+
+**Resume update:** Focused M42 tests now pass (30/30). `CloudProviderRuntime` decrypts
+only the current credential and constructs active Gemini, Groq, ElevenLabs, and Google
+Cloud adapters; startup uses those components for the legacy call-session protocol.
+The remaining acceptance work is voice-profile-pinned route selection/fallback and
+complete repository/frontend verification. Next action: connect the telephony media
+bridge to a call's pinned voice profile, or document the exact bridge limitation after
+all independent checks pass.
 
 ---
 
