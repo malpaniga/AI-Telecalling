@@ -21,6 +21,12 @@ complete repository/frontend verification. Next action: connect the telephony me
 bridge to a call's pinned voice profile, or document the exact bridge limitation after
 all independent checks pass.
 
+**M42 commit:** `2fd7671` — managed-provider adapters, active-configuration runtime
+wiring, and cloud-only enforcement. The full `python -m pytest -q` run was launched
+after the focused suite and remains in progress in `.omx/logs/m42-pytest.out`; it had
+reached the initial regression set at the time of this checkpoint. No live API test was
+run because no credential was supplied and live testing was not explicitly enabled.
+
 ---
 
 ## CHECKPOINT HISTORY
