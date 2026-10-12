@@ -545,8 +545,8 @@ def test_model_test_service_ai4bharat_tts_unavailable():
 def test_m41_catalogue_seed_imports_cleanly():
     """Regression: M41+M42 catalogue seed imports without error."""
     from backend.services.model_catalogue_seed import _ENTRIES, _M42_ENTRIES
-    # 12 M41 entries + 1 M42 (Google Cloud STT)
-    assert len(_ENTRIES) == 12
+    # Original catalogue plus verified managed TTS model variants.
+    assert len(_ENTRIES) == 22
     assert len(_M42_ENTRIES) == 1
     # Ollama must be marked unavailable (cloud-only mode)
     ollama = next((e for e in _ENTRIES if e["provider_name"] == "ollama"), None)
@@ -583,3 +583,21 @@ def test_groq_provider_capabilities():
     caps = provider.get_capabilities()
     assert caps["provider"] == "groq"
     assert caps["streaming"] is True
+
+
+def test_tts_catalogue_uses_verified_sarvam_and_elevenlabs_model_ids():
+    """[mock] Admin catalogue exposes only executable provider model IDs."""
+    from backend.providers.tts.elevenlabs_v2 import SUPPORTED_MODELS
+    from backend.services.model_catalogue_seed import _ENTRIES
+
+    sarvam_models = {
+        entry["model_id"] for entry in _ENTRIES
+        if entry["provider_name"] == "sarvam" and entry["capability"] == "tts"
+    }
+    eleven_models = {
+        entry["model_id"] for entry in _ENTRIES
+        if entry["provider_name"] == "elevenlabs" and entry["capability"] == "tts"
+    }
+
+    assert {"bulbul:v3", "bulbul:v4-flash"}.issubset(sarvam_models)
+    assert eleven_models == SUPPORTED_MODELS

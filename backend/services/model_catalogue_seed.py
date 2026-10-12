@@ -267,7 +267,7 @@ _ENTRIES: list[dict] = [
     },
     {
         "provider_name": "sarvam",
-        "model_id": "bulbul-v3",
+        "model_id": "bulbul:v3",
         "capability": "tts",
         "hosting_mode": "managed_api",
         "supported_languages": ["hi", "ta", "te", "kn", "mr", "bn", "gu", "ml", "pa", "en-IN"],
@@ -291,7 +291,7 @@ _ENTRIES: list[dict] = [
     },
     {
         "provider_name": "elevenlabs",
-        "model_id": "multilingual-v2",
+        "model_id": "eleven_multilingual_v2",
         "capability": "tts",
         "hosting_mode": "managed_api",
         "supported_languages": ["multilingual"],
@@ -320,6 +320,32 @@ _ENTRIES: list[dict] = [
         ),
     },
 ]
+
+# Additional verified managed TTS models. The provider-facing identifiers are
+# deliberately kept identical to the official API model IDs.
+_TTS_MODEL_ADDITIONS = [
+    ("sarvam", "bulbul:v4-flash", "Sarvam Bulbul v4 Flash — latest managed model with persona voices."),
+    ("elevenlabs", "eleven_v4", "ElevenLabs v4 TTS."),
+    ("elevenlabs", "eleven_v4_turbo", "ElevenLabs v4 Turbo TTS."),
+    ("elevenlabs", "eleven_v3", "ElevenLabs v3 TTS."),
+    ("elevenlabs", "eleven_multilingual_v1", "ElevenLabs Multilingual v1 TTS."),
+    ("elevenlabs", "eleven_monolingual_v1", "ElevenLabs English v1 TTS."),
+    ("elevenlabs", "eleven_flash_v2_5", "ElevenLabs Flash v2.5 TTS."),
+    ("elevenlabs", "eleven_flash_v2", "ElevenLabs Flash v2 TTS."),
+    ("elevenlabs", "eleven_turbo_v2_5", "ElevenLabs Turbo v2.5 TTS."),
+    ("elevenlabs", "eleven_turbo_v2", "ElevenLabs Turbo v2 TTS."),
+]
+
+for _provider, _model, _note in _TTS_MODEL_ADDITIONS:
+    _ENTRIES.append({
+        "provider_name": _provider, "model_id": _model, "capability": "tts",
+        "hosting_mode": "managed_api", "supported_languages": ["multilingual"] if _provider == "elevenlabs" else ["bn-IN", "en-IN", "gu-IN", "hi-IN", "kn-IN", "ml-IN", "mr-IN", "od-IN", "pa-IN", "ta-IN", "te-IN"],
+        "streaming_supported": True, "credential_requirements": ["ELEVENLABS_API_KEY"] if _provider == "elevenlabs" else ["SARVAM_API_KEY"],
+        "setup_requirements": "Configure an API key and compatible voice in Super Admin.", "license_spdx": "Proprietary",
+        "commercial_use_allowed": True, "free_tier_info": None, "free_tier_verified_date": None,
+        "pricing_per_minute_usd": None, "doc_url": "https://elevenlabs.io/docs/models" if _provider == "elevenlabs" else "https://docs.sarvam.ai/api-reference/text-to-speech/convert",
+        "model_card_url": None, "implementation_status": "supported", "notes": _note,
+    })
 
 # ---------------------------------------------------------------------------
 # M42 additions — appended to keep seed idempotent with M41 data

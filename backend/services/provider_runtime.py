@@ -97,6 +97,10 @@ class CloudProviderRuntime:
                 model=config.model_id,
                 **_tts_options(params),
             )
+        if config.capability == "tts" and config.provider_name == "sarvam":
+            from backend.providers.tts.sarvam import SarvamTTSProvider
+            return SarvamTTSProvider(api_key=_required_credential(config, credential), model=config.model_id,
+                                     voice_id=config.voice, language=config.language or "en-IN", timeout=_timeout(params))
         if config.capability == "stt" and config.provider_name == "google-cloud-stt":
             from backend.providers.stt.google_cloud import GoogleCloudSTTProvider
             project_id = params.get("project_id")

@@ -27,9 +27,11 @@ log = logging.getLogger("providers.tts.elevenlabs")
 DEFAULT_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"  # ElevenLabs "George" — public
 
 SUPPORTED_MODELS = {
+    "eleven_v4", "eleven_v4_turbo", "eleven_v3",
     "eleven_multilingual_v2",
-    "eleven_flash_v2_5",     # lower latency
-    "eleven_monolingual_v1",  # English only
+    "eleven_multilingual_v1", "eleven_monolingual_v1",
+    "eleven_flash_v2_5", "eleven_flash_v2",
+    "eleven_turbo_v2_5", "eleven_turbo_v2",
 }
 
 DEFAULT_MODEL = "eleven_multilingual_v2"
