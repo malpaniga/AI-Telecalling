@@ -93,19 +93,22 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   refunded: "danger",
 };
 
-export function statusVariant(status: string): StatusVariant {
-  return STATUS_MAP[status.toLowerCase()] ?? "default";
+export function statusVariant(status?: string | null): StatusVariant {
+  const normalizedStatus = status?.toLowerCase();
+  return normalizedStatus ? STATUS_MAP[normalizedStatus] ?? "default" : "default";
 }
 
 export function StatusBadge({
   status,
   className,
 }: {
-  status: string;
+  status?: string | null;
   className?: string;
 }) {
   const variant = statusVariant(status);
-  const label = status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const label = (status ?? "unknown")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
   return (
     <Badge variant={variant} className={className}>
       {label}
