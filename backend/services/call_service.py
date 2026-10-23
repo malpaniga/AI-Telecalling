@@ -112,8 +112,12 @@ class CallService:
             "credit_reservation_id": call_id_placeholder,
         })
 
-        # Re-reserve with actual call ID
+        # Update ledger and Redis reservation to actual call.id
         try:
+            await self.db.wallet_transactions.update_many(
+                {"call_id": call_id_placeholder, "organization_id": organization_id},
+                {"$set": {"call_id": call.id}},
+            )
             r2 = self._get_redis()
             if r2:
                 old_key = f"credit_reserve:{organization_id}:{call_id_placeholder}"
@@ -162,9 +166,19 @@ class CallService:
                         organization_id=organization_id,
                         call_id=call.id,
                     )
+                    await credit_svc.release(
+                        organization_id=organization_id,
+                        call_id=call_id_placeholder,
+                    )
                 except Exception as rel_exc:
                     log.warning("Failed releasing credits after dispatch failure: %s", rel_exc)
-                raise RuntimeError(f"Telephony dispatch failed: {exc}") from exc
+                err_msg = str(exc)
+                if "answer_url parameter is not valid" in err_msg:
+                    err_msg += (
+                        " (Vobiz requires a publicly accessible HTTPS answer_url. "
+                        "Please configure PUBLIC_BASE_URL in backend/.env with a public HTTPS domain or ngrok tunnel URL)."
+                    )
+                raise RuntimeError(f"Telephony dispatch failed: {err_msg}") from exc
 
         # Increment campaign concurrency counter
         if campaign_id:

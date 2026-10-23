@@ -108,7 +108,7 @@ async def initiate_call(
             provider=body.provider,
             reserve_credits=body.reserve_credits,
         )
-    except ValueError as e:
+    except (ValueError, RuntimeError) as e:
         raise HTTPException(status_code=400, detail=str(e))
     return result
 
