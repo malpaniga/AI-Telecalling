@@ -174,7 +174,9 @@ export interface BusinessTemplate {
   slug: string;
   name: string;
   description: string;
-  slot_definitions: Record<string, unknown>;
+  category?: string;
+  icon_color?: string;
+  slot_definitions: Record<string, unknown> | Array<Record<string, unknown>>;
   default_configuration: Record<string, unknown>;
 }
 
@@ -304,6 +306,12 @@ export interface PhoneNumber {
   number: string;
   status: string;
   organization_id: string | null;
+  assigned_org_ids?: string[];
+  inbound_organization_id?: string | null;
+  inbound_agent_id?: string | null;
+  display_name?: string | null;
+  provider?: string;
+  provider_metadata?: Record<string, unknown>;
   assigned_at: string | null;
   created_at: string;
 }
@@ -522,6 +530,24 @@ export interface TestResult {
   response?: string | null;
 }
 
+export interface WizardCapabilityStatus {
+  connected: boolean;
+  tested: boolean;
+  active: boolean;
+  active_provider: string | null;
+  active_latency_ms: number | null;
+  configs: number;
+}
+
+export interface WizardStatusResponse {
+  capabilities: {
+    stt: WizardCapabilityStatus;
+    tts: WizardCapabilityStatus;
+    llm: WizardCapabilityStatus;
+  };
+  all_ready: boolean;
+}
+
 export interface AdminDashboard {
   organizations: {
     total_active: number;
@@ -676,10 +702,43 @@ export const api = {
     create: (body: {
       name: string;
       template_slug: string;
-      voice_profile_id: string;
-      voice_profile_version: number;
+      voice_profile_id?: string;
+      voice_profile_version?: number;
       description?: string;
+      auto_init_version?: boolean;
+      initial_configuration?: Record<string, unknown>;
     }) => apiRequest<Agent>("POST", "/api/v1/agents", body),
+    update: (
+      id: string,
+      body: Partial<{
+        name: string;
+        description: string;
+        voice_profile_id: string;
+        voice_profile_version: number;
+      }>
+    ) => apiRequest<Agent>("PATCH", `/api/v1/agents/${id}`, body),
+    improveWithGenie: (body: {
+      instructions: string;
+      greeting?: string;
+      persona_focus?: string;
+    }) =>
+      apiRequest<{
+        improved_instructions: string;
+        suggestions: string[];
+      }>("POST", "/api/v1/agents/improve-instructions", body),
+    translateGreeting: (body: { text: string; target_language: string }) =>
+      apiRequest<{ translated_text: string }>(
+        "POST",
+        "/api/v1/agents/translate-greeting",
+        body,
+      ),
+    pipelineStatus: () =>
+      apiRequest<{
+        stt: { connected: boolean };
+        llm: { connected: boolean };
+        tts: { connected: boolean };
+        all_ready: boolean;
+      }>("GET", "/api/v1/agents/pipeline-status"),
     delete: (id: string) =>
       apiRequest<{ status: string; agent_id: string }>(
         "DELETE", `/api/v1/agents/${id}`
@@ -1025,17 +1084,31 @@ export const api = {
     addAdmin: (body: {
       number: string;
       provider: string;
-      provider_resource_id: string;
+      provider_resource_id?: string;
       display_name?: string;
       country_code?: string;
       number_type?: string;
       rental_paise_per_month?: number;
+      provider_metadata?: Record<string, unknown>;
     }) => apiRequest<PhoneNumber>("POST", "/api/v1/phone-numbers/admin", body),
-    assign: (phoneNumberId: string, organization_id: string) =>
-      apiRequest<PhoneNumber>(
-        "POST", `/api/v1/phone-numbers/admin/${phoneNumberId}/assign`,
-        { organization_id }
-      ),
+    assign: (
+      phoneNumberId: string,
+      payload:
+        | {
+            organization_id?: string;
+            org_ids?: string[];
+            inbound_organization_id?: string;
+            inbound_agent_id?: string;
+          }
+        | string
+    ) => {
+      const body = typeof payload === "string" ? { organization_id: payload } : payload;
+      return apiRequest<PhoneNumber>(
+        "POST",
+        `/api/v1/phone-numbers/admin/${phoneNumberId}/assign`,
+        body
+      );
+    },
     release: (phoneNumberId: string) =>
       apiRequest<PhoneNumber>(
         "POST", `/api/v1/phone-numbers/admin/${phoneNumberId}/release`
@@ -1076,6 +1149,23 @@ export const api = {
       apiRequest<void>("DELETE", `/api/v1/knowledge/${kbId}/documents/${docId}`),
     search: (query: string, knowledge_base_ids?: string[], limit?: number) =>
       apiRequest<KnowledgeDocument[]>("POST", "/api/v1/knowledge/search", { query, knowledge_base_ids, limit }),
+    getForAgent: (agentId: string) =>
+      apiRequest<KnowledgeBase[]>("GET", `/api/v1/knowledge/agents/${agentId}`),
+    associateAgent: (kbId: string, agentId: string, priority: number = 0) =>
+      apiRequest<{ status: string; kb_id: string; agent_id: string }>(
+        "POST",
+        `/api/v1/knowledge/${kbId}/agents/${agentId}?priority=${priority}`
+      ),
+    disassociateAgent: (kbId: string, agentId: string) =>
+      apiRequest<{ status: string; kb_id: string; agent_id: string }>(
+        "DELETE",
+        `/api/v1/knowledge/${kbId}/agents/${agentId}`
+      ),
+    getContext: (agentId: string, query?: string) =>
+      apiRequest<{ agent_id: string; context: string; char_count: number }>(
+        "GET",
+        `/api/v1/knowledge/context/${agentId}${query ? `?query=${encodeURIComponent(query)}` : ""}`
+      ),
   },
 
   // ── Users / Team ──────────────────────────────────────────────────────────
@@ -1461,6 +1551,8 @@ export const api = {
 
   // ── Model Directory (admin) ───────────────────────────────────────────────
   modelDirectory: {
+    wizardStatus: () =>
+      apiRequest<WizardStatusResponse>("GET", "/api/v1/model-directory/wizard-status"),
     catalogue: (params?: { capability?: string; status?: string; search?: string }) => {
       const q = new URLSearchParams();
       if (params?.capability) q.set("capability", params.capability);
@@ -1521,8 +1613,140 @@ export const api = {
       apiRequest<void>(
         "DELETE", `/api/v1/model-directory/credentials/${encodeURIComponent(providerName)}`
       ),
+    testAgentInfo: () =>
+      apiRequest<TestAgentInfoResponse>(
+        "GET", "/api/v1/model-directory/test-agent/info"
+      ),
+    testChat: (body: {
+      message: string;
+      history?: Array<{ role: string; content: string }>;
+      system_prompt?: string;
+      language?: string;
+    }) =>
+      apiRequest<TestChatResponse>(
+        "POST", "/api/v1/model-directory/test-chat", body
+      ),
+  },
+  pricing: {
+    rates: () => apiRequest<PricingRatesResponse>("GET", "/api/v1/pricing/rates"),
+    pipelineCost: (params: Record<string, string | number | undefined>) => {
+      const sp = new URLSearchParams();
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== undefined && v !== null) sp.append(k, String(v));
+      });
+      return apiRequest<PipelineCostResponse>("GET", `/api/v1/pricing/pipeline-cost?${sp.toString()}`);
+    },
+    sync: (body?: { force_fx_rate?: number; force_safety_margin_pct?: number }) =>
+      apiRequest<{ status: string; synced_count: number; usd_to_inr_fx_rate: number; safety_margin_pct: number; synced_at: string }>(
+        "POST",
+        "/api/v1/pricing/sync",
+        body
+      ),
+    override: (body: {
+      capability: string;
+      provider_name: string;
+      model_id: string;
+      base_unit_rate: number;
+      safety_margin_pct?: number;
+      notes?: string;
+    }) => apiRequest<{ status: string; card: ProviderRateCard }>("POST", "/api/v1/pricing/override", body),
   },
 };
+
+export interface ProviderRateCard {
+  id: string;
+  provider_name: string;
+  model_id: string;
+  capability: "stt" | "llm" | "tts" | "telephony";
+  display_name: string;
+  base_currency: "INR" | "USD";
+  billing_unit: string;
+  base_unit_rate: number;
+  fx_rate_usd_inr: number;
+  effective_unit_rate_inr: number;
+  active_cost_per_sec_inr: number;
+  blended_cost_per_sec_inr: number;
+  safety_margin_pct: number;
+  retail_rate_per_sec_inr: number;
+  last_synced_at: string;
+  sync_source: string;
+  notes?: string | null;
+}
+
+export interface PricingSettings {
+  id: string;
+  usd_to_inr_fx_rate: number;
+  fx_last_updated_at: string;
+  default_safety_margin_pct: number;
+  min_retail_paise_per_sec: number;
+  auto_sync_enabled: boolean;
+  last_daily_sync_at: string | null;
+}
+
+export interface PricingRatesResponse {
+  settings: PricingSettings;
+  rates_by_capability: {
+    stt: ProviderRateCard[];
+    llm: ProviderRateCard[];
+    tts: ProviderRateCard[];
+    telephony: ProviderRateCard[];
+  };
+  total_providers_tracked: number;
+  last_synced_at: string | null;
+}
+
+export interface PipelineCostResponse {
+  components: {
+    stt: { provider: string; model: string; blended_cost_per_sec_inr: number; paise_per_sec: number };
+    llm: { provider: string; model: string; blended_cost_per_sec_inr: number; paise_per_sec: number };
+    tts: { provider: string; model: string; blended_cost_per_sec_inr: number; paise_per_sec: number };
+    telephony: { provider: string; blended_cost_per_sec_inr: number; paise_per_sec: number };
+  };
+  raw_provider_cost_per_sec_inr: number;
+  raw_provider_cost_per_min_inr: number;
+  raw_provider_paise_per_sec: number;
+  safety_margin_pct: number;
+  safety_buffer_paise_per_sec: number;
+  retail_billable_rate_per_sec_inr: number;
+  retail_billable_rate_per_min_inr: number;
+  retail_billable_paise_per_sec: number;
+  projections: {
+    one_minute_call_inr: number;
+    three_minute_call_inr: number;
+    thousand_calls_one_min_inr: number;
+  };
+  fx_usd_to_inr: number;
+  last_synced_at: string | null;
+}
+
+export interface TestAgentScenario {
+  id: string;
+  name: string;
+  agent_name: string;
+  language: string;
+  greeting: string;
+  system_prompt: string;
+  input_variables?: Record<string, string>;
+  output_variables?: string[];
+}
+
+export interface TestAgentInfoResponse {
+  all_ready: boolean;
+  pipeline: {
+    stt: ProviderConfiguration | null;
+    llm: ProviderConfiguration | null;
+    tts: ProviderConfiguration | null;
+  };
+  languages: Array<{ code: string; name: string; native: string }>;
+  default_scenarios: TestAgentScenario[];
+}
+
+export interface TestChatResponse {
+  reply: string;
+  latency_ms: number;
+  provider_name: string;
+  model_id: string;
+}
 
 // Legacy re-export for backward compat during migration
 export const API_BASE_URL = BASE_URL;
