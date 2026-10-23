@@ -101,7 +101,7 @@ def _vobiz_xml(call_id: Optional[str] = None, agent_id: Optional[str] = None, la
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<Response>\n'
-        f'  <Stream bidirectional="true" keepCallAlive="true" streamTimeout="7200">{xml_url}</Stream>\n'
+        f'  <Stream bidirectional="true" keepCallAlive="true" streamTimeout="7200" contentType="audio/x-l16;rate=16000">{xml_url}</Stream>\n'
         '</Response>'
     )
 
@@ -266,6 +266,11 @@ async def ws_vobiz(ws: WebSocket):
 
     log.info("Vobiz websocket connected: call_id=%s agent_id=%s lang=%s", call_id, agent_id, language)
 
+    media_format = {}
+    encoding = "audio/x-l16"
+    inbound_sample_rate = 16000
+    media_frame_count = 0
+
     try:
         while True:
             text_data = await ws.receive_text()
@@ -279,8 +284,12 @@ async def ws_vobiz(ws: WebSocket):
                 language = custom_params.get("lang", language)
                 agent_id = custom_params.get("agent_id", agent_id)
                 call_id = custom_params.get("call_id", call_id)
-                log.info("Vobiz stream started: stream_id=%s call_id=%s agent_id=%s lang=%s",
-                         transport.stream_id, call_id, agent_id, language)
+                media_format = start_obj.get("mediaFormat") or {}
+                if media_format:
+                    encoding = media_format.get("encoding", encoding).lower()
+                    inbound_sample_rate = int(media_format.get("sampleRate", inbound_sample_rate))
+                log.info("Vobiz stream started: stream_id=%s call_id=%s agent_id=%s lang=%s encoding=%s sr=%s",
+                         transport.stream_id, call_id, agent_id, language, encoding, inbound_sample_rate)
 
                 custom_greeting = None
                 system_prompt = None
@@ -372,8 +381,23 @@ async def ws_vobiz(ws: WebSocket):
                 media_info = data.get("media", {})
                 b64_payload = media_info.get("payload", "")
                 if b64_payload:
-                    raw_mulaw = base64.b64decode(b64_payload)
-                    pcm16, resample_state = _mulaw8k_to_pcm16k(raw_mulaw, resample_state)
+                    media_frame_count += 1
+                    raw_bytes = base64.b64decode(b64_payload)
+                    if media_frame_count == 1:
+                        log.info(
+                            "First Vobiz media packet: size=%d bytes, encoding=%s, sr=%d",
+                            len(raw_bytes), encoding, inbound_sample_rate
+                        )
+                    # Adaptive audio decoding:
+                    # If Vobiz sends 16kHz Linear PCM (audio/x-l16 or 20ms frame >= 500 bytes):
+                    if ("l16" in encoding or "linear" in encoding or "pcm" in encoding) or len(raw_bytes) >= 500:
+                        if inbound_sample_rate == 8000 or (len(raw_bytes) in (320, 160) and "l16" in encoding):
+                            pcm16, resample_state = audioop.ratecv(raw_bytes, 2, 1, 8000, 16000, resample_state)
+                        else:
+                            pcm16 = raw_bytes
+                    else:
+                        pcm8 = audioop.ulaw2lin(raw_bytes, 2)
+                        pcm16, resample_state = audioop.ratecv(pcm8, 2, 1, inbound_sample_rate or 8000, 16000, resample_state)
                     await session.feed_pcm16(pcm16)
 
             elif event in ("stop", "closed"):
