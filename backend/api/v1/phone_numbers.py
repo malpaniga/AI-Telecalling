@@ -48,7 +48,10 @@ class AddNumberRequest(BaseModel):
 
 
 class AssignRequest(BaseModel):
-    organization_id: str
+    organization_id: Optional[str] = None
+    org_ids: Optional[list[str]] = None
+    inbound_organization_id: Optional[str] = None
+    inbound_agent_id: Optional[str] = None
 
 
 class ReleaseRequest(BaseModel):
@@ -150,9 +153,14 @@ async def assign_number(
     db = get_db()
     svc = PhoneNumberService(db)
     try:
-        result = await svc.assign_to_org(
+        org_ids = body.org_ids or ([body.organization_id] if body.organization_id else [])
+        if not org_ids:
+            raise ValueError("At least one organization must be specified")
+        result = await svc.assign_to_orgs(
             phone_number_id=phone_number_id,
-            organization_id=body.organization_id,
+            org_ids=org_ids,
+            inbound_org_id=body.inbound_organization_id or org_ids[0],
+            inbound_agent_id=body.inbound_agent_id,
             performed_by=user.user_id,
         )
     except ValueError as e:

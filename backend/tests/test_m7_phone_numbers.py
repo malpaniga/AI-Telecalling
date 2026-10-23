@@ -26,7 +26,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 
 def run(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    return loop.run_until_complete(coro)
 
 
 def _mongomock_available():

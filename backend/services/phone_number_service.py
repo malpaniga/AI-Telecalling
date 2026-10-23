@@ -64,6 +64,7 @@ def _to_customer_view(pn: PhoneNumber) -> dict:
         "can_whatsapp": pn.can_whatsapp,
         "status": pn.status,
         "organization_id": pn.organization_id,
+        "assigned_org_ids": getattr(pn, "assigned_org_ids", []),
         "assigned_at": pn.assigned_at.isoformat() if pn.assigned_at else None,
     }
     # NOTE: provider, provider_resource_id, provider_metadata, rental_paise_per_month
@@ -76,6 +77,9 @@ def _to_admin_view(pn: PhoneNumber) -> dict:
     base.update({
         "provider": pn.provider,
         "provider_resource_id": pn.provider_resource_id,
+        "provider_metadata": pn.provider_metadata,
+        "inbound_organization_id": pn.inbound_organization_id,
+        "inbound_agent_id": pn.inbound_agent_id,
         "rental_paise_per_month": pn.rental_paise_per_month,
         "created_at": pn.created_at.isoformat(),
     })
@@ -100,7 +104,10 @@ class PhoneNumberService:
     ) -> Optional[dict]:
         """Get a specific number only if it belongs to this org."""
         pn = await self.repo.find_by_id(phone_number_id)
-        if pn is None or pn.organization_id != organization_id:
+        if pn is None:
+            return None
+        assigned_orgs = getattr(pn, "assigned_org_ids", []) or []
+        if pn.organization_id != organization_id and organization_id not in assigned_orgs:
             return None
         return _to_customer_view(pn)
 
@@ -179,6 +186,44 @@ class PhoneNumberService:
 
         log.info("number assigned id=%s number=%s org=%s",
                  phone_number_id, assigned.number, organization_id)
+        return _to_customer_view(assigned)
+
+    async def assign_to_orgs(
+        self,
+        phone_number_id: str,
+        org_ids: list[str],
+        inbound_org_id: Optional[str] = None,
+        inbound_agent_id: Optional[str] = None,
+        performed_by: Optional[str] = None,
+    ) -> dict:
+        """
+        Assign an available or assigned number to multiple organizations.
+        """
+        pn = await self.repo.find_by_id(phone_number_id)
+        if pn is None:
+            raise ValueError(f"Phone number {phone_number_id} not found")
+
+        assigned = await self.repo.atomic_assign_multi(
+            phone_number_id=phone_number_id,
+            organization_ids=org_ids,
+            inbound_org_id=inbound_org_id,
+            inbound_agent_id=inbound_agent_id,
+        )
+        if assigned is None:
+            raise RuntimeError("Assignment failed — please try again")
+
+        for oid in org_ids:
+            await self.assignment_repo.record(
+                phone_number_id=phone_number_id,
+                number=assigned.number,
+                organization_id=oid,
+                action="assigned",
+                performed_by=performed_by,
+                rental_paise_per_month=assigned.rental_paise_per_month,
+            )
+
+        log.info("number assigned multi id=%s number=%s orgs=%s",
+                 phone_number_id, assigned.number, org_ids)
         return _to_customer_view(assigned)
 
     async def release_from_org(

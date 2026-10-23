@@ -80,8 +80,13 @@ class PhoneNumberRepository(BaseRepository):
 
     async def list_for_org(self, organization_id: str) -> list[PhoneNumber]:
         return await self.find_many(
-            {"organization_id": organization_id,
-             "status": {"$in": ["assigned", "suspended"]}},
+            {
+                "$or": [
+                    {"organization_id": organization_id},
+                    {"assigned_org_ids": organization_id},
+                ],
+                "status": {"$in": ["assigned", "suspended"]},
+            },
             sort=[("assigned_at", DESCENDING)],
         )
 
@@ -128,6 +133,35 @@ class PhoneNumberRepository(BaseRepository):
             {"$set": {
                 "status": "assigned",
                 "organization_id": organization_id,
+                "assigned_org_ids": [organization_id],
+                "inbound_organization_id": organization_id,
+                "assigned_at": now,
+                "updated_at": now,
+            }},
+            return_document=True,
+        )
+        if result is None:
+            return None
+        return PhoneNumber(**result)
+
+    async def atomic_assign_multi(
+        self,
+        phone_number_id: str,
+        organization_ids: list[str],
+        inbound_org_id: Optional[str] = None,
+        inbound_agent_id: Optional[str] = None,
+    ) -> Optional[PhoneNumber]:
+        """Finalize assignment to multiple orgs."""
+        now = utcnow()
+        primary_org = inbound_org_id or (organization_ids[0] if organization_ids else None)
+        result = await self.col.find_one_and_update(
+            {"_id": phone_number_id, "status": {"$in": ["reserved", "available", "assigned"]}},
+            {"$set": {
+                "status": "assigned",
+                "organization_id": primary_org,
+                "assigned_org_ids": organization_ids,
+                "inbound_organization_id": primary_org,
+                "inbound_agent_id": inbound_agent_id,
                 "assigned_at": now,
                 "updated_at": now,
             }},
@@ -142,6 +176,9 @@ class PhoneNumberRepository(BaseRepository):
         return await self.update_by_id(phone_number_id, {
             "status": "available",
             "organization_id": None,
+            "assigned_org_ids": [],
+            "inbound_organization_id": None,
+            "inbound_agent_id": None,
             "assigned_at": None,
             "released_at": utcnow(),
         })
