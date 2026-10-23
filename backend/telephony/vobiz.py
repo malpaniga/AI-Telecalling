@@ -97,10 +97,11 @@ def _stream_wss_url(call_id: Optional[str] = None, agent_id: Optional[str] = Non
 
 def _vobiz_xml(call_id: Optional[str] = None, agent_id: Optional[str] = None, lang: str = "en-IN") -> str:
     wss_url = _stream_wss_url(call_id, agent_id, lang)
+    xml_url = wss_url.replace("&", "&amp;")
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<Response>\n'
-        f'  <Stream bidirectional="true">{wss_url}</Stream>\n'
+        f'  <Stream bidirectional="true" keepCallAlive="true" streamTimeout="7200">{xml_url}</Stream>\n'
         '</Response>'
     )
 
@@ -132,6 +133,9 @@ async def vobiz_voice(request: Request) -> Response:
             language = language or form_data.get("lang", "en-IN")
         except Exception:
             pass
+
+    log.info("Vobiz voice webhook invoked: method=%s call_id=%s agent_id=%s lang=%s",
+             request.method, call_id, agent_id, language)
 
     # Outbound call: already has call_id and agent configured
     if call_id:
@@ -236,13 +240,31 @@ async def ws_vobiz(ws: WebSocket):
     transport = VobizTransport(ws)
     resample_state = None
     started = False
-    session: Optional[CallSession] = None
+    session = None
     call_id = ws.query_params.get("call_id")
     agent_id = ws.query_params.get("agent_id")
     language = ws.query_params.get("lang", "en-IN")
 
     db = get_db()
     app = ws.app
+
+    # Ensure cloud call pipeline components are loaded
+    try:
+        from backend.memory.session import SessionStore
+        from backend.agent.engine import ConversationEngine
+        from backend.services.provider_runtime import CloudProviderRuntime
+
+        if db is not None:
+            components = await CloudProviderRuntime(db).load_call_components()
+            app.state.stt = components.stt
+            app.state.engine = ConversationEngine(llm=components.llm)
+            app.state.tts = components.tts
+            if not getattr(app.state, "session_store", None):
+                app.state.session_store = SessionStore()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("failed to load cloud call pipeline: %s", exc)
+
+    log.info("Vobiz websocket connected: call_id=%s agent_id=%s lang=%s", call_id, agent_id, language)
 
     try:
         while True:
@@ -251,44 +273,111 @@ async def ws_vobiz(ws: WebSocket):
             event = data.get("event")
 
             if event == "start":
-                transport.stream_id = data.get("streamId") or data.get("start", {}).get("streamId")
+                start_obj = data.get("start") or {}
+                transport.stream_id = data.get("streamId") or start_obj.get("streamId")
+                custom_params = start_obj.get("customParameters") or {}
+                language = custom_params.get("lang", language)
+                agent_id = custom_params.get("agent_id", agent_id)
+                call_id = custom_params.get("call_id", call_id)
+                log.info("Vobiz stream started: stream_id=%s call_id=%s agent_id=%s lang=%s",
+                         transport.stream_id, call_id, agent_id, language)
+
+                custom_greeting = None
+                system_prompt = None
+                agent_name = None
+                voice_id = None
+                variables = {}
+                barge_in_sensitivity = 70
+                direction = "outbound"
+
+                # Lookup call record for direction and agent if available
+                if call_id and db is not None:
+                    try:
+                        call_doc = await db.calls.find_one({"_id": call_id})
+                        if call_doc:
+                            direction = call_doc.get("direction", "outbound")
+                            if not agent_id:
+                                agent_id = call_doc.get("agent_id")
+                    except Exception as e:
+                        log.warning("failed looking up call_doc for vobiz stream: %s", e)
+
+                # Resolve agent prompt, greeting, and KB context
+                if agent_id and db is not None:
+                    try:
+                        agent_doc = await db.agents.find_one({"_id": agent_id})
+                        if agent_doc:
+                            agent_name = agent_doc.get("name")
+                            org_id = agent_doc.get("organization_id")
+                            active_vid = agent_doc.get("active_version_id")
+                            version_doc = None
+                            if active_vid:
+                                version_doc = await db.agent_versions.find_one({"_id": active_vid})
+                            if not version_doc:
+                                version_doc = await db.agent_versions.find_one(
+                                    {"agent_id": agent_id}, sort=[("version", -1)]
+                                )
+
+                            if version_doc:
+                                cfg = version_doc.get("configuration") or {}
+                                custom_greeting = cfg.get("greeting")
+                                system_prompt = cfg.get("system_prompt")
+                                language = cfg.get("primary_language", language)
+                                voice_id = cfg.get("voice_id")
+                                variables = cfg.get("input_variables") or {}
+                                strictness = cfg.get("knowledge_strictness", "flexible")
+                                if "sensitivity" in cfg:
+                                    try:
+                                        barge_in_sensitivity = int(cfg["sensitivity"])
+                                    except Exception:
+                                        pass
+
+                                # Ground with Knowledge Base if associated
+                                if org_id:
+                                    from backend.services.knowledge_service import KnowledgeService
+                                    kb_svc = KnowledgeService(db)
+                                    kb_context = await kb_svc.get_context_for_agent(agent_id, org_id, mode=strictness)
+                                    if kb_context:
+                                        system_prompt = (system_prompt or "") + f"\n\n{kb_context}"
+                                        log.info("injected knowledge base context into vobiz call for agent=%s", agent_id)
+                    except Exception as exc:
+                        log.warning("failed resolving agent config for vobiz stream: %s", exc)
+
                 if not started and getattr(app.state, "stt", None) and getattr(app.state, "tts", None):
-                    # Inject Knowledge Base context if agent exists
-                    system_prompt = None
-                    if agent_id and db is not None:
-                        try:
-                            from backend.services.knowledge_service import KnowledgeService
-                            kb_svc = KnowledgeService(db)
-                            agent_doc = await db.agents.find_one({"_id": agent_id})
-                            if agent_doc:
-                                org_id = agent_doc.get("organization_id")
-                                kb_context = await kb_svc.get_context_for_agent(agent_id, org_id)
-                                if kb_context:
-                                    system_prompt = kb_context
-                        except Exception as e:
-                            log.warning("Error fetching KB context for vobiz stream: %s", e)
+                    from backend.call_session import CallSession
 
                     session = CallSession(
                         transport=transport,
                         stt=app.state.stt,
                         engine=app.state.engine,
                         tts=app.state.tts,
-                        call_id=call_id,
+                        store=app.state.session_store,
+                        direction=direction,
                         language=language,
+                        agent_name=agent_name,
+                        custom_greeting=custom_greeting,
                         system_prompt=system_prompt,
+                        variables=variables,
+                        voice_id=voice_id,
+                        barge_in_sensitivity=barge_in_sensitivity,
                     )
+                    if call_id:
+                        session.call_id = call_id
                     await session.start()
                     started = True
+                    log.info("CallSession started for vobiz call %s", call_id)
 
             elif event == "media":
+                if not started or session is None:
+                    continue
                 media_info = data.get("media", {})
                 b64_payload = media_info.get("payload", "")
-                if b64_payload and session is not None:
+                if b64_payload:
                     raw_mulaw = base64.b64decode(b64_payload)
                     pcm16, resample_state = _mulaw8k_to_pcm16k(raw_mulaw, resample_state)
-                    await session.push_audio(pcm16)
+                    await session.feed_pcm16(pcm16)
 
             elif event in ("stop", "closed"):
+                log.info("Vobiz stream event %s received for call %s", event, call_id)
                 break
 
     except WebSocketDisconnect:
@@ -296,7 +385,7 @@ async def ws_vobiz(ws: WebSocket):
     except Exception as exc:
         log.exception("Vobiz streaming error: %s", exc)
     finally:
-        if session:
+        if session is not None:
             await session.finalize()
         # Settle credits if call record exists
         if call_id and db is not None:

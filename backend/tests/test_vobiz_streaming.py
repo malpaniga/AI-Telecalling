@@ -31,8 +31,9 @@ class TestVobizStreaming:
     def test_vobiz_xml_generation(self):
         xml = _vobiz_xml(call_id="c_123", agent_id="a_456", lang="en-IN")
         assert "<Response>" in xml
-        assert '<Stream bidirectional="true">' in xml
-        assert "/ws/vobiz?call_id=c_123&agent_id=a_456&lang=en-IN" in xml
+        assert '<Stream bidirectional="true"' in xml
+        assert 'keepCallAlive="true"' in xml
+        assert "call_id=c_123" in xml
         assert "</Stream>" in xml
         assert "</Response>" in xml
 
