@@ -16,10 +16,19 @@ class ProviderRegistry:
 
 def build_demo_registry() -> ProviderRegistry:
     from backend.providers.telephony.mock import MockTelephonyProvider
+    from backend.providers.telephony.vobiz import VobizTelephonyProvider
     from backend.providers.stt.mock import MockSTTProvider
     from backend.providers.tts.mock import MockTTSProvider
     from backend.providers.llm.mock import MockLLMProvider
     from backend.providers.phone_number.mock import MockPhoneNumberProvider
     registry = ProviderRegistry()
-    for kind, provider in (("telephony", MockTelephonyProvider()), ("stt", MockSTTProvider()), ("tts", MockTTSProvider()), ("llm", MockLLMProvider()), ("phone_number", MockPhoneNumberProvider())): registry.register(kind, provider)
+    for kind, provider in (
+        ("telephony", MockTelephonyProvider()),
+        ("telephony", VobizTelephonyProvider()),
+        ("stt", MockSTTProvider()),
+        ("tts", MockTTSProvider()),
+        ("llm", MockLLMProvider()),
+        ("phone_number", MockPhoneNumberProvider()),
+    ):
+        registry.register(kind, provider)
     return registry
