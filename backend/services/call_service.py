@@ -68,6 +68,19 @@ class CallService:
         3. Increment campaign active call counter
         Returns the call record.
         """
+        # Look up phone number to verify assignment & provider
+        phone_doc = None
+        if from_number:
+            from backend.repositories.phone_number_repo import PhoneNumberRepository
+            pn_repo = PhoneNumberRepository(self.db)
+            phone_doc = await pn_repo.find_by_number(from_number)
+            if phone_doc:
+                assigned_orgs = getattr(phone_doc, "assigned_org_ids", []) or []
+                if phone_doc.organization_id != organization_id and organization_id not in assigned_orgs:
+                    raise ValueError(f"Number {from_number} is not assigned to organization {organization_id}")
+                if phone_doc.provider:
+                    provider = phone_doc.provider
+
         # Reserve credits
         try:
             from backend.services.credit_service import CreditService
@@ -111,6 +124,47 @@ class CallService:
                     await r2.delete(old_key)
         except Exception:  # noqa: BLE001
             pass
+
+        # Dispatch call via Vobiz telephony provider if configured
+        if provider == "vobiz" and phone_doc:
+            from backend.providers.telephony.vobiz import VobizTelephonyProvider
+            from backend.config import settings
+            base_public = settings.public_base_url.rstrip("/") if getattr(settings, "public_base_url", None) else "http://localhost:8000"
+            answer_url = f"{base_public}/vobiz/voice?call_id={call.id}&agent_id={agent_id or ''}&lang=en-IN"
+            metadata = phone_doc.provider_metadata or {}
+            auth_id = metadata.get("vobiz_auth_id")
+            auth_token = metadata.get("vobiz_auth_token")
+
+            if not auth_id or not auth_token:
+                raise ValueError("Vobiz phone number is missing API credentials in provider_metadata")
+
+            vobiz_provider = VobizTelephonyProvider()
+            try:
+                dispatch_res = await vobiz_provider.initiate_call(
+                    to=to_number,
+                    from_number=from_number,
+                    auth_id=auth_id,
+                    auth_token=auth_token,
+                    url=answer_url,
+                )
+                await self.call_repo.update_by_id(call.id, {
+                    "provider": "vobiz",
+                    "provider_resource_id": dispatch_res.get("provider_resource_id"),
+                })
+            except Exception as exc:
+                log.error("Failed to dispatch call %s via Vobiz: %s", call.id, exc)
+                await self.call_repo.update_by_id(call.id, {
+                    "status": "failed",
+                    "error_message": str(exc),
+                })
+                try:
+                    await credit_svc.release(
+                        organization_id=organization_id,
+                        call_id=call.id,
+                    )
+                except Exception as rel_exc:
+                    log.warning("Failed releasing credits after dispatch failure: %s", rel_exc)
+                raise RuntimeError(f"Telephony dispatch failed: {exc}") from exc
 
         # Increment campaign concurrency counter
         if campaign_id:
