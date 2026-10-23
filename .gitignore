@@ -18,7 +18,7 @@ backend/.env
 !.env.example
 
 # Models (large binary files — download separately)
-models/
+/models/
 
 # Secrets
 *.pem
