@@ -40,10 +40,16 @@ try {
     $status = git status --porcelain
     if ($status) {
         git commit -m $Message
+        Write-Host "  [OK] Committed local changes." -ForegroundColor Green
+    }
+    
+    # Check if local branch is ahead of origin
+    $unpushed = git log @{u}..HEAD --oneline 2>$null
+    if ($unpushed -or $status) {
         git push origin HEAD
         Write-Host "  [OK] GitHub updated. Vercel is redeploying the frontend." -ForegroundColor Green
     } else {
-        Write-Host "  [INFO] No new uncommitted changes for git." -ForegroundColor DarkGray
+        Write-Host "  [INFO] No new changes to push to GitHub." -ForegroundColor DarkGray
     }
 } catch {
     Write-Host "  [WARN] Git warning: $_ (proceeding with backend deploy)" -ForegroundColor DarkYellow
