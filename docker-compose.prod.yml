@@ -15,6 +15,20 @@ services:
     depends_on:
       - api
 
+  mongodb:
+    image: mongo:7
+    container_name: telecalling_mongo
+    restart: unless-stopped
+    volumes:
+      - mongodata:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: telecalling_saas
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:7-alpine
     container_name: telecalling_redis
@@ -37,12 +51,15 @@ services:
       - backend/.env
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - MONGODB_URI=mongodb://mongodb:27017/telecalling_saas
       - APP_PORT=8080
       - APP_HOST=0.0.0.0
     volumes:
       - ./models:/app/models
     depends_on:
       redis:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
 
   worker:
@@ -55,13 +72,18 @@ services:
       - backend/.env
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - MONGODB_URI=mongodb://mongodb:27017/telecalling_saas
     volumes:
       - ./models:/app/models
     depends_on:
       redis:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
 
 volumes:
   caddy_data:
   caddy_config:
   redisdata:
+  mongodata:
+

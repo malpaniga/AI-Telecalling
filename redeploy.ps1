@@ -81,7 +81,7 @@ Write-Host "`n[OK] All containers updated!" -ForegroundColor Green
 
 # 5. Quick Health Check
 Write-Host "`n[Verification] Testing backend health..." -ForegroundColor Yellow
-Start-Sleep -Seconds 2
+Start-Sleep -Seconds 5
 try {
     $res = curl.exe -s "http://${Server}/health"
     Write-Host "  Backend Response: $res" -ForegroundColor Green
