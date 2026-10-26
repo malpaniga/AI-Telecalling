@@ -35,25 +35,29 @@ Write-Host "  SSH Key: $KeyPath" -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
 # 1. Git push for Vercel
-Write-Host "`n[1/4] Pushing changes to GitHub (triggers Vercel frontend build)..." -ForegroundColor Yellow
-try {
-    git add .
-    $status = git status --porcelain
-    if ($status) {
-        git commit -m $Message
-        Write-Host "  [OK] Committed local changes." -ForegroundColor Green
+if (-not $SkipGit) {
+    Write-Host "`n[1/4] Pushing changes to GitHub (triggers Vercel frontend build)..." -ForegroundColor Yellow
+    try {
+        git add .
+        $status = git status --porcelain
+        if ($status) {
+            git commit -m $Message
+            Write-Host "  [OK] Committed local changes." -ForegroundColor Green
+        }
+        
+        # Check if local branch is ahead of origin
+        $unpushed = git log "@{u}..HEAD" --oneline 2>$null
+        if ($unpushed -or $status) {
+            git push origin HEAD
+            Write-Host "  [OK] GitHub updated. Vercel is redeploying the frontend." -ForegroundColor Green
+        } else {
+            Write-Host "  [INFO] No new changes to push to GitHub." -ForegroundColor DarkGray
+        }
+    } catch {
+        Write-Host "  [WARN] Git warning: $_ (proceeding with backend deploy)" -ForegroundColor DarkYellow
     }
-    
-    # Check if local branch is ahead of origin
-    $unpushed = git log '@{u}..HEAD' --oneline 2>$null
-    if ($unpushed -or $status) {
-        git push origin HEAD
-        Write-Host "  [OK] GitHub updated. Vercel is redeploying the frontend." -ForegroundColor Green
-    } else {
-        Write-Host "  [INFO] No new changes to push to GitHub." -ForegroundColor DarkGray
-    }
-} catch {
-    Write-Host "  [WARN] Git warning: $_ (proceeding with backend deploy)" -ForegroundColor DarkYellow
+} else {
+    Write-Host "`n[1/4] Skipping Git push (-SkipGit flag set)..." -ForegroundColor Yellow
 }
 
 # 2. Package backend and configs
