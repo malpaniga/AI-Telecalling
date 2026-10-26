@@ -22,9 +22,11 @@ import wave
 log = logging.getLogger("model_test")
 
 # ---------------------------------------------------------------------------
-# Minimal silent WAV for STT probing (10 ms of silence at 16 kHz, 16-bit mono)
+# Minimal silent WAV for STT probing (1000 ms of silence at 16 kHz, 16-bit mono)
+# Sarvam STT requires min 201 samples (0.0126s @ 16kHz); 1000ms gives 16,000 samples,
+# ensuring compatibility across all STT engines (Sarvam, Groq, Google Cloud).
 # ---------------------------------------------------------------------------
-def _make_silent_wav(duration_ms: int = 10, sample_rate: int = 16000) -> bytes:
+def _make_silent_wav(duration_ms: int = 1000, sample_rate: int = 16000) -> bytes:
     num_frames = int(sample_rate * duration_ms / 1000)
     pcm = b"\x00\x00" * num_frames  # 16-bit silence
     buf = io.BytesIO()

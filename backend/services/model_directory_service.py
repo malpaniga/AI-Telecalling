@@ -155,8 +155,9 @@ class ModelDirectoryService:
         catalogue_entry = await self._catalogue_repo.find_one(
             {"provider_name": provider_name, "model_id": model_id}
         )
+        existing_cred = await self._cred_repo.find_current(provider_name)
         if catalogue_entry and catalogue_entry.credential_requirements:
-            if not credential_plaintext:
+            if not credential_plaintext and not existing_cred:
                 raise ValueError(
                     f"A credential is required for {provider_name}. "
                     f"Required: {catalogue_entry.credential_requirements}"
@@ -512,6 +513,60 @@ class ModelDirectoryService:
                 credential,
             )
         return {"status": "error", "error": f"Unknown capability: {cap}"}
+
+    async def list_provider_live_models(self, provider_name: str) -> list[str]:
+        """Return available models for a provider, querying provider API if credentials exist."""
+        provider_name = provider_name.strip().lower()
+
+        # Catalogue models for this provider
+        cat_docs = await self._catalogue_repo.find_many({"provider_name": provider_name})
+        cat_models = {d.model_id for d in cat_docs}
+
+        # Check if we have credentials to do live querying
+        cred_doc = await self._cred_repo.find_current(provider_name)
+        plaintext_key = None
+        if cred_doc and cred_doc.encrypted_value:
+            try:
+                plaintext_key = credential_store.decrypt(cred_doc.encrypted_value)
+            except Exception as e:
+                log.warning("Could not decrypt credential for live models lookup: %s", e)
+
+        if provider_name in ("groq", "groq-whisper"):
+            from backend.providers.llm.groq import GroqLLMProvider, SUPPORTED_MODELS
+            cat_models.update(SUPPORTED_MODELS)
+            if plaintext_key:
+                try:
+                    prov = GroqLLMProvider(api_key=plaintext_key)
+                    live = await prov.list_available_models()
+                    cat_models.update(live)
+                except Exception as e:
+                    log.warning("Failed live Groq model lookup: %s", e)
+        elif provider_name == "gemini":
+            cat_models.update([
+                "gemini-2.0-flash-lite",
+                "gemini-3.1-flash-lite",
+                "gemini-3.5-flash-lite",
+                "gemini-3.8-flash",
+            ])
+        elif provider_name == "sarvam":
+            cat_models.update([
+                "saaras:v4",
+                "saaras:v4-turbo",
+                "saaras-v3",
+                "bulbul:v4-flash",
+                "bulbul:v4",
+                "bulbul:v3",
+            ])
+        elif provider_name == "elevenlabs":
+            cat_models.update([
+                "eleven_multilingual_v2",
+                "eleven_flash_v2_5",
+                "eleven_turbo_v2_5",
+                "eleven_v4",
+                "eleven_v4_turbo",
+            ])
+
+        return sorted(cat_models)
 
     async def _enforce_rate_limit(self, provider_name: str) -> None:
         """Raise RateLimitError if too many test calls in the last hour."""

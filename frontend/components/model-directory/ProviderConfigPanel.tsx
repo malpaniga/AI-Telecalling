@@ -90,6 +90,10 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
   const [selectedModel, setSelectedModel] = useState<AIModelCatalogue | null>(
     null
   );
+  const [liveModels, setLiveModels] = useState<string[]>([]);
+  const [loadingLiveModels, setLoadingLiveModels] = useState(false);
+  const [customModelId, setCustomModelId] = useState("");
+  const [isCustomModel, setIsCustomModel] = useState(false);
   const [connectForm, setConnectForm] = useState({
     credential_plaintext: "",
     voice: "",
@@ -150,6 +154,25 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (selectedModel?.provider_name) {
+      setLoadingLiveModels(true);
+      api.modelDirectory
+        .listLiveModels(selectedModel.provider_name)
+        .then((mList) => {
+          setLiveModels(mList || []);
+        })
+        .catch(() => {
+          setLiveModels([]);
+        })
+        .finally(() => {
+          setLoadingLiveModels(false);
+        });
+    } else {
+      setLiveModels([]);
+    }
+  }, [selectedModel?.provider_name]);
 
   // ── active / fallback ──
   const activeConfig = configs.find((c) => c.is_active);
@@ -230,6 +253,9 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
   // ── connect modal ──
   const openConnect = () => {
     setSelectedModel(null);
+    setLiveModels([]);
+    setIsCustomModel(false);
+    setCustomModelId("");
     setConnectForm({
       credential_plaintext: "",
       voice: "",
@@ -246,6 +272,13 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
       setConnectError("Please select a model.");
       return;
     }
+    const finalModelId = (isCustomModel ? customModelId.trim() : (customModelId || selectedModel.model_id)).trim();
+    if (!finalModelId) {
+      setConnectError("Please choose or enter a valid Model ID.");
+      return;
+    }
+
+    const hasStoredCred = Boolean(credentials[selectedModel.provider_name]?.length);
     const isGoogleSTT =
       selectedModel.provider_name === "google-cloud-stt" ||
       selectedModel.credential_requirements.includes(
@@ -254,7 +287,8 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
 
     if (
       selectedModel.credential_requirements.length > 0 &&
-      !connectForm.credential_plaintext
+      !connectForm.credential_plaintext &&
+      !hasStoredCred
     ) {
       setConnectError(
         isGoogleSTT
@@ -303,7 +337,7 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
     try {
       const body: ConnectProviderRequest = {
         provider_name: selectedModel.provider_name,
-        model_id: selectedModel.model_id,
+        model_id: finalModelId,
         capability,
         is_fallback: connectForm.is_fallback,
       };
@@ -824,7 +858,7 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
           {/* Model selector */}
           <div>
             <label className="block text-xs font-medium text-text-primary mb-1">
-              Model{" "}
+              Provider & Catalogue Model{" "}
               <span className="text-danger" aria-hidden>
                 *
               </span>
@@ -836,14 +870,16 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
                   (m) => m.id === e.target.value
                 );
                 setSelectedModel(found ?? null);
+                setIsCustomModel(false);
+                setCustomModelId(found?.model_id ?? "");
                 setConnectForm((f) => ({ ...f, language: "", voice: "" }));
               }}
               className="w-full h-9 rounded-md border border-border bg-surface px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
             >
-              <option value="">Select a model…</option>
+              <option value="">Select a provider / model from catalogue…</option>
               {catalogueOptions.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.provider_name} / {m.model_id}{" "}
+                  {m.provider_name.toUpperCase()} — {m.model_id}{" "}
                   {m.implementation_status === "experimental"
                     ? "(experimental)"
                     : ""}
@@ -851,6 +887,62 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
               ))}
             </select>
           </div>
+
+          {/* Model Variant Selector / Live models / Custom */}
+          {selectedModel && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-text-primary">
+                  Specific Model Variant / ID{" "}
+                  <span className="text-danger" aria-hidden>*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomModel(!isCustomModel)}
+                  className="text-[11px] text-accent hover:underline"
+                >
+                  {isCustomModel ? "Choose from available list" : "+ Enter custom model ID"}
+                </button>
+              </div>
+
+              {isCustomModel ? (
+                <input
+                  type="text"
+                  placeholder="e.g. openai/gpt-oss-20b or custom identifier"
+                  value={customModelId}
+                  onChange={(e) => setCustomModelId(e.target.value)}
+                  className="w-full h-9 rounded-md border border-border bg-surface px-3 text-sm font-mono text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
+                />
+              ) : (
+                <div className="relative">
+                  <select
+                    value={customModelId || selectedModel.model_id}
+                    onChange={(e) => {
+                      if (e.target.value === "__custom__") {
+                        setIsCustomModel(true);
+                        setCustomModelId("");
+                      } else {
+                        setCustomModelId(e.target.value);
+                      }
+                    }}
+                    className="w-full h-9 rounded-md border border-border bg-surface px-3 text-sm font-mono text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
+                  >
+                    {Array.from(new Set([selectedModel.model_id, ...liveModels])).map((mId) => (
+                      <option key={mId} value={mId}>
+                        {mId} {mId === selectedModel.model_id ? "(template default)" : ""}
+                      </option>
+                    ))}
+                    <option value="__custom__">+ Enter custom model ID…</option>
+                  </select>
+                  {loadingLiveModels && (
+                    <span className="absolute right-8 top-2.5 text-[10px] text-text-muted">
+                      fetching live models…
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* API key / Service Account JSON — only when credentials required */}
           {selectedModel && selectedModel.credential_requirements.length > 0 && (
@@ -863,12 +955,20 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-medium text-text-primary">
                       Service Account JSON Key{" "}
-                      <span className="text-danger" aria-hidden>*</span>
+                      {!Boolean(credentials[selectedModel.provider_name]?.length) && (
+                        <span className="text-danger" aria-hidden>*</span>
+                      )}
                     </label>
                     <span className="text-[11px] text-accent font-medium">
                       roles/speech.client
                     </span>
                   </div>
+                  {Boolean(credentials[selectedModel.provider_name]?.length) && (
+                    <div className="mb-1.5 flex items-center gap-1.5 rounded bg-success/10 px-2 py-1 text-[11px] text-success">
+                      <CheckCircle2 className="h-3 w-3 shrink-0" />
+                      <span>Stored service account active. Optional: paste new key to rotate.</span>
+                    </div>
+                  )}
                   <p className="text-[11px] text-text-muted mb-1.5 leading-relaxed">
                     Google Cloud Speech-to-Text requires a Service Account JSON key file. API keys are not supported by the Google Cloud Speech API.
                   </p>
@@ -887,17 +987,30 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-medium text-text-primary mb-1">
-                    API Key{" "}
-                    <span className="text-danger" aria-hidden>*</span>
-                    <span className="ml-1 text-text-muted font-normal">
-                      (required: {selectedModel.credential_requirements.join(", ")})
-                    </span>
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-medium text-text-primary">
+                      API Key{" "}
+                      {!Boolean(credentials[selectedModel.provider_name]?.length) && (
+                        <span className="text-danger" aria-hidden>*</span>
+                      )}
+                      <span className="ml-1 text-text-muted font-normal">
+                        ({selectedModel.credential_requirements.join(", ")})
+                      </span>
+                    </label>
+                    {Boolean(credentials[selectedModel.provider_name]?.length) && (
+                      <span className="text-[11px] text-success font-medium flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3 inline" /> Stored key active ({credentials[selectedModel.provider_name]?.[0]?.key_hint || "••••"})
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="password"
                     autoComplete="new-password"
-                    placeholder="Paste your API key"
+                    placeholder={
+                      Boolean(credentials[selectedModel.provider_name]?.length)
+                        ? "Optional: paste new key to update stored credential"
+                        : "Paste your API key"
+                    }
                     value={connectForm.credential_plaintext}
                     onChange={(e) =>
                       setConnectForm((f) => ({
@@ -907,6 +1020,11 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
                     }
                     className="w-full h-9 rounded-md border border-border bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
                   />
+                  {Boolean(credentials[selectedModel.provider_name]?.length) && !connectForm.credential_plaintext && (
+                    <p className="text-[11px] text-text-muted mt-1">
+                      Reusing existing encrypted credential for {selectedModel.provider_name}.
+                    </p>
+                  )}
                 </div>
               )}
             </div>

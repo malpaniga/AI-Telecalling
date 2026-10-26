@@ -95,7 +95,7 @@ _ENTRIES: list[dict] = [
         "doc_url": "https://console.groq.com/docs/openai",
         "model_card_url": None,
         "implementation_status": "supported",
-        "notes": "Already wired in existing LLMClient. Rate limits apply on free tier.",
+        "notes": "Deprecated on free tier by Groq. Requires enterprise or paid tier. Use openai/gpt-oss-20b for free tier.",
     },
     # ------------------------------------------------------------------
     # STT
@@ -345,6 +345,115 @@ for _provider, _model, _note in _TTS_MODEL_ADDITIONS:
         "commercial_use_allowed": True, "free_tier_info": None, "free_tier_verified_date": None,
         "pricing_per_minute_usd": None, "doc_url": "https://elevenlabs.io/docs/models" if _provider == "elevenlabs" else "https://docs.sarvam.ai/api-reference/text-to-speech/convert",
         "model_card_url": None, "implementation_status": "supported", "notes": _note,
+    })
+
+# ---------------------------------------------------------------------------
+# Additional verified LLM and STT models
+# ---------------------------------------------------------------------------
+_LLM_MODEL_ADDITIONS = [
+    (
+        "groq",
+        "openai/gpt-oss-20b",
+        "Recommended Groq reasoning model (~270ms latency) on Groq LPU inference.",
+        "https://console.groq.com/docs/models",
+        ["GROQ_API_KEY"],
+        "Apache-2.0",
+    ),
+    (
+        "groq",
+        "openai/gpt-oss-120b",
+        "Large high-capacity reasoning model on Groq LPU inference.",
+        "https://console.groq.com/docs/models",
+        ["GROQ_API_KEY"],
+        "Apache-2.0",
+    ),
+    (
+        "groq",
+        "qwen/qwen3.8-27b",
+        "Ultra-fast low-latency (~65ms) reasoning model on Groq LPU inference.",
+        "https://console.groq.com/docs/models",
+        ["GROQ_API_KEY"],
+        "Apache-2.0",
+    ),
+    (
+        "groq",
+        "llama-3.1-8b-instant",
+        "Fast 8B instant model on Groq.",
+        "https://console.groq.com/docs/openai",
+        ["GROQ_API_KEY"],
+        "Meta-Llama-3.1-License",
+    ),
+    (
+        "gemini",
+        "gemini-3.1-flash-lite",
+        "Google Gemini 3.1 Flash Lite model.",
+        "https://ai.google.dev/gemini-api/docs",
+        ["GEMINI_API_KEY"],
+        "Proprietary",
+    ),
+    (
+        "gemini",
+        "gemini-3.5-flash-lite",
+        "Google Gemini 3.5 Flash Lite model.",
+        "https://ai.google.dev/gemini-api/docs",
+        ["GEMINI_API_KEY"],
+        "Proprietary",
+    ),
+    (
+        "gemini",
+        "gemini-3.8-flash",
+        "Google Gemini 3.8 Flash model.",
+        "https://ai.google.dev/gemini-api/docs",
+        ["GEMINI_API_KEY"],
+        "Proprietary",
+    ),
+]
+
+for _provider, _model, _note, _doc, _creds, _license in _LLM_MODEL_ADDITIONS:
+    _ENTRIES.append({
+        "provider_name": _provider,
+        "model_id": _model,
+        "capability": "llm",
+        "hosting_mode": "managed_api",
+        "supported_languages": ["multilingual"],
+        "streaming_supported": True,
+        "credential_requirements": _creds,
+        "setup_requirements": f"Configure API key for {_provider} in Super Admin.",
+        "license_spdx": _license,
+        "commercial_use_allowed": True,
+        "free_tier_info": {"note": "Active production model tier."},
+        "free_tier_verified_date": "2026-01-01",
+        "pricing_per_minute_usd": None,
+        "doc_url": _doc,
+        "model_card_url": None,
+        "implementation_status": "supported",
+        "notes": _note,
+    })
+
+_STT_MODEL_ADDITIONS = [
+    ("sarvam", "saaras:v4", "Sarvam Saaras v4 STT model. High accuracy Indian language transcription."),
+    ("sarvam", "saaras:v4-turbo", "Sarvam Saaras v4 Turbo STT model. Optimized for low-latency voice pipeline."),
+]
+
+for _provider, _model, _note in _STT_MODEL_ADDITIONS:
+    _ENTRIES.append({
+        "provider_name": _provider,
+        "model_id": _model,
+        "capability": "stt",
+        "hosting_mode": "managed_api",
+        "supported_languages": ["hi", "ta", "te", "kn", "mr", "bn", "gu", "ml", "pa", "en-IN"],
+        "streaming_supported": False,
+        "credential_requirements": ["SARVAM_API_KEY"],
+        "setup_requirements": "Configure SARVAM_API_KEY in Super Admin.",
+        "license_spdx": "Proprietary",
+        "commercial_use_allowed": True,
+        "free_tier_info": {"note": "Free tier available; contact Sarvam for current quota."},
+        "free_tier_verified_date": "2026-01-01",
+        "pricing_per_minute_usd": None,
+        "doc_url": "https://docs.sarvam.ai",
+        "model_card_url": None,
+        "implementation_status": "supported",
+        "notes": _note,
     })
 
 # ---------------------------------------------------------------------------

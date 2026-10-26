@@ -86,6 +86,16 @@ async def get_catalogue_entry(
         raise HTTPException(status_code=404, detail=str(exc))
 
 
+@router.get("/providers/{provider_name}/live-models")
+async def list_provider_live_models(
+    provider_name: str,
+    user: CurrentUser = Depends(require_platform("platform_owner", "platform_admin")),
+) -> list[str]:
+    """Return available live models for a provider using stored credentials if present."""
+    svc = _get_service()
+    return await svc.list_provider_live_models(provider_name)
+
+
 # ---------------------------------------------------------------------------
 # Configuration endpoints
 # ---------------------------------------------------------------------------

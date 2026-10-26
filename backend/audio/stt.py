@@ -112,6 +112,8 @@ class SarvamSTT:
     async def transcribe(
         self, audio_bytes: bytes, filename: str = "audio.wav", language: str | None = None
     ) -> str:
+        if not audio_bytes or len(audio_bytes) < 450:
+            return ""
         started = time.perf_counter()
         try:
             resp = await self._client.post(

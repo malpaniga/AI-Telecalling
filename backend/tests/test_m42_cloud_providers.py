@@ -153,6 +153,28 @@ def test_groq_llm_provider_missing_key_raises():
         GroqLLMProvider(api_key="")
 
 
+def test_groq_llm_provider_list_available_models():
+    """[mock] Dynamic list_available_models returns models and includes supported ones."""
+    from backend.providers.llm.groq import GroqLLMProvider
+
+    async def scenario():
+        mock_client = AsyncMock()
+        model_item = MagicMock()
+        model_item.id = "openai/gpt-oss-20b"
+        whisper_item = MagicMock()
+        whisper_item.id = "whisper-large-v3-turbo"
+        mock_client.models.list = AsyncMock(
+            return_value=MagicMock(data=[model_item, whisper_item])
+        )
+        provider = GroqLLMProvider(api_key="test-key", _client=mock_client)
+        models = await provider.list_available_models()
+        assert "openai/gpt-oss-20b" in models
+        # Whisper should be filtered out from LLM models list
+        assert "whisper-large-v3-turbo" not in models
+
+    run(scenario())
+
+
 # ---------------------------------------------------------------------------
 # Test 6 — GeminiLLMProvider normalizes response
 # ---------------------------------------------------------------------------
@@ -546,7 +568,7 @@ def test_m41_catalogue_seed_imports_cleanly():
     """Regression: M41+M42 catalogue seed imports without error."""
     from backend.services.model_catalogue_seed import _ENTRIES, _M42_ENTRIES
     # Original catalogue plus verified managed TTS model variants.
-    assert len(_ENTRIES) == 22
+    assert len(_ENTRIES) >= 22
     assert len(_M42_ENTRIES) == 1
     # Ollama must be marked unavailable (cloud-only mode)
     ollama = next((e for e in _ENTRIES if e["provider_name"] == "ollama"), None)

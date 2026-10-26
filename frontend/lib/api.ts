@@ -1585,6 +1585,11 @@ export const api = {
         "GET",
         `/api/v1/model-directory/catalogue/${encodeURIComponent(providerName)}/${encodeURIComponent(modelId)}`
       ),
+    listLiveModels: (providerName: string) =>
+      apiRequest<string[]>(
+        "GET",
+        `/api/v1/model-directory/providers/${encodeURIComponent(providerName)}/live-models`
+      ),
     listConfigs: (capability?: string) => {
       const q = new URLSearchParams();
       if (capability) q.set("capability", capability);

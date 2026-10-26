@@ -19,9 +19,12 @@ from backend.providers.base import LLMProvider
 
 log = logging.getLogger("providers.llm.groq")
 
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-20b"
 
 SUPPORTED_MODELS = {
+    "openai/gpt-oss-20b",
+    "openai/gpt-oss-120b",
+    "qwen/qwen3.8-27b",
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
     "llama3-8b-8192",
@@ -139,6 +142,18 @@ class GroqLLMProvider(LLMProvider):
 
     async def get_models(self) -> list[str]:
         return sorted(SUPPORTED_MODELS)
+
+    async def list_available_models(self) -> list[str]:
+        """Fetch models dynamically from the official Groq API using this client."""
+        try:
+            page = await self._client.models.list()
+            ids = [m.id for m in getattr(page, "data", []) if getattr(m, "id", None)]
+            # Filter out whisper / audio models since this is an LLM provider
+            llm_ids = [m_id for m_id in ids if "whisper" not in m_id.lower()]
+            return sorted(set(llm_ids + list(SUPPORTED_MODELS)))
+        except Exception as exc:
+            log.warning("Dynamic Groq model listing fallback: %s", exc)
+            return sorted(SUPPORTED_MODELS)
 
 
 def _sanitize_groq_error(exc: Exception, model: str) -> str:

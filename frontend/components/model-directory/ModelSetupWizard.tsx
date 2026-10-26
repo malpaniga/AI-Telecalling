@@ -258,10 +258,15 @@ export function ModelSetupWizard() {
   const handleSaveAndConnect = async () => {
     if (!selectedModel) return;
 
+    const hasStoredCred = configurations.some(
+      (c) => c.provider_name === selectedModel.provider_name
+    );
+
     if (
       selectedModel.credential_requirements.length > 0 &&
       !apiKeyInput.trim() &&
-      !connectedConfig
+      !connectedConfig &&
+      !hasStoredCred
     ) {
       toast.error(`Please provide ${selectedModel.credential_requirements.join(" or ")}`);
       return;
@@ -782,11 +787,19 @@ export function ModelSetupWizard() {
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-semibold text-text-primary">
                     API Key / Secret Credential{" "}
-                    <span className="text-danger" aria-hidden>*</span>
+                    {!configurations.some((c) => c.provider_name === selectedModel.provider_name) && (
+                      <span className="text-danger" aria-hidden>*</span>
+                    )}
                   </label>
-                  <span className="text-[11px] text-text-muted">
-                    Required: {selectedModel.credential_requirements.join(", ")}
-                  </span>
+                  {configurations.some((c) => c.provider_name === selectedModel.provider_name) ? (
+                    <span className="text-[11px] text-success font-medium flex items-center gap-1">
+                      <Check className="h-3 w-3 inline" /> Stored credential active
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-text-muted">
+                      Required: {selectedModel.credential_requirements.join(", ")}
+                    </span>
+                  )}
                 </div>
 
                 {selectedModel.credential_requirements.includes("GOOGLE_APPLICATION_CREDENTIALS_JSON") ? (
@@ -808,7 +821,11 @@ export function ModelSetupWizard() {
                       type="password"
                       autoComplete="new-password"
                       placeholder={
-                        selectedModel.provider_name === "sarvam"
+                        configurations.some((c) => c.provider_name === selectedModel.provider_name)
+                          ? "Optional: paste new key to update stored credential"
+                          : selectedModel.provider_name === "groq"
+                          ? "Paste GROQ_API_KEY from console.groq.com"
+                          : selectedModel.provider_name === "sarvam"
                           ? "Paste SARVAM_API_KEY from dashboard.sarvam.ai"
                           : selectedModel.provider_name === "elevenlabs"
                           ? "Paste ELEVENLABS_API_KEY from elevenlabs.io"
@@ -818,6 +835,11 @@ export function ModelSetupWizard() {
                       onChange={(e) => setApiKeyInput(e.target.value)}
                       className="w-full h-10 rounded-lg border border-border bg-surface px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30 font-mono"
                     />
+                    {configurations.some((c) => c.provider_name === selectedModel.provider_name) && !apiKeyInput && (
+                      <p className="text-[11px] text-text-muted mt-1">
+                        Reusing existing stored credentials for {selectedModel.provider_name}.
+                      </p>
+                    )}
                     <p className="text-[11px] text-text-muted mt-1.5">
                       {selectedModel.setup_requirements || "Stored with military-grade Fernet AES encryption."}
                     </p>

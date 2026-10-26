@@ -64,7 +64,7 @@ class SarvamSTTProvider(STTProvider):
         language: str | None = None,
         **kwargs: Any,
     ) -> str:
-        if not audio:
+        if not audio or len(audio) < 450:
             return ""
         try:
             resp = await self._client.post(
