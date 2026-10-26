@@ -7,6 +7,7 @@ All settings have sensible defaults; only secrets have empty defaults.
 from pathlib import Path
 from typing import Optional
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ENV_FILE = Path(__file__).resolve().parent / ".env"
@@ -31,8 +32,14 @@ class Settings(BaseSettings):
     demo_mode: bool = False
 
     # ---- MongoDB ----
-    mongodb_uri: str = "mongodb://localhost:27017"
-    mongodb_database: str = "telecalling_saas"
+    mongodb_uri: str = Field(
+        default="mongodb://localhost:27017",
+        validation_alias=AliasChoices("MONGODB_URI", "MONGO_URI", "mongodb_uri", "mongo_uri"),
+    )
+    mongodb_database: str = Field(
+        default="telecalling_saas",
+        validation_alias=AliasChoices("MONGODB_DATABASE", "MONGO_DATABASE", "mongodb_database", "mongo_database"),
+    )
 
     # ---- Redis ----
     redis_url: str = "redis://localhost:6379/0"
