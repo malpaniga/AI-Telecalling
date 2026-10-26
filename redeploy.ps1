@@ -2,7 +2,8 @@ param(
     [string]$Message = "Update platform",
     [string]$KeyPath = "",
     [string]$Server = "92.5.149.29",
-    [string]$User = "ubuntu"
+    [string]$User = "ubuntu",
+    [switch]$SkipGit = $false
 )
 
 $ErrorActionPreference = "Stop"
