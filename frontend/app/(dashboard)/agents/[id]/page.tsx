@@ -40,6 +40,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Modal } from "@/components/ui/modal";
 import { Input, Select } from "@/components/ui/input";
 import { api, Agent, AgentVersion, VoiceProfile, KnowledgeBase, PhoneNumber } from "@/lib/api";
+import { getBackendWsBase } from "@/lib/ws";
 import { StructuredInstructionEditor } from "@/components/agents/structured-instruction-editor";
 
 type StudioTab = "instructions" | "knowledge" | "variables" | "tools" | "settings" | "tests";
@@ -672,11 +673,9 @@ export default function SarvamAgentStudioPage() {
 
       // 3. Setup WebSocket connection (use clean URL to avoid HTTP 8KB header limit on large prompts)
       initSentRef.current = false;
-      const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = window.location.hostname;
-      const port = "8000"; // FastAPI backend port
+      const wsBase = getBackendWsBase();
       const voiceParam = voiceId || (agentName.toLowerCase().includes("chitra") ? "chaitra_hi_customer" : "");
-      const wsUrl = `${proto}//${host}:${port}/ws/call?lang=${encodeURIComponent(primaryLanguage)}&agent_name=${encodeURIComponent(agentName)}&voice_profile_id=${encodeURIComponent(voiceProfileId)}${voiceParam ? `&voice_id=${encodeURIComponent(voiceParam)}` : ""}&agent_id=${encodeURIComponent(id || "")}&version_id=${encodeURIComponent(activeVersion?.id || "")}`;
+      const wsUrl = `${wsBase}/ws/call?lang=${encodeURIComponent(primaryLanguage)}&agent_name=${encodeURIComponent(agentName)}&voice_profile_id=${encodeURIComponent(voiceProfileId)}${voiceParam ? `&voice_id=${encodeURIComponent(voiceParam)}` : ""}&agent_id=${encodeURIComponent(id || "")}&version_id=${encodeURIComponent(activeVersion?.id || "")}`;
 
       const ws = new WebSocket(wsUrl);
       ws.binaryType = "arraybuffer";
@@ -919,10 +918,8 @@ export default function SarvamAgentStudioPage() {
       phonePollRef.current = null;
     }
 
-    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.hostname;
-    const port = "8000";
-    const wsUrl = `${proto}//${host}:${port}/ws/calls/${encodeURIComponent(callId)}`;
+    const wsBase = getBackendWsBase();
+    const wsUrl = `${wsBase}/ws/calls/${encodeURIComponent(callId)}`;
 
     try {
       const ws = new WebSocket(wsUrl);
@@ -2303,6 +2300,12 @@ export default function SarvamAgentStudioPage() {
                       className="w-full text-center py-2.5 rounded-xl text-sm font-mono bg-secondary/50 border border-border focus:border-primary focus:outline-none text-text-primary"
                     />
                   </div>
+
+                  {assignedNumbers.length === 0 && (
+                    <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-center leading-relaxed">
+                      No outbound calling number assigned to this organization yet. To test via real phone, allocate a number under <strong>Phone Numbers</strong>, or test live right now using the <strong>Voice</strong> tab with your microphone.
+                    </p>
+                  )}
 
                   <Button
                     onClick={handleDialPhone}

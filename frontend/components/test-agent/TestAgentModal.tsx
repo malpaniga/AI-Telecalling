@@ -26,6 +26,7 @@ import {
   Info,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { getBackendWsBase } from "@/lib/ws";
 import { Button } from "@/components/ui/button";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
@@ -373,9 +374,7 @@ export function TestAgentModal() {
       setIsListening(false);
 
       // Construct WS endpoint
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
-      const wsProto = apiBase.startsWith("https") ? "wss" : "ws";
-      const wsHost = apiBase.replace(/^https?:\/\//, "");
+      const wsBase = getBackendWsBase();
 
       const activeRep = inputVariables.salesRepName || agentName;
       const interpolatedGreeting = interpolate(greeting, inputVariables);
@@ -386,7 +385,7 @@ export function TestAgentModal() {
         agent_name: activeRep,
       });
 
-      const wsUrl = `${wsProto}://${wsHost}/ws/call?${params.toString()}`;
+      const wsUrl = `${wsBase}/ws/call?${params.toString()}`;
       const ws = new WebSocket(wsUrl);
       ws.binaryType = "arraybuffer";
       wsRef.current = ws;

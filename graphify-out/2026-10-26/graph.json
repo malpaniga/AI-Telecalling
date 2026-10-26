@@ -195,7 +195,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_llmclient",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "llmclient"
     },
     {
@@ -340,6 +340,19 @@
       "community": 115,
       "community_name": "TestCallPipelinePreserved",
       "norm_label": "testcallpipelinepreserved"
+    },
+    {
+      "label": "_TraceFilter",
+      "file_type": "code",
+      "source_file": "backend/logging_setup.py",
+      "source_location": "L25",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_logging_setup_tracefilter",
+      "community": 116,
+      "community_name": "main.py",
+      "norm_label": "_tracefilter"
     },
     {
       "label": "BrowserTransport",
@@ -1008,7 +1021,7 @@
       "label": "Invoice",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L134",
+      "source_location": "L166",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -1021,7 +1034,7 @@
       "label": "Payment",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L121",
+      "source_location": "L153",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -1034,7 +1047,7 @@
       "label": "PhoneNumber",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L304",
+      "source_location": "L336",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -1047,7 +1060,7 @@
       "label": "SubscriptionPlan",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L50",
+      "source_location": "L82",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -1235,7 +1248,7 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_capability",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "capability"
     },
     {
@@ -1248,7 +1261,7 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_statusfilter",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "statusfilter"
     },
     {
@@ -1261,7 +1274,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelconnectcard_modelconnectcardprops",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "modelconnectcardprops"
     },
     {
@@ -1274,7 +1287,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelsetupwizard_capabilitytype",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "capabilitytype"
     },
     {
@@ -1287,7 +1300,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelsetupwizard_stepconfig",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "stepconfig"
     },
     {
@@ -1300,21 +1313,8 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_pipelinecostcalculator_pipelinecostcalculatorprops",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "pipelinecostcalculatorprops"
-    },
-    {
-      "label": "ProviderConfigPanelProps",
-      "file_type": "code",
-      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
-      "source_location": "L36",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "frontend_components_model_directory_providerconfigpanel_providerconfigpanelprops",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "providerconfigpanelprops"
     },
     {
       "label": "ActiveTab",
@@ -1326,7 +1326,7 @@
       "_origin": "ast",
       "id": "frontend_components_test_agent_testagentmodal_activetab",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "activetab"
     },
     {
@@ -1339,7 +1339,7 @@
       "_origin": "ast",
       "id": "frontend_components_test_agent_testagentmodal_turnmessage",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "turnmessage"
     },
     {
@@ -1352,8 +1352,47 @@
       "_origin": "ast",
       "id": "frontend_components_ui_badge_badgevariant",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "badgevariant"
+    },
+    {
+      "label": "ButtonProps",
+      "file_type": "code",
+      "source_file": "frontend/components/ui/button.tsx",
+      "source_location": "L9",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "frontend_components_ui_button_buttonprops",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "buttonprops"
+    },
+    {
+      "label": "ButtonSize",
+      "file_type": "code",
+      "source_file": "frontend/components/ui/button.tsx",
+      "source_location": "L7",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "frontend_components_ui_button_buttonsize",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "buttonsize"
+    },
+    {
+      "label": "ButtonVariant",
+      "file_type": "code",
+      "source_file": "frontend/components/ui/button.tsx",
+      "source_location": "L6",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "frontend_components_ui_button_buttonvariant",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "buttonvariant"
     },
     {
       "label": "TestAgentContextValue",
@@ -1365,7 +1404,7 @@
       "_origin": "ast",
       "id": "frontend_contexts_test_agent_context_testagentcontextvalue",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "testagentcontextvalue"
     },
     {
@@ -1378,137 +1417,124 @@
       "_origin": "ast",
       "id": "frontend_contexts_test_agent_context_testagentoptions",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "testagentoptions"
     },
     {
       "label": "AIModelCatalogue",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L468",
+      "source_location": "L500",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_aimodelcatalogue",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "aimodelcatalogue"
     },
     {
       "label": "ConnectProviderRequest",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L513",
+      "source_location": "L545",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_connectproviderrequest",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "connectproviderrequest"
     },
     {
       "label": "PricingRatesResponse",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1709",
+      "source_location": "L1741",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_pricingratesresponse",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "pricingratesresponse"
     },
     {
       "label": "ProviderConfiguration",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L489",
+      "source_location": "L521",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_providerconfiguration",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "providerconfiguration"
-    },
-    {
-      "label": "ProviderCredentialMeta",
-      "file_type": "code",
-      "source_file": "frontend/lib/api.ts",
-      "source_location": "L506",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "frontend_lib_api_providercredentialmeta",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "providercredentialmeta"
     },
     {
       "label": "ProviderRateCard",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1679",
+      "source_location": "L1711",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_providerratecard",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "providerratecard"
     },
     {
       "label": "TestAgentInfoResponse",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1756",
+      "source_location": "L1788",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_testagentinforesponse",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "testagentinforesponse"
     },
     {
       "label": "TestAgentScenario",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1745",
+      "source_location": "L1777",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_testagentscenario",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "testagentscenario"
     },
     {
       "label": "TestResult",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L524",
+      "source_location": "L556",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_testresult",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "testresult"
     },
     {
       "label": "WizardStatusResponse",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L542",
+      "source_location": "L574",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_wizardstatusresponse",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "wizardstatusresponse"
     },
     {
@@ -2737,7 +2763,7 @@
       "label": "AdminDashboard",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L551",
+      "source_location": "L583",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2750,7 +2776,7 @@
       "label": "AgentVersion",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L163",
+      "source_location": "L195",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2776,7 +2802,7 @@
       "label": "Appointment",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L277",
+      "source_location": "L309",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2789,7 +2815,7 @@
       "label": "BusinessTemplate",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L173",
+      "source_location": "L205",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2802,7 +2828,7 @@
       "label": "CallingPack",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L373",
+      "source_location": "L405",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2815,7 +2841,7 @@
       "label": "Campaign",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L217",
+      "source_location": "L249",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2828,7 +2854,7 @@
       "label": "CampaignStats",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L243",
+      "source_location": "L275",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2841,7 +2867,7 @@
       "label": "CreditLot",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L363",
+      "source_location": "L395",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2854,7 +2880,7 @@
       "label": "DashboardData",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L400",
+      "source_location": "L432",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2867,7 +2893,7 @@
       "label": "DNCEntry",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L211",
+      "source_location": "L243",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2880,7 +2906,7 @@
       "label": "Entitlements",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L100",
+      "source_location": "L132",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2893,7 +2919,7 @@
       "label": "KnowledgeBase",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L319",
+      "source_location": "L351",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2906,7 +2932,7 @@
       "label": "KnowledgeDocument",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L328",
+      "source_location": "L360",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2919,7 +2945,7 @@
       "label": "Lead",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L183",
+      "source_location": "L215",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2932,7 +2958,7 @@
       "label": "LeadListResponse",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L204",
+      "source_location": "L236",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2945,7 +2971,7 @@
       "label": "Order",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L109",
+      "source_location": "L141",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2958,7 +2984,7 @@
       "label": "Organization",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L37",
+      "source_location": "L69",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2971,7 +2997,7 @@
       "label": "PipelineCostResponse",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1721",
+      "source_location": "L1753",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2984,7 +3010,7 @@
       "label": "PricingSettings",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1699",
+      "source_location": "L1731",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2997,7 +3023,7 @@
       "label": "Subscription",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L75",
+      "source_location": "L107",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -3010,7 +3036,7 @@
       "label": "TestChatResponse",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1767",
+      "source_location": "L1799",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -3023,7 +3049,7 @@
       "label": "Transaction",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L352",
+      "source_location": "L384",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -3036,7 +3062,7 @@
       "label": "User",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L24",
+      "source_location": "L56",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -3049,7 +3075,7 @@
       "label": "VoiceProfile",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L389",
+      "source_location": "L421",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -3062,7 +3088,7 @@
       "label": "WalletSummary",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L341",
+      "source_location": "L373",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -3075,7 +3101,7 @@
       "label": "WizardCapabilityStatus",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L533",
+      "source_location": "L565",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -3436,55 +3462,16 @@
       "norm_label": "testpasswordhashing"
     },
     {
-      "label": "ButtonProps",
-      "file_type": "code",
-      "source_file": "frontend/components/ui/button.tsx",
-      "source_location": "L9",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "frontend_components_ui_button_buttonprops",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "buttonprops"
-    },
-    {
-      "label": "ButtonSize",
-      "file_type": "code",
-      "source_file": "frontend/components/ui/button.tsx",
-      "source_location": "L7",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "frontend_components_ui_button_buttonsize",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "buttonsize"
-    },
-    {
-      "label": "ButtonVariant",
-      "file_type": "code",
-      "source_file": "frontend/components/ui/button.tsx",
-      "source_location": "L6",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "frontend_components_ui_button_buttonvariant",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "buttonvariant"
-    },
-    {
       "label": "Agent",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L149",
+      "source_location": "L181",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "frontend_lib_api_agent",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "agent"
     },
     {
@@ -3497,7 +3484,7 @@
       "_origin": "ast",
       "id": "frontend_lib_template_catalog_marketplacetemplate",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "marketplacetemplate"
     },
     {
@@ -3842,7 +3829,7 @@
       "label": "Call",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L252",
+      "source_location": "L284",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -4121,7 +4108,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_conversationengine",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "conversationengine"
     },
     {
@@ -4134,7 +4121,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_turnstate",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "turnstate"
     },
     {
@@ -4147,7 +4134,7 @@
       "_origin": "ast",
       "id": "backend_agent_state_conversationstate",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "conversationstate"
     },
     {
@@ -4160,7 +4147,7 @@
       "_origin": "ast",
       "id": "backend_memory_session_sessionstore",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "sessionstore"
     },
     {
@@ -5694,21 +5681,34 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_twiliotransport",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "twiliotransport"
     },
     {
-      "label": "_TraceFilter",
+      "label": "ProviderConfigPanelProps",
       "file_type": "code",
-      "source_file": "backend/logging_setup.py",
-      "source_location": "L25",
+      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
+      "source_location": "L36",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_logging_setup_tracefilter",
+      "id": "frontend_components_model_directory_providerconfigpanel_providerconfigpanelprops",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "_tracefilter"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "providerconfigpanelprops"
+    },
+    {
+      "label": "ProviderCredentialMeta",
+      "file_type": "code",
+      "source_file": "frontend/lib/api.ts",
+      "source_location": "L538",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "frontend_lib_api_providercredentialmeta",
+      "community": 71,
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "providercredentialmeta"
     },
     {
       "label": "SubscriptionPlanRepository",
@@ -9227,7 +9227,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_extract_json",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "_extract_json()"
     },
     {
@@ -9239,7 +9239,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_llmclient_build_messages",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "._build_messages()"
     },
     {
@@ -9251,7 +9251,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_llmclient_complete",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": ".complete()"
     },
     {
@@ -9263,7 +9263,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_llmclient_complete_json",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": ".complete_json()"
     },
     {
@@ -9275,7 +9275,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_llmclient_init",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": ".__init__()"
     },
     {
@@ -9287,7 +9287,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_llmclient_stream_reply",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": ".stream_reply()"
     },
     {
@@ -9299,7 +9299,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_llmclient_stream_sentences",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": ".stream_sentences()"
     },
     {
@@ -9311,7 +9311,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_smoke_test",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "_smoke_test()"
     },
     {
@@ -10683,6 +10683,18 @@
       "norm_label": ".test_websocket_routes_registered()"
     },
     {
+      "label": "resolve()",
+      "file_type": "code",
+      "source_file": "backend/languages.py",
+      "source_location": "L26",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_languages_resolve",
+      "community": 115,
+      "community_name": "TestCallPipelinePreserved",
+      "norm_label": "resolve()"
+    },
+    {
       "label": ".test_barge_in_transport_protocol()",
       "file_type": "code",
       "source_file": "backend/tests/test_m15_calls.py",
@@ -10719,6 +10731,18 @@
       "norm_label": ".test_conversation_engine_importable()"
     },
     {
+      "label": ".test_language_support()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m15_calls.py",
+      "source_location": "L339",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m15_calls_testcallpipelinepreserved_test_language_support",
+      "community": 115,
+      "community_name": "TestCallPipelinePreserved",
+      "norm_label": ".test_language_support()"
+    },
+    {
       "label": ".test_stt_router_importable()",
       "file_type": "code",
       "source_file": "backend/tests/test_m15_calls.py",
@@ -10753,6 +10777,42 @@
       "community": 115,
       "community_name": "TestCallPipelinePreserved",
       "norm_label": ".test_vad_endpointer_importable()"
+    },
+    {
+      "label": "configure_logging()",
+      "file_type": "code",
+      "source_file": "backend/logging_setup.py",
+      "source_location": "L31",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_logging_setup_configure_logging",
+      "community": 116,
+      "community_name": "main.py",
+      "norm_label": "configure_logging()"
+    },
+    {
+      "label": "get_trace_id()",
+      "file_type": "code",
+      "source_file": "backend/logging_setup.py",
+      "source_location": "L21",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_logging_setup_get_trace_id",
+      "community": 116,
+      "community_name": "main.py",
+      "norm_label": "get_trace_id()"
+    },
+    {
+      "label": ".filter()",
+      "file_type": "code",
+      "source_file": "backend/logging_setup.py",
+      "source_location": "L26",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_logging_setup_tracefilter_filter",
+      "community": 116,
+      "community_name": "main.py",
+      "norm_label": ".filter()"
     },
     {
       "label": ".clear()",
@@ -13583,7 +13643,7 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_adminmodelspage",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "adminmodelspage()"
     },
     {
@@ -13595,7 +13655,7 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_capabilityvariant",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "capabilityvariant()"
     },
     {
@@ -13607,7 +13667,7 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_formatfreetierinfo",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "formatfreetierinfo()"
     },
     {
@@ -13619,7 +13679,7 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_freetierdetails",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "freetierdetails()"
     },
     {
@@ -13631,7 +13691,7 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_hostingicon",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "hostingicon()"
     },
     {
@@ -13643,7 +13703,7 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_hostinglabel",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "hostinglabel()"
     },
     {
@@ -13655,7 +13715,7 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_isstale",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "isstale()"
     },
     {
@@ -13667,44 +13727,8 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page_modelcard",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "modelcard()"
-    },
-    {
-      "label": "AdminProvidersLLMPage()",
-      "file_type": "code",
-      "source_file": "frontend/app/(admin)/admin/providers/llm/page.tsx",
-      "source_location": "L6",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_app_admin_admin_providers_llm_page_adminprovidersllmpage",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "adminprovidersllmpage()"
-    },
-    {
-      "label": "AdminProvidersSTTPage()",
-      "file_type": "code",
-      "source_file": "frontend/app/(admin)/admin/providers/stt/page.tsx",
-      "source_location": "L6",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_app_admin_admin_providers_stt_page_adminproviderssttpage",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "adminproviderssttpage()"
-    },
-    {
-      "label": "AdminProvidersTTSPage()",
-      "file_type": "code",
-      "source_file": "frontend/app/(admin)/admin/providers/tts/page.tsx",
-      "source_location": "L6",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_app_admin_admin_providers_tts_page_adminprovidersttspage",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "adminprovidersttspage()"
     },
     {
       "label": "AdminWizardPage()",
@@ -13715,8 +13739,32 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_wizard_page_adminwizardpage",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "adminwizardpage()"
+    },
+    {
+      "label": "LoginPage()",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L11",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "frontend_app_auth_login_page_loginpage",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "loginpage()"
+    },
+    {
+      "label": "handleSubmit()",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L20",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "frontend_app_auth_login_page_loginpage_handlesubmit",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "handlesubmit()"
     },
     {
       "label": "capabilityVariant()",
@@ -13727,7 +13775,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelconnectcard_capabilityvariant",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "capabilityvariant()"
     },
     {
@@ -13739,7 +13787,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelconnectcard_hostingicon",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "hostingicon()"
     },
     {
@@ -13751,7 +13799,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelconnectcard_hostinglabel",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "hostinglabel()"
     },
     {
@@ -13763,7 +13811,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelconnectcard_isstale",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "isstale()"
     },
     {
@@ -13775,7 +13823,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelconnectcard_modelconnectcard",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "modelconnectcard()"
     },
     {
@@ -13787,7 +13835,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelsetupwizard_modelsetupwizard",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "modelsetupwizard()"
     },
     {
@@ -13799,56 +13847,8 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_pipelinecostcalculator_pipelinecostcalculator",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "pipelinecostcalculator()"
-    },
-    {
-      "label": "configStatus()",
-      "file_type": "code",
-      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
-      "source_location": "L44",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_components_model_directory_providerconfigpanel_configstatus",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "configstatus()"
-    },
-    {
-      "label": "formatDate()",
-      "file_type": "code",
-      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
-      "source_location": "L57",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_components_model_directory_providerconfigpanel_formatdate",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "formatdate()"
-    },
-    {
-      "label": "ProviderConfigPanel()",
-      "file_type": "code",
-      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
-      "source_location": "L73",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_components_model_directory_providerconfigpanel_providerconfigpanel",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "providerconfigpanel()"
-    },
-    {
-      "label": "truncate()",
-      "file_type": "code",
-      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
-      "source_location": "L65",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_components_model_directory_providerconfigpanel_truncate",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "truncate()"
     },
     {
       "label": "TestAgentModal()",
@@ -13859,7 +13859,7 @@
       "_origin": "ast",
       "id": "frontend_components_test_agent_testagentmodal_testagentmodal",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "testagentmodal()"
     },
     {
@@ -13871,8 +13871,32 @@
       "_origin": "ast",
       "id": "frontend_components_ui_badge_badge",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "badge()"
+    },
+    {
+      "label": "Button()",
+      "file_type": "code",
+      "source_file": "frontend/components/ui/button.tsx",
+      "source_location": "L36",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "frontend_components_ui_button_button",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "button()"
+    },
+    {
+      "label": ".login()",
+      "file_type": "code",
+      "source_file": "frontend/contexts/auth-context.tsx",
+      "source_location": "L36",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "frontend_contexts_auth_context_authcontextvalue_login",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": ".login()"
     },
     {
       "label": "TestAgentProvider()",
@@ -13883,7 +13907,7 @@
       "_origin": "ast",
       "id": "frontend_contexts_test_agent_context_testagentprovider",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "testagentprovider()"
     },
     {
@@ -13895,7 +13919,7 @@
       "_origin": "ast",
       "id": "frontend_contexts_test_agent_context_usetestagent",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "usetestagent()"
     },
     {
@@ -21078,7 +21102,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L11",
+      "source_location": "L13",
       "_callable": true,
       "_origin": "ast",
       "id": "frontend_lib_api_apierror_constructor",
@@ -22731,18 +22755,6 @@
       "norm_label": "hash_password()"
     },
     {
-      "label": ".create()",
-      "file_type": "code",
-      "source_file": "backend/repositories/user_repo.py",
-      "source_location": "L30",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_repositories_user_repo_userrepository_create",
-      "community": 216,
-      "community_name": "test_m1_mongodb.py",
-      "norm_label": ".create()"
-    },
-    {
       "label": ".update_password()",
       "file_type": "code",
       "source_file": "backend/repositories/user_repo.py",
@@ -22863,30 +22875,6 @@
       "norm_label": ".test_wrong_password_fails()"
     },
     {
-      "label": "LoginPage()",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L11",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_app_auth_login_page_loginpage",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "loginpage()"
-    },
-    {
-      "label": "handleSubmit()",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L20",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_app_auth_login_page_loginpage_handlesubmit",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "handlesubmit()"
-    },
-    {
       "label": "AgentsPage()",
       "file_type": "code",
       "source_file": "frontend/app/(dashboard)/agents/page.tsx",
@@ -22895,7 +22883,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_page_agentspage",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "agentspage()"
     },
     {
@@ -22907,7 +22895,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_page_agentspage_handlecreatescratch",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "handlecreatescratch()"
     },
     {
@@ -22919,7 +22907,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_page_agentspage_handledeleteagent",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "handledeleteagent()"
     },
     {
@@ -22931,7 +22919,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_page_agentspage_handlegeniegenerate",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "handlegeniegenerate()"
     },
     {
@@ -22943,7 +22931,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_page_agentspage_handleusetemplate",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "handleusetemplate()"
     },
     {
@@ -22955,7 +22943,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_campaigns_new_page_newcampaignpage",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "newcampaignpage()"
     },
     {
@@ -22967,7 +22955,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_campaigns_new_page_newcampaignpage_handlesubmit",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "handlesubmit()"
     },
     {
@@ -22979,32 +22967,8 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_campaigns_new_page_newcampaignpage_toggleday",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "toggleday()"
-    },
-    {
-      "label": "Button()",
-      "file_type": "code",
-      "source_file": "frontend/components/ui/button.tsx",
-      "source_location": "L36",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_components_ui_button_button",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "button()"
-    },
-    {
-      "label": ".login()",
-      "file_type": "code",
-      "source_file": "frontend/contexts/auth-context.tsx",
-      "source_location": "L36",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "frontend_contexts_auth_context_authcontextvalue_login",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": ".login()"
     },
     {
       "label": "run()",
@@ -25566,7 +25530,7 @@
       "label": "apiRequest()",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L600",
+      "source_location": "L632",
       "_callable": true,
       "_origin": "ast",
       "id": "frontend_lib_api_apirequest",
@@ -25578,7 +25542,7 @@
       "label": "_doRefresh()",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L584",
+      "source_location": "L616",
       "_callable": true,
       "_origin": "ast",
       "id": "frontend_lib_api_dorefresh",
@@ -25667,7 +25631,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_conversationengine_build_graph",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "._build_graph()"
     },
     {
@@ -25679,7 +25643,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_conversationengine_init",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": ".__init__()"
     },
     {
@@ -25691,7 +25655,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_conversationengine_route",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "._route()"
     },
     {
@@ -25703,7 +25667,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_conversationengine_run_turn",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": ".run_turn()"
     },
     {
@@ -25715,7 +25679,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_conversationengine_understand",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "._understand()"
     },
     {
@@ -25727,7 +25691,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_decide_stage",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "_decide_stage()"
     },
     {
@@ -25739,7 +25703,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_smoke_test",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "_smoke_test()"
     },
     {
@@ -25751,7 +25715,7 @@
       "_origin": "ast",
       "id": "backend_agent_prompts_extraction_user_content",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "extraction_user_content()"
     },
     {
@@ -25763,7 +25727,7 @@
       "_origin": "ast",
       "id": "backend_agent_prompts_known_slots_line",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "_known_slots_line()"
     },
     {
@@ -25775,7 +25739,7 @@
       "_origin": "ast",
       "id": "backend_agent_prompts_stage_system_prompt",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "stage_system_prompt()"
     },
     {
@@ -25787,7 +25751,7 @@
       "_origin": "ast",
       "id": "backend_agent_state_missing_slots",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "missing_slots()"
     },
     {
@@ -25799,7 +25763,7 @@
       "_origin": "ast",
       "id": "backend_agent_state_new_conversation_state",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "new_conversation_state()"
     },
     {
@@ -25811,7 +25775,7 @@
       "_origin": "ast",
       "id": "backend_agent_state_slots_filled",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "slots_filled()"
     },
     {
@@ -25823,7 +25787,7 @@
       "_origin": "ast",
       "id": "backend_memory_session_sessionstore_close",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": ".close()"
     },
     {
@@ -25835,7 +25799,7 @@
       "_origin": "ast",
       "id": "backend_memory_session_sessionstore_delete",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": ".delete()"
     },
     {
@@ -25847,7 +25811,7 @@
       "_origin": "ast",
       "id": "backend_memory_session_sessionstore_init",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": ".__init__()"
     },
     {
@@ -25859,7 +25823,7 @@
       "_origin": "ast",
       "id": "backend_memory_session_sessionstore_key",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "._key()"
     },
     {
@@ -25871,7 +25835,7 @@
       "_origin": "ast",
       "id": "backend_memory_session_sessionstore_load",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": ".load()"
     },
     {
@@ -25883,7 +25847,7 @@
       "_origin": "ast",
       "id": "backend_memory_session_sessionstore_ping",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": ".ping()"
     },
     {
@@ -25895,7 +25859,7 @@
       "_origin": "ast",
       "id": "backend_memory_session_sessionstore_save",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": ".save()"
     },
     {
@@ -35171,7 +35135,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_mulaw8k_to_pcm16k",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "_mulaw8k_to_pcm16k()"
     },
     {
@@ -35183,7 +35147,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_place_outbound_call",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "place_outbound_call()"
     },
     {
@@ -35195,7 +35159,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_stream_wss_url",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "_stream_wss_url()"
     },
     {
@@ -35207,7 +35171,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_twiliotransport_clear",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": ".clear()"
     },
     {
@@ -35219,7 +35183,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_twiliotransport_close",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": ".close()"
     },
     {
@@ -35231,7 +35195,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_twiliotransport_init",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": ".__init__()"
     },
     {
@@ -35243,7 +35207,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_twiliotransport_notify",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": ".notify()"
     },
     {
@@ -35255,7 +35219,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_twiliotransport_play",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": ".play()"
     },
     {
@@ -35267,7 +35231,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_twiml_voice",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "twiml_voice()"
     },
     {
@@ -35279,7 +35243,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_voice_twiml",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "_voice_twiml()"
     },
     {
@@ -35291,92 +35255,92 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_ws_twilio",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "ws_twilio()"
     },
     {
-      "label": "_looks_like_noise()",
+      "label": "AdminProvidersLLMPage()",
       "file_type": "code",
-      "source_file": "backend/call_session.py",
-      "source_location": "L80",
+      "source_file": "frontend/app/(admin)/admin/providers/llm/page.tsx",
+      "source_location": "L6",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_call_session_looks_like_noise",
+      "id": "frontend_app_admin_admin_providers_llm_page_adminprovidersllmpage",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "_looks_like_noise()"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "adminprovidersllmpage()"
     },
     {
-      "label": "resolve()",
+      "label": "AdminProvidersSTTPage()",
       "file_type": "code",
-      "source_file": "backend/languages.py",
-      "source_location": "L26",
+      "source_file": "frontend/app/(admin)/admin/providers/stt/page.tsx",
+      "source_location": "L6",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_languages_resolve",
+      "id": "frontend_app_admin_admin_providers_stt_page_adminproviderssttpage",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "resolve()"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "adminproviderssttpage()"
     },
     {
-      "label": "configure_logging()",
+      "label": "AdminProvidersTTSPage()",
       "file_type": "code",
-      "source_file": "backend/logging_setup.py",
-      "source_location": "L31",
+      "source_file": "frontend/app/(admin)/admin/providers/tts/page.tsx",
+      "source_location": "L6",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_logging_setup_configure_logging",
+      "id": "frontend_app_admin_admin_providers_tts_page_adminprovidersttspage",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "configure_logging()"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "adminprovidersttspage()"
     },
     {
-      "label": "get_trace_id()",
+      "label": "configStatus()",
       "file_type": "code",
-      "source_file": "backend/logging_setup.py",
-      "source_location": "L21",
+      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
+      "source_location": "L44",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_logging_setup_get_trace_id",
+      "id": "frontend_components_model_directory_providerconfigpanel_configstatus",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "get_trace_id()"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "configstatus()"
     },
     {
-      "label": "set_trace_id()",
+      "label": "formatDate()",
       "file_type": "code",
-      "source_file": "backend/logging_setup.py",
-      "source_location": "L15",
+      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
+      "source_location": "L57",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_logging_setup_set_trace_id",
+      "id": "frontend_components_model_directory_providerconfigpanel_formatdate",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "set_trace_id()"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "formatdate()"
     },
     {
-      "label": ".filter()",
+      "label": "ProviderConfigPanel()",
       "file_type": "code",
-      "source_file": "backend/logging_setup.py",
-      "source_location": "L26",
+      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
+      "source_location": "L73",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_logging_setup_tracefilter_filter",
+      "id": "frontend_components_model_directory_providerconfigpanel_providerconfigpanel",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": ".filter()"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "providerconfigpanel()"
     },
     {
-      "label": ".test_language_support()",
+      "label": "truncate()",
       "file_type": "code",
-      "source_file": "backend/tests/test_m15_calls.py",
-      "source_location": "L339",
+      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
+      "source_location": "L65",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_tests_test_m15_calls_testcallpipelinepreserved_test_language_support",
+      "id": "frontend_components_model_directory_providerconfigpanel_truncate",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": ".test_language_support()"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "truncate()"
     },
     {
       "label": ".create()",
@@ -36267,6 +36231,30 @@
       "norm_label": ".start()"
     },
     {
+      "label": "_looks_like_noise()",
+      "file_type": "code",
+      "source_file": "backend/call_session.py",
+      "source_location": "L80",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_call_session_looks_like_noise",
+      "community": 77,
+      "community_name": "CallSession",
+      "norm_label": "_looks_like_noise()"
+    },
+    {
+      "label": "set_trace_id()",
+      "file_type": "code",
+      "source_file": "backend/logging_setup.py",
+      "source_location": "L15",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_logging_setup_set_trace_id",
+      "community": 77,
+      "community_name": "CallSession",
+      "norm_label": "set_trace_id()"
+    },
+    {
       "label": "._make_session()",
       "file_type": "code",
       "source_file": "backend/tests/test_m16_barge_in_latency.py",
@@ -36517,6 +36505,18 @@
       "community": 79,
       "community_name": "UserRepository",
       "norm_label": ".authenticate()"
+    },
+    {
+      "label": ".create()",
+      "file_type": "code",
+      "source_file": "backend/repositories/user_repo.py",
+      "source_location": "L30",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_repositories_user_repo_userrepository_create",
+      "community": 79,
+      "community_name": "UserRepository",
+      "norm_label": ".create()"
     },
     {
       "label": ".deactivate()",
@@ -41509,19 +41509,8 @@
       "_origin": "ast",
       "id": "backend_agent_llm",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "llm.py"
-    },
-    {
-      "label": "config.py",
-      "file_type": "code",
-      "source_file": "backend/config.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_config",
-      "community": 106,
-      "community_name": "config.py",
-      "norm_label": "config.py"
     },
     {
       "label": "Message",
@@ -41531,7 +41520,7 @@
       "_origin": "ast",
       "id": "message",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "message"
     },
     {
@@ -41542,7 +41531,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_rationale_1",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "groq gpt-oss client (openai-compatible), async + streaming. streaming matters:..."
     },
     {
@@ -41553,7 +41542,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_rationale_103",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "yield complete sentences as soon as they're ready, so tts can start speaking..."
     },
     {
@@ -41564,7 +41553,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_rationale_121",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "non-streaming convenience helper (used by smoke tests)."
     },
     {
@@ -41575,7 +41564,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_rationale_125",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "structured extraction. never raises: returns {} if extraction fails. gpt-oss on..."
     },
     {
@@ -41586,7 +41575,7 @@
       "_origin": "ast",
       "id": "backend_agent_llm_rationale_28",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "best-effort parse of a json object from model output. none on failure."
     },
     {
@@ -41597,19 +41586,8 @@
       "_origin": "ast",
       "id": "backend_agent_llm_rationale_69",
       "community": 106,
-      "community_name": "config.py",
+      "community_name": "LLMClient",
       "norm_label": "yield raw text deltas as the model generates them. gpt-oss on groq..."
-    },
-    {
-      "label": "Central configuration for the AI Telecalling SaaS platform. Loads backend/.env\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/config.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_config_rationale_1",
-      "community": 106,
-      "community_name": "config.py",
-      "norm_label": "central configuration for the ai telecalling saas platform. loads backend/.env..."
     },
     {
       "label": "gemini.py",
@@ -42030,6 +42008,39 @@
       "norm_label": "m31 tests \u2014 production deployment configuration. tests: 1. dockerfile exists..."
     },
     {
+      "label": "languages.py",
+      "file_type": "code",
+      "source_file": "backend/languages.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_languages",
+      "community": 115,
+      "community_name": "TestCallPipelinePreserved",
+      "norm_label": "languages.py"
+    },
+    {
+      "label": "Supported call languages (Indian-focused, backed by Sarvam Bulbul). Each entry\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/languages.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_languages_rationale_1",
+      "community": 115,
+      "community_name": "TestCallPipelinePreserved",
+      "norm_label": "supported call languages (indian-focused, backed by sarvam bulbul). each entry..."
+    },
+    {
+      "label": "Return (canonical_code, info). Falls back to the default if unknown.",
+      "file_type": "rationale",
+      "source_file": "backend/languages.py",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "backend_languages_rationale_27",
+      "community": 115,
+      "community_name": "TestCallPipelinePreserved",
+      "norm_label": "return (canonical_code, info). falls back to the default if unknown."
+    },
+    {
       "label": "Verify the original call_session.py pipeline is intact.",
       "file_type": "rationale",
       "source_file": "backend/tests/test_m15_calls.py",
@@ -42074,6 +42085,17 @@
       "norm_label": "transport protocol (play/clear/notify) is still intact."
     },
     {
+      "label": "logging_setup.py",
+      "file_type": "code",
+      "source_file": "backend/logging_setup.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_logging_setup",
+      "community": 116,
+      "community_name": "main.py",
+      "norm_label": "logging_setup.py"
+    },
+    {
       "label": "main.py",
       "file_type": "code",
       "source_file": "backend/main.py",
@@ -42116,6 +42138,28 @@
       "community": 116,
       "community_name": "main.py",
       "norm_label": "jsonresponse"
+    },
+    {
+      "label": "LogRecord",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "logrecord",
+      "community": 116,
+      "community_name": "main.py",
+      "norm_label": "logrecord"
+    },
+    {
+      "label": "Structured logging with a per-turn/trace correlation id. Every log line carries\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/logging_setup.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_logging_setup_rationale_1",
+      "community": 116,
+      "community_name": "main.py",
+      "norm_label": "structured logging with a per-turn/trace correlation id. every log line carries..."
     },
     {
       "label": "FastAPI entrypoint. Routes: /health \u2014 MongoDB + Redis + provider key checks / \u2014\u2026",
@@ -44306,41 +44350,8 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_models_page",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "models/page.tsx"
-    },
-    {
-      "label": "llm/page.tsx",
-      "file_type": "code",
-      "source_file": "frontend/app/(admin)/admin/providers/llm/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "frontend_app_admin_admin_providers_llm_page",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "llm/page.tsx"
-    },
-    {
-      "label": "stt/page.tsx",
-      "file_type": "code",
-      "source_file": "frontend/app/(admin)/admin/providers/stt/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "frontend_app_admin_admin_providers_stt_page",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "stt/page.tsx"
-    },
-    {
-      "label": "tts/page.tsx",
-      "file_type": "code",
-      "source_file": "frontend/app/(admin)/admin/providers/tts/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "frontend_app_admin_admin_providers_tts_page",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "tts/page.tsx"
     },
     {
       "label": "wizard/page.tsx",
@@ -44350,8 +44361,19 @@
       "_origin": "ast",
       "id": "frontend_app_admin_admin_wizard_page",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "wizard/page.tsx"
+    },
+    {
+      "label": "login/page.tsx",
+      "file_type": "code",
+      "source_file": "frontend/app/(auth)/login/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "frontend_app_auth_login_page",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "login/page.tsx"
     },
     {
       "label": "ModelConnectCard.tsx",
@@ -44361,7 +44383,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelconnectcard",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "modelconnectcard.tsx"
     },
     {
@@ -44372,7 +44394,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelsetupwizard",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "modelsetupwizard.tsx"
     },
     {
@@ -44383,7 +44405,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelsetupwizard_steps",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "steps"
     },
     {
@@ -44394,7 +44416,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_modelsetupwizard_voice_presets",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "voice_presets"
     },
     {
@@ -44405,7 +44427,7 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_pipelinecostcalculator",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "pipelinecostcalculator.tsx"
     },
     {
@@ -44416,19 +44438,8 @@
       "_origin": "ast",
       "id": "frontend_components_model_directory_pipelinecostcalculator_fallback_rates",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "fallback_rates"
-    },
-    {
-      "label": "ProviderConfigPanel.tsx",
-      "file_type": "code",
-      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "frontend_components_model_directory_providerconfigpanel",
-      "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
-      "norm_label": "providerconfigpanel.tsx"
     },
     {
       "label": "TestAgentModal.tsx",
@@ -44438,8 +44449,41 @@
       "_origin": "ast",
       "id": "frontend_components_test_agent_testagentmodal",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "testagentmodal.tsx"
+    },
+    {
+      "label": "button.tsx",
+      "file_type": "code",
+      "source_file": "frontend/components/ui/button.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "frontend_components_ui_button",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "button.tsx"
+    },
+    {
+      "label": "sizeClasses",
+      "file_type": "code",
+      "source_file": "frontend/components/ui/button.tsx",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "frontend_components_ui_button_sizeclasses",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "sizeclasses"
+    },
+    {
+      "label": "variantClasses",
+      "file_type": "code",
+      "source_file": "frontend/components/ui/button.tsx",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "frontend_components_ui_button_variantclasses",
+      "community": 137,
+      "community_name": "button.tsx",
+      "norm_label": "variantclasses"
     },
     {
       "label": "test-agent-context.tsx",
@@ -44449,7 +44493,7 @@
       "_origin": "ast",
       "id": "frontend_contexts_test_agent_context",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "test-agent-context.tsx"
     },
     {
@@ -44460,7 +44504,7 @@
       "_origin": "ast",
       "id": "frontend_contexts_test_agent_context_testagentcontext",
       "community": 137,
-      "community_name": "ModelSetupWizard.tsx",
+      "community_name": "button.tsx",
       "norm_label": "testagentcontext"
     },
     {
@@ -48865,7 +48909,7 @@
       "label": "API_BASE_URL",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1775",
+      "source_location": "L1807",
       "_origin": "ast",
       "id": "frontend_lib_api_api_base_url",
       "community": 19,
@@ -50163,17 +50207,6 @@
       "norm_label": "health.check_all should return the correct structure (mocked)."
     },
     {
-      "label": "login/page.tsx",
-      "file_type": "code",
-      "source_file": "frontend/app/(auth)/login/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "frontend_app_auth_login_page",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "login/page.tsx"
-    },
-    {
       "label": "agents/page.tsx",
       "file_type": "code",
       "source_file": "frontend/app/(dashboard)/agents/page.tsx",
@@ -50181,7 +50214,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_page",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "agents/page.tsx"
     },
     {
@@ -50192,7 +50225,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_campaigns_new_page",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "campaigns/new/page.tsx"
     },
     {
@@ -50203,7 +50236,7 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_campaigns_new_page_days_of_week",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "days_of_week"
     },
     {
@@ -50214,41 +50247,8 @@
       "_origin": "ast",
       "id": "frontend_app_dashboard_campaigns_new_page_timezone_options",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "timezone_options"
-    },
-    {
-      "label": "button.tsx",
-      "file_type": "code",
-      "source_file": "frontend/components/ui/button.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "frontend_components_ui_button",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "button.tsx"
-    },
-    {
-      "label": "sizeClasses",
-      "file_type": "code",
-      "source_file": "frontend/components/ui/button.tsx",
-      "source_location": "L30",
-      "_origin": "ast",
-      "id": "frontend_components_ui_button_sizeclasses",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "sizeclasses"
-    },
-    {
-      "label": "variantClasses",
-      "file_type": "code",
-      "source_file": "frontend/components/ui/button.tsx",
-      "source_location": "L17",
-      "_origin": "ast",
-      "id": "frontend_components_ui_button_variantclasses",
-      "community": 217,
-      "community_name": "button.tsx",
-      "norm_label": "variantclasses"
     },
     {
       "label": "template-catalog.ts",
@@ -50258,7 +50258,7 @@
       "_origin": "ast",
       "id": "frontend_lib_template_catalog",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "template-catalog.ts"
     },
     {
@@ -50269,7 +50269,7 @@
       "_origin": "ast",
       "id": "frontend_lib_template_catalog_sarvam_catalog",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "sarvam_catalog"
     },
     {
@@ -50280,7 +50280,7 @@
       "_origin": "ast",
       "id": "frontend_lib_template_catalog_template_categories",
       "community": 217,
-      "community_name": "button.tsx",
+      "community_name": "agents/page.tsx",
       "norm_label": "template_categories"
     },
     {
@@ -52103,7 +52103,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "engine.py"
     },
     {
@@ -52114,7 +52114,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_py_typeddict",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "typeddict"
     },
     {
@@ -52125,7 +52125,7 @@
       "_origin": "ast",
       "id": "backend_agent_prompts",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "prompts.py"
     },
     {
@@ -52136,7 +52136,7 @@
       "_origin": "ast",
       "id": "backend_agent_state",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "state.py"
     },
     {
@@ -52147,8 +52147,19 @@
       "_origin": "ast",
       "id": "backend_agent_state_py_typeddict",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "typeddict"
+    },
+    {
+      "label": "call_session.py",
+      "file_type": "code",
+      "source_file": "backend/call_session.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_call_session",
+      "community": 28,
+      "community_name": "call_session.py",
+      "norm_label": "call_session.py"
     },
     {
       "label": "session.py",
@@ -52158,7 +52169,7 @@
       "_origin": "ast",
       "id": "backend_memory_session",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "session.py"
     },
     {
@@ -52169,7 +52180,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_rationale_1",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "the conversation engine: a langgraph state machine that drives the call. per..."
     },
     {
@@ -52180,7 +52191,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_rationale_196",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "advance the conversation by one user turn. updates `state` in place (stage,..."
     },
     {
@@ -52191,7 +52202,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_rationale_42",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "ephemeral state passed through the graph for a single turn."
     },
     {
@@ -52202,7 +52213,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_rationale_52",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "pure transition logic. order matters: end > objection > booking > qualify."
     },
     {
@@ -52213,7 +52224,7 @@
       "_origin": "ast",
       "id": "backend_agent_engine_rationale_77",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "extract slots + output variables + intent flags from the latest user message."
     },
     {
@@ -52224,7 +52235,7 @@
       "_origin": "ast",
       "id": "backend_agent_prompts_rationale_1",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "prompts. sprint 1 used one flat prompt; sprint 2 uses a persona plus a per-..."
     },
     {
@@ -52235,8 +52246,19 @@
       "_origin": "ast",
       "id": "backend_agent_state_rationale_1",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "conversation state shared across the langgraph engine and the call loop. sprint..."
+    },
+    {
+      "label": "Transport-agnostic call pipeline. `CallSession` owns everything that makes a\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/call_session.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_call_session_rationale_1",
+      "community": 28,
+      "community_name": "call_session.py",
+      "norm_label": "transport-agnostic call pipeline. `callsession` owns everything that makes a..."
     },
     {
       "label": "Redis-backed live session store. Holds in-flight conversation state (stage,\u2026",
@@ -52246,7 +52268,7 @@
       "_origin": "ast",
       "id": "backend_memory_session_rationale_1",
       "community": 28,
-      "community_name": "ConversationEngine",
+      "community_name": "call_session.py",
       "norm_label": "redis-backed live session store. holds in-flight conversation state (stage,..."
     },
     {
@@ -55413,7 +55435,7 @@
       "label": "api",
       "file_type": "code",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L666",
+      "source_location": "L698",
       "_origin": "ast",
       "id": "frontend_lib_api_api",
       "community": 5,
@@ -59082,6 +59104,17 @@
       "norm_label": "empty state: dashboard works when org has no data."
     },
     {
+      "label": "config.py",
+      "file_type": "code",
+      "source_file": "backend/config.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_config",
+      "community": 70,
+      "community_name": "config.py",
+      "norm_label": "config.py"
+    },
+    {
       "label": "backend/telephony/twilio.py",
       "file_type": "code",
       "source_file": "backend/telephony/twilio.py",
@@ -59089,7 +59122,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "backend/telephony/twilio.py"
     },
     {
@@ -59100,7 +59133,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_py_api_route",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "api_route"
     },
     {
@@ -59111,7 +59144,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_py_post",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "post"
     },
     {
@@ -59122,7 +59155,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_py_request",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "request"
     },
     {
@@ -59133,7 +59166,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_py_response",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "response"
     },
     {
@@ -59144,8 +59177,19 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_py_websocket",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "websocket"
+    },
+    {
+      "label": "Central configuration for the AI Telecalling SaaS platform. Loads backend/.env\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/config.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_config_rationale_1",
+      "community": 70,
+      "community_name": "config.py",
+      "norm_label": "central configuration for the ai telecalling saas platform. loads backend/.env..."
     },
     {
       "label": "Twilio telephony via Media Streams. Twilio speaks a websocket protocol carrying\u2026",
@@ -59155,7 +59199,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_rationale_1",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "twilio telephony via media streams. twilio speaks a websocket protocol carrying..."
     },
     {
@@ -59166,7 +59210,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_rationale_126",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "twilio fetches this when a call connects; we hand it a media stream."
     },
     {
@@ -59177,7 +59221,7 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_rationale_257",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "dial `to` (must be verified while on a twilio trial) and connect ava."
     },
     {
@@ -59188,107 +59232,52 @@
       "_origin": "ast",
       "id": "backend_telephony_twilio_rationale_48",
       "community": 70,
-      "community_name": "backend/telephony/twilio.py",
+      "community_name": "config.py",
       "norm_label": "speaks the twilio media streams protocol over the websocket. `streaming = true`..."
     },
     {
-      "label": "call_session.py",
+      "label": "llm/page.tsx",
       "file_type": "code",
-      "source_file": "backend/call_session.py",
+      "source_file": "frontend/app/(admin)/admin/providers/llm/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "backend_call_session",
+      "id": "frontend_app_admin_admin_providers_llm_page",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "call_session.py"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "llm/page.tsx"
     },
     {
-      "label": "languages.py",
+      "label": "stt/page.tsx",
       "file_type": "code",
-      "source_file": "backend/languages.py",
+      "source_file": "frontend/app/(admin)/admin/providers/stt/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "backend_languages",
+      "id": "frontend_app_admin_admin_providers_stt_page",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "languages.py"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "stt/page.tsx"
     },
     {
-      "label": "logging_setup.py",
+      "label": "tts/page.tsx",
       "file_type": "code",
-      "source_file": "backend/logging_setup.py",
+      "source_file": "frontend/app/(admin)/admin/providers/tts/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "backend_logging_setup",
+      "id": "frontend_app_admin_admin_providers_tts_page",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "logging_setup.py"
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "tts/page.tsx"
     },
     {
-      "label": "LogRecord",
+      "label": "ProviderConfigPanel.tsx",
       "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "logrecord",
-      "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "logrecord"
-    },
-    {
-      "label": "Transport-agnostic call pipeline. `CallSession` owns everything that makes a\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/call_session.py",
+      "source_file": "frontend/components/model-directory/ProviderConfigPanel.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "backend_call_session_rationale_1",
+      "id": "frontend_components_model_directory_providerconfigpanel",
       "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "transport-agnostic call pipeline. `callsession` owns everything that makes a..."
-    },
-    {
-      "label": "True if the transcript is almost certainly a hallucination or noise blip.",
-      "file_type": "rationale",
-      "source_file": "backend/call_session.py",
-      "source_location": "L81",
-      "_origin": "ast",
-      "id": "backend_call_session_rationale_81",
-      "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "true if the transcript is almost certainly a hallucination or noise blip."
-    },
-    {
-      "label": "Supported call languages (Indian-focused, backed by Sarvam Bulbul). Each entry\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/languages.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_languages_rationale_1",
-      "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "supported call languages (indian-focused, backed by sarvam bulbul). each entry..."
-    },
-    {
-      "label": "Return (canonical_code, info). Falls back to the default if unknown.",
-      "file_type": "rationale",
-      "source_file": "backend/languages.py",
-      "source_location": "L27",
-      "_origin": "ast",
-      "id": "backend_languages_rationale_27",
-      "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "return (canonical_code, info). falls back to the default if unknown."
-    },
-    {
-      "label": "Structured logging with a per-turn/trace correlation id. Every log line carries\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/logging_setup.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_logging_setup_rationale_1",
-      "community": 71,
-      "community_name": "call_session.py",
-      "norm_label": "structured logging with a per-turn/trace correlation id. every log line carries..."
+      "community_name": "ProviderConfigPanel.tsx",
+      "norm_label": "providerconfigpanel.tsx"
     },
     {
       "label": "SubscriptionPlan",
@@ -59894,6 +59883,17 @@
       "community": 77,
       "community_name": "CallSession",
       "norm_label": "feed a chunk of caller audio; drives vad, barge-in, and responses."
+    },
+    {
+      "label": "True if the transcript is almost certainly a hallucination or noise blip.",
+      "file_type": "rationale",
+      "source_file": "backend/call_session.py",
+      "source_location": "L81",
+      "_origin": "ast",
+      "id": "backend_call_session_rationale_81",
+      "community": 77,
+      "community_name": "CallSession",
+      "norm_label": "true if the transcript is almost certainly a hallucination or noise blip."
     },
     {
       "label": "Build a CallSession with mocked dependencies.",
@@ -94707,7 +94707,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/app/(auth)/signup/page.tsx",
-      "source_location": "L46",
+      "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_auth_signup_page_signuppage_handlesubmit",
@@ -94719,7 +94719,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/app/(auth)/signup/page.tsx",
-      "source_location": "L47",
+      "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_auth_signup_page_signuppage_handlesubmit",
@@ -95463,7 +95463,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L607",
+      "source_location": "L639",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api_apirequest",
@@ -95474,7 +95474,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L634",
+      "source_location": "L666",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api_apirequest",
@@ -95486,7 +95486,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L585",
+      "source_location": "L617",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api_dorefresh",
@@ -95498,7 +95498,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L593",
+      "source_location": "L625",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api_dorefresh",
@@ -95510,7 +95510,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L597",
+      "source_location": "L629",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api_dorefresh",
@@ -151588,7 +151588,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L100",
+      "source_location": "L107",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_lib_api",
+      "target": "frontend_lib_api_subscription",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/lib/api.ts",
+      "source_location": "L132",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151599,7 +151610,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L109",
+      "source_location": "L141",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151610,7 +151621,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L121",
+      "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151621,7 +151632,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L134",
+      "source_location": "L166",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151632,29 +151643,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L149",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "frontend_lib_api",
-      "target": "frontend_lib_api_agent",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/lib/api.ts",
-      "source_location": "L163",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "frontend_lib_api",
-      "target": "frontend_lib_api_agentversion",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/lib/api.ts",
-      "source_location": "L1679",
+      "source_location": "L1711",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151665,7 +151654,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1699",
+      "source_location": "L1731",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151676,7 +151665,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1709",
+      "source_location": "L1741",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151687,7 +151676,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1721",
+      "source_location": "L1753",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151698,18 +151687,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L173",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "frontend_lib_api",
-      "target": "frontend_lib_api_businesstemplate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/lib/api.ts",
-      "source_location": "L1745",
+      "source_location": "L1777",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151720,7 +151698,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1756",
+      "source_location": "L1788",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151731,7 +151709,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1767",
+      "source_location": "L1799",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151742,7 +151720,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L1775",
+      "source_location": "L1807",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151753,7 +151731,40 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L183",
+      "source_location": "L181",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_lib_api",
+      "target": "frontend_lib_api_agent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/lib/api.ts",
+      "source_location": "L195",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_lib_api",
+      "target": "frontend_lib_api_agentversion",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/lib/api.ts",
+      "source_location": "L205",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_lib_api",
+      "target": "frontend_lib_api_businesstemplate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/lib/api.ts",
+      "source_location": "L215",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151764,7 +151775,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L204",
+      "source_location": "L236",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151775,7 +151786,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L211",
+      "source_location": "L243",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151786,7 +151797,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L217",
+      "source_location": "L249",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151797,18 +151808,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "frontend_lib_api",
-      "target": "frontend_lib_api_user",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/lib/api.ts",
-      "source_location": "L243",
+      "source_location": "L275",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151819,22 +151819,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L252",
+      "source_location": "L284",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
       "target": "frontend_lib_api_call",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/lib/api.ts",
-      "source_location": "L277",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "frontend_lib_api",
-      "target": "frontend_lib_api_appointment",
       "confidence_score": 1.0
     },
     {
@@ -151852,7 +151841,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L304",
+      "source_location": "L309",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_lib_api",
+      "target": "frontend_lib_api_appointment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/lib/api.ts",
+      "source_location": "L336",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151863,7 +151863,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L319",
+      "source_location": "L351",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151874,7 +151874,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L328",
+      "source_location": "L360",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151885,7 +151885,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L341",
+      "source_location": "L373",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151896,7 +151896,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L352",
+      "source_location": "L384",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151907,7 +151907,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L363",
+      "source_location": "L395",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151918,18 +151918,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "frontend_lib_api",
-      "target": "frontend_lib_api_organization",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/lib/api.ts",
-      "source_location": "L373",
+      "source_location": "L405",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151940,7 +151929,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L389",
+      "source_location": "L421",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151951,7 +151940,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L400",
+      "source_location": "L432",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151962,7 +151951,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L468",
+      "source_location": "L500",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151973,7 +151962,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L489",
+      "source_location": "L521",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -151984,18 +151973,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L50",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "frontend_lib_api",
-      "target": "frontend_lib_api_subscriptionplan",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/lib/api.ts",
-      "source_location": "L506",
+      "source_location": "L538",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -152006,7 +151984,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L513",
+      "source_location": "L545",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -152017,7 +151995,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L524",
+      "source_location": "L556",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -152028,7 +152006,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L533",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_lib_api",
+      "target": "frontend_lib_api_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/lib/api.ts",
+      "source_location": "L565",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -152039,7 +152028,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L542",
+      "source_location": "L574",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -152050,7 +152039,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L551",
+      "source_location": "L583",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -152061,7 +152050,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L584",
+      "source_location": "L616",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -152072,7 +152061,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L600",
+      "source_location": "L632",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -152083,7 +152072,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L666",
+      "source_location": "L69",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "frontend_lib_api",
+      "target": "frontend_lib_api_organization",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/lib/api.ts",
+      "source_location": "L698",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
@@ -152094,11 +152094,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L75",
+      "source_location": "L82",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api",
-      "target": "frontend_lib_api_subscription",
+      "target": "frontend_lib_api_subscriptionplan",
       "confidence_score": 1.0
     },
     {
@@ -178681,7 +178681,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "frontend/lib/api.ts",
-      "source_location": "L11",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_lib_api_apierror",
@@ -197111,5 +197111,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "6596b93db22417d255c3b2609684cd9cdbe50aa3"
+  "built_at_commit": "9ccca36cad878161b85225d7a732187e0b1124a6"
 }
