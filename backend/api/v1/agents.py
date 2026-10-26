@@ -32,9 +32,11 @@ router = APIRouter(prefix="/agents", tags=["agents"])
 class CreateAgentRequest(BaseModel):
     name: str
     template_slug: str
-    voice_profile_id: str
-    voice_profile_version: int
+    voice_profile_id: Optional[str] = None
+    voice_profile_version: Optional[int] = None
     description: str = ""
+    auto_init_version: bool = False
+    initial_configuration: Optional[dict[str, Any]] = None
 
 
 class CreateVersionRequest(BaseModel):
@@ -83,6 +85,8 @@ def _template_response(tmpl) -> dict:
         "slug": tmpl.slug,
         "name": tmpl.name,
         "description": tmpl.description,
+        "category": getattr(tmpl, "category", "Lead qualification"),
+        "icon_color": getattr(tmpl, "icon_color", "blue"),
         "slot_definitions": tmpl.slot_definitions,
         "default_configuration": tmpl.configuration,
     }
@@ -94,6 +98,24 @@ def _require_org(user: CurrentUser):
     return user.org_id
 
 
+class UpdateAgentRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    voice_profile_id: Optional[str] = None
+    voice_profile_version: Optional[int] = None
+
+
+class ImproveInstructionsRequest(BaseModel):
+    instructions: str
+    greeting: Optional[str] = None
+    persona_focus: Optional[str] = None
+
+
+class TranslateGreetingRequest(BaseModel):
+    text: str
+    target_language: str  # e.g. "hi-IN", "mr-IN", "ta-IN", "te-IN"
+
+
 # ---------------------------------------------------------------------------
 # Template endpoints (public within authenticated context)
 # ---------------------------------------------------------------------------
@@ -103,6 +125,138 @@ async def list_templates(user: CurrentUser = Depends(get_current_user)):
     svc = AgentService(db)
     templates = await svc.list_templates()
     return [_template_response(t) for t in templates]
+
+
+@router.get("/pipeline-status")
+async def get_pipeline_status(user: CurrentUser = Depends(get_current_user)):
+    """Return whether STT, LLM, and TTS pipeline components are configured and ready.
+
+    Deliberately conceals internal cloud provider names and model IDs from
+    tenant organizations to maintain multi-tenant abstraction.
+    """
+    from backend.services.model_directory_service import ModelDirectoryService
+
+    db = get_db()
+    svc = ModelDirectoryService(db)
+
+    stt_active = await svc.get_active_config("stt")
+    llm_active = await svc.get_active_config("llm")
+    tts_active = await svc.get_active_config("tts")
+
+    return {
+        "stt": {"connected": stt_active is not None},
+        "llm": {"connected": llm_active is not None},
+        "tts": {"connected": tts_active is not None},
+        "all_ready": bool(stt_active and llm_active and tts_active),
+    }
+
+
+@router.post("/improve-instructions")
+async def improve_instructions(
+    body: ImproveInstructionsRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Use active LLM (Genie) to optimize agent instructions and prompt."""
+    from backend.services.provider_runtime import CloudProviderRuntime
+
+    db = get_db()
+    runtime = CloudProviderRuntime(db)
+    try:
+        llm = await runtime.load_provider("llm")
+    except Exception:
+        return {
+            "improved_instructions": body.instructions,
+            "suggestions": [
+                "Keep speech under 25 words per turn for natural phone rhythm.",
+                "Always acknowledge what the prospect said before asking the next question.",
+                "Ask strictly one question per turn.",
+            ],
+        }
+
+    prompt = (
+        "You are Genie, Sarvam AI's prompt optimization assistant for voice telecalling agents in India. "
+        "Review and optimize the following telecalling instructions. "
+        "Strict voice conversational guidelines: "
+        "1. Under 25 words per conversational turn. "
+        "2. Strictly ONE clear question per turn. "
+        "3. Acknowledge before asking. "
+        "4. Structure cleanly with Persona, Environment & Situation, Objective, Speaking Style, and Conversation Phases. "
+        "5. Keep variable placeholders intact like {partnerName}, {salesRepName}, {productCategory}. "
+        "Return only the polished markdown instructions:\n\n"
+        f"{body.instructions}"
+    )
+    try:
+        reply = await llm.generate([{"role": "user", "content": prompt}])
+        return {
+            "improved_instructions": reply,
+            "suggestions": [
+                "Streamlined conversational turns to under 25 words.",
+                "Reinforced strict single-question discipline.",
+                "Added objection handling and graceful closing phases.",
+            ],
+        }
+    except Exception as exc:
+        log.warning("Genie instruction improvement failed: %s", exc)
+        return {"improved_instructions": body.instructions, "suggestions": []}
+
+
+_LANG_NAMES = {
+    "hi-IN": "Hindi",
+    "mr-IN": "Marathi",
+    "en-IN": "English",
+    "ta-IN": "Tamil",
+    "te-IN": "Telugu",
+    "kn-IN": "Kannada",
+    "bn-IN": "Bengali",
+    "gu-IN": "Gujarati",
+    "ml-IN": "Malayalam",
+    "pa-IN": "Punjabi",
+}
+
+
+@router.post("/translate-greeting")
+async def translate_greeting(
+    body: TranslateGreetingRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Use active LLM to translate the greeting text into the target language.
+
+    Variable placeholders like {partnerName}, {salesRepName}, etc. are
+    preserved verbatim in the translated output.
+    """
+    from backend.services.provider_runtime import CloudProviderRuntime
+
+    lang_name = _LANG_NAMES.get(body.target_language, body.target_language)
+
+    db = get_db()
+    runtime = CloudProviderRuntime(db)
+    try:
+        llm = await runtime.load_provider("llm")
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="LLM provider is not configured. Please set up an LLM in the Model Directory.",
+        )
+
+    prompt = (
+        f"Translate the following telecalling greeting into {lang_name}. "
+        "Rules:\n"
+        "1. This is a voice telecalling greeting spoken on the phone — keep it natural and conversational.\n"
+        "2. Preserve ALL variable placeholders exactly as-is (e.g. {user_name}, {partnerName}, {salesRepName}, {productCategory}). "
+        "Do NOT translate, rename, or remove any placeholder.\n"
+        "3. The translated text must convey the SAME meaning as the original — do NOT change the content, add or remove information.\n"
+        "4. Return ONLY the translated text, nothing else — no explanations, no quotes, no markdown.\n\n"
+        f"Original text:\n{body.text}"
+    )
+    try:
+        translated = await llm.generate([{"role": "user", "content": prompt}])
+        return {"translated_text": translated.strip()}
+    except Exception as exc:
+        log.warning("Greeting translation failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Translation failed. Please try again.",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -117,16 +271,66 @@ async def create_agent(
     db = get_db()
     svc = AgentService(db)
     try:
+        vp_id = body.voice_profile_id
+        vp_version = body.voice_profile_version
+        if not vp_id:
+            from backend.services.voice_profile_service import VoiceProfileService
+            vp_svc = VoiceProfileService(db)
+            profiles = await vp_svc.list_customer_profiles(org_id)
+            if profiles:
+                vp_id = profiles[0]["id"]
+                vp_version = profiles[0].get("active_version") or 1
+            else:
+                vp_id = "default"
+                vp_version = 1
+        if not vp_version:
+            vp_version = 1
+
         agent = await svc.create_agent(
             organization_id=org_id,
             name=body.name,
             template_slug=body.template_slug,
-            voice_profile_id=body.voice_profile_id,
-            voice_profile_version=body.voice_profile_version,
+            voice_profile_id=vp_id,
+            voice_profile_version=vp_version,
             description=body.description,
         )
+        # Optionally auto-seed v1 with template default configuration or provided configuration
+        if body.auto_init_version:
+            config = body.initial_configuration
+            if not config:
+                tmpl = await svc.templates.find_by_slug(body.template_slug)
+                if tmpl and tmpl.configuration:
+                    config = tmpl.configuration
+            if config:
+                await svc.create_version(
+                    agent_id=agent.id,
+                    organization_id=org_id,
+                    configuration=config,
+                    description="Initial version",
+                    auto_activate=True,
+                )
+                agent = await svc.get_agent(agent.id, org_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    return _agent_response(agent)
+
+
+@router.patch("/{agent_id}")
+async def update_agent(
+    agent_id: str,
+    body: UpdateAgentRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    org_id = _require_org(user)
+    db = get_db()
+    svc = AgentService(db)
+    agent = await svc.get_agent(agent_id, org_id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    update_data = {k: v for k, v in body.model_dump().items() if v is not None}
+    if update_data:
+        await svc.agents.col.update_one({"_id": agent_id}, {"$set": update_data})
+    agent = await svc.get_agent(agent_id, org_id)
     return _agent_response(agent)
 
 

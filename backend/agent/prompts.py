@@ -88,40 +88,63 @@ def stage_system_prompt(
     return "\n\n".join(parts)
 
 
-# Structured slot/intent extraction, run on every user turn.
-EXTRACTION_SYSTEM_PROMPT = """You extract structured data from a caller's message \
-during a real estate phone call in India. Return ONLY a JSON object with these keys:
-- "budget": their budget in Indian Rupees as a short string, or null. Keep their \
-wording (e.g. "90 lakhs", "1.5 crore", "20k per month"). Never use a $ sign; this \
-is India (INR).
-- "timeline": when they want to buy/move (e.g. "3 months", "immediately"), or null
-- "city": an INDIAN city or locality only (e.g. Pune, Mumbai, Bengaluru, Gurgaon, \
-Andheri, Whitefield), or null
-- "property_type": the kind/size of property (e.g. "2 BHK flat", "3 BHK villa", \
-"plot", "independent house"), or null
-- "raised_objection": true if they express a concern, hesitation, or complaint \
-(price, trust, timing), else false
-- "wants_to_book": true if they want to schedule/see a property or agree to a \
-viewing, else false
-- "wants_to_end": true if they want to end the call or say they are not \
-interested, else false
-- "interested": true if they sound engaged and interested, else false
+from typing import Any
 
-Important disambiguation:
-- "villa", "flat", "apartment", "plot", "bungalow", "independent house" are \
-property_type values, NOT cities. Never put them in "city".
-- Only fill budget/timeline/city/property_type when the caller clearly states \
-them; otherwise use null. Do not guess.
+def interpolate_template(template: str | None, variables: dict[str, Any] | None) -> str:
+    """Interpolate variables into template string supporting both {var} and {{var}} syntax."""
+    if not template:
+        return ""
+    if not variables:
+        return template
 
-Hindi / Hinglish intent (callers mix Hindi + English) — judge by MEANING:
-- "कर दो", "हाँ कर दो", "book कर दो", "proceed", "ठीक है चलो", "आगे बढ़ो" -> \
-wants_to_book = true, interested = true. (Note: "कर दो" means "go ahead / do it", \
-NOT ending the call.)
-- "नहीं", "रहने दो", "अभी नहीं", "बाद में बात करेंगे", "not interested" -> \
-wants_to_end = true.
-- "हाँ", "हाँजी", "ठीक है", "बिल्कुल", "sure", "haan" -> interested = true."""
+    result = template
+    for key, val in variables.items():
+        if val is None:
+            continue
+        str_val = str(val)
+        result = result.replace(f"{{{{{key}}}}}", str_val)
+        result = result.replace(f"{{{key}}}", str_val)
+    return result
+
+
+# Structured slot & discovery variable extraction, run on every user turn.
+EXTRACTION_SYSTEM_PROMPT = """You extract structured discovery variables and intents from a phone conversation in India (English, Hindi, Marathi, etc.).
+Return ONLY a valid JSON object with these keys:
+
+1. Discovery Output Variables:
+- "disposition": one of ["qualified", "disqualified", "needs_more_discovery", "not_interested", "callback_requested"].
+  * "qualified": caller confirms interest in consultation, site visit, or WhatsApp estimate and has need (e.g. high bill, rooftop space).
+  * "disqualified": caller has no own roof / tenant without control, or no electricity bill.
+  * "needs_more_discovery": call is still in progress and information is being gathered.
+  * "not_interested": caller firmly refuses any help or hangs up.
+  * "callback_requested": caller asked to call back later.
+- "pain_points_mentioned": key problems mentioned by caller (e.g. "high electricity bill", "heavy summer load", "frequent load shedding"), or null.
+- "current_state_of_solving": how they currently manage (e.g. "paying ₹2000 bill monthly", "has backup inverter"), or null.
+- "budget_indication": caller's bill or financial mention (e.g. "₹2,000 / month bill", "looking for PM Surya Ghar subsidy"), or null.
+- "timeline_to_decide": when they plan to install/decide (e.g. "immediate", "within 1 month", "exploring"), or null.
+- "chosen_next_step": agreed next step (e.g. "free site survey visit", "WhatsApp estimate calculation", "callback tomorrow", "declined"), or null.
+- "next_step_date_time": date/time for visit or callback if agreed, or null.
+
+2. Classic Qualification Slots (for Real Estate/general sales):
+- "budget": budget in INR as a short string, or null (e.g. "90 lakhs", "20k per month").
+- "timeline": move-in or purchase timeline, or null.
+- "city": Indian city/locality (e.g. Pune, Mumbai, Bangalore), or null.
+- "property_type": property type (e.g. "2 BHK flat", "villa"), or null.
+
+3. Intent Flags:
+- "raised_objection": true if caller raises doubt, price objection, or hesitation, else false.
+- "wants_to_book": true if caller agrees to site visit, appointment, or viewing, else false.
+- "wants_to_end": true if caller explicitly says they don't want to talk or want to disconnect, else false.
+- "interested": true if caller sounds engaged, affirms, or agrees to receive details, else false.
+
+Judgement Guidelines:
+- In Marathi/Hindi:
+  * "बोला", "हो", "सांगा", "पाठवा", "चालू द्या", "ठीक आहे" -> interested = true.
+  * "नाही", "नको", "आता नाही" -> wants_to_end = false if they are only declining an in-person visit but haven't hung up; wants_to_end = true ONLY if they reject all communication ("काहीच नको", "फोन ठेवा").
+- Never guess values. Use null when not mentioned."""
 
 
 def extraction_user_content(known: dict[str, str | None], user_text: str) -> str:
     known_str = ", ".join(f"{k}={v}" for k, v in known.items() if v) or "none"
     return f"Already known: {known_str}\nCaller just said: \"{user_text}\""
+

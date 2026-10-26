@@ -12,7 +12,9 @@ the transport resamples/encodes as its medium requires).
 """
 
 import asyncio
+import inspect
 import logging
+import random
 import time
 from statistics import mean
 from typing import Protocol
@@ -67,6 +69,13 @@ _HALLUCINATION_PHRASES = {
     "you", "the", "bye", ".", "..", "...", "uh", "um", "hmm", "yeah",
 }
 
+# Conversational fillers played concurrently with LLM to mask response latency
+_FILLERS: dict[str, list[str]] = {
+    "mr-IN": ["हं...", "बरोबर...", "अच्छा..."],
+    "hi-IN": ["हम्म...", "अच्छा...", "जी..."],
+    "en-IN": ["Sure...", "Right...", "I see..."],
+}
+
 
 def _looks_like_noise(text: str) -> bool:
     """True if the transcript is almost certainly a hallucination or noise blip."""
@@ -108,6 +117,7 @@ class CallSession:
         greeting: str | None = None,
         barge_in_sensitivity: int | None = None,
         voice_id: str | None = None,
+        call_id: str | None = None,
     ):
         self.t = transport
         self.voice_id = voice_id
@@ -128,7 +138,7 @@ class CallSession:
 
         self.state = new_conversation_state()
         self.latencies: list[int] = []
-        self.call_id = None
+        self.call_id = call_id
         self.lead_id = None
 
         self.barge_in_sensitivity = barge_in_sensitivity or 70
@@ -146,10 +156,22 @@ class CallSession:
         self._is_speaking = False
         self._call_ending = False
 
+        # Cache run_turn signature once — avoid inspect overhead on every utterance
+        _sig = inspect.signature(self.engine.run_turn)
+        self._can_pass_prompt = "system_prompt" in _sig.parameters or any(
+            p.kind == inspect.Parameter.VAR_KEYWORD for p in _sig.parameters.values()
+        )
+
     # ---- helpers ----
     async def _say(self, text: str) -> float:
         self._is_speaking = True
         await self.t.notify({"type": "agent", "text": text})
+        if self.call_id:
+            try:
+                from backend.telephony.broadcaster import call_broadcaster
+                await call_broadcaster.broadcast(str(self.call_id), {"type": "agent", "text": text})
+            except Exception:
+                pass
         total_duration = 0.0
         try:
             # Streaming transports (phone) play progressive chunks for low latency;
@@ -217,12 +239,22 @@ class CallSession:
 
     # ---- lifecycle ----
     async def start(self) -> None:
-        try:
-            call, lead = await repo.start_call(direction=self.direction)
-            self.call_id, self.lead_id = call.id, lead.id
-            log.info("call connected call=%s (%s)", self.call_id, self.direction)
-        except Exception as exc:  # noqa: BLE001
-            log.warning("failed to create call record (continuing unpersisted): %s", exc)
+        if self.call_id is None:
+            try:
+                call, lead = await repo.start_call(direction=self.direction)
+                self.call_id, self.lead_id = call.id, lead.id
+                log.info("call connected call=%s (%s)", self.call_id, self.direction)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("failed to create call record (continuing unpersisted): %s", exc)
+        else:
+            log.info("call connected with existing call=%s (%s)", self.call_id, self.direction)
+
+        if self.call_id:
+            try:
+                from backend.telephony.broadcaster import call_broadcaster
+                await call_broadcaster.broadcast(str(self.call_id), {"type": "ready", "status": "connected"})
+            except Exception:
+                pass
 
         greeting = await self._greeting_text()
         self.state["messages"].append({"role": "assistant", "content": greeting})
@@ -300,59 +332,50 @@ class CallSession:
             self._last_user_text = user_text
             await self.t.notify({"type": "user", "text": user_text})
             await self._persist_turn("user", user_text, self.state["stage"])
+            if self.call_id:
+                try:
+                    from backend.telephony.broadcaster import call_broadcaster
+                    await call_broadcaster.broadcast(str(self.call_id), {"type": "user", "text": user_text})
+                except Exception:
+                    pass
 
             first_audio_ms: int | None = None
-
-            # Conversational filler for longer queries (4+ words) to eliminate awkward dead silence
-            _FILLERS = {
-                "mr-IN": ["हं...", "बरोबर...", "अच्छा..."],
-                "hi-IN": ["हम्म...", "अच्छा...", "जी..."],
-                "en-IN": ["Sure...", "Right...", "I see..."],
-            }
-            filler_list = _FILLERS.get(self.language, [])
-            words = user_text.split()
-            if filler_list and len(words) >= 4 and not self._in_greeting:
-                import random
-                filler = random.choice(filler_list)
-                await self._say(filler)
-                if first_audio_ms is None:
-                    first_audio_ms = int((time.perf_counter() - t0) * 1000)
             should_hangup = False
 
-            # Inspect run_turn signature for backward compatibility with test mocks
-            import inspect
-            sig = inspect.signature(self.engine.run_turn)
-            can_pass_prompt = "system_prompt" in sig.parameters or any(
-                p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
-            )
-            if can_pass_prompt and self.system_prompt:
+            # Use cached signature check (computed once at __init__)
+            if self._can_pass_prompt and self.system_prompt:
                 turn_generator = self.engine.run_turn(
                     self.state, user_text, self.language_name, system_prompt=self.system_prompt
                 )
             else:
                 turn_generator = self.engine.run_turn(self.state, user_text, self.language_name)
 
-            tts_buffer = ""
+            # Fire filler concurrently with the first LLM tokens — saves ~300 ms per turn.
+            # Only for utterances >= 4 words (complex enough to warrant thinking time).
+            filler_task: asyncio.Task | None = None
+            filler_list = _FILLERS.get(self.language, [])
+            if filler_list and len(user_text.split()) >= 4 and not self._in_greeting:
+                filler_task = asyncio.create_task(self._say(random.choice(filler_list)))
+
             async for sentence in turn_generator:
+                # Drain filler before overlapping real audio
+                if filler_task is not None and not filler_task.done():
+                    await filler_task
+                    filler_task = None
+                    if first_audio_ms is None:
+                        first_audio_ms = int((time.perf_counter() - t0) * 1000)
                 clean_sentence = sentence.replace("[HANGUP]", "").replace("[hangup]", "").strip()
                 if "[HANGUP]" in sentence.upper():
                     should_hangup = True
                 if clean_sentence:
                     reply_parts.append(clean_sentence)
-                    tts_buffer += (" " if tts_buffer else "") + clean_sentence
-                    words = len(tts_buffer.split())
-                    is_question = any(clean_sentence.rstrip().endswith(q) for q in ("?", "का?", "का.", "ना?"))
-                    # Speak when buffer has at least 12 words or ends with a question, to avoid choppy audio
-                    if words >= 12 or is_question:
-                        await self._say(tts_buffer)
-                        if first_audio_ms is None:
-                            first_audio_ms = int((time.perf_counter() - t0) * 1000)
-                        tts_buffer = ""
+                    await self._say(clean_sentence)
+                    if first_audio_ms is None:
+                        first_audio_ms = int((time.perf_counter() - t0) * 1000)
 
-            if tts_buffer:
-                await self._say(tts_buffer)
-                if first_audio_ms is None:
-                    first_audio_ms = int((time.perf_counter() - t0) * 1000)
+            # Drain any remaining filler if LLM reply was very short
+            if filler_task is not None and not filler_task.done():
+                await filler_task
 
             if not reply_parts:
                 # LLM returned nothing — never leave the caller in silence.
@@ -378,6 +401,17 @@ class CallSession:
                 "slots": self.state["slots"],
             })
             await self.t.notify({"type": "turn_end"})
+            if self.call_id:
+                try:
+                    from backend.telephony.broadcaster import call_broadcaster
+                    await call_broadcaster.broadcast(str(self.call_id), {
+                        "type": "state",
+                        "stage": self.state["stage"],
+                        "slots": self.state["slots"],
+                        "output_variables": self.state.get("output_variables", {}),
+                    })
+                except Exception:
+                    pass
 
             # Automated Call Hangup Check
             full_reply = " ".join(reply_parts).lower()
@@ -401,9 +435,15 @@ class CallSession:
                 self._call_ending = True
                 log.info("Call wrap-up detected, notifying transport to hang up")
                 await self.t.notify({"type": "hangup", "reason": "call_completed"})
+                if self.call_id:
+                    try:
+                        from backend.telephony.broadcaster import call_broadcaster
+                        await call_broadcaster.broadcast(str(self.call_id), {"type": "hangup", "reason": "call_completed"})
+                    except Exception:
+                        pass
 
                 async def _delayed_close() -> None:
-                    await asyncio.sleep(8.0)
+                    await asyncio.sleep(3.5)
                     if hasattr(self.t, "close"):
                         try:
                             await self.t.close()

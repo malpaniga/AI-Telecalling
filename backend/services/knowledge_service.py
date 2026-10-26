@@ -27,7 +27,7 @@ from backend.repositories.knowledge_repo import (
 log = logging.getLogger("service.knowledge")
 
 # Max chars of knowledge context to inject per call (keeps LLM context manageable)
-MAX_CONTEXT_CHARS = 4000
+MAX_CONTEXT_CHARS = 32000
 MAX_DOCS_PER_SEARCH = 5
 
 
@@ -230,10 +230,15 @@ class KnowledgeService:
         organization_id: str,
         query_text: Optional[str] = None,
         max_chars: int = MAX_CONTEXT_CHARS,
+        mode: str = "flexible",
     ) -> str:
         """
         Retrieve relevant knowledge as plain text for injection into the LLM context.
         MVP: returns top matching documents concatenated (no embeddings/RAG).
+        mode:
+          - 'strict': strictly answer from KB; politely state inability to answer if missing.
+          - 'flexible': prioritize KB facts; polite conversational fallback for general queries.
+          - 'raw': return documents without directive wrappers.
         """
         kb_ids = await self.assoc_repo.get_kb_ids_for_agent(agent_id, organization_id)
         if not kb_ids:
@@ -256,16 +261,43 @@ class KnowledgeService:
         if not docs:
             return ""
 
+        # Directive header and instruction
+        if mode == "strict":
+            header = "# Reference Knowledge Base (Strict Mode)\n"
+            instruction = (
+                "\nCRITICAL INSTRUCTION: Answer questions about products, services, terms, "
+                "and pricing ONLY using the facts in this reference knowledge base. "
+                "If asked about something not covered here, politely state that you do not "
+                "have that information handy and offer to have a team member follow up. "
+                "Do not fabricate facts."
+            )
+        elif mode == "raw":
+            header = ""
+            instruction = ""
+        else:  # flexible (default)
+            header = "# Reference Knowledge Base\n"
+            instruction = (
+                "\nINSTRUCTION: Use the above reference knowledge as your primary source of truth "
+                "for facts and answers. For general chit-chat or questions outside this knowledge, "
+                "reply politely and helpfully."
+            )
+
+        envelope_len = len(header) + len(instruction)
+        doc_budget = max(100, max_chars - envelope_len)
+
         parts = []
         total_chars = 0
         for doc in docs:
             entry = f"## {doc.title}\n{doc.content}\n"
-            if total_chars + len(entry) > max_chars:
-                remaining = max_chars - total_chars
+            if total_chars + len(entry) > doc_budget:
+                remaining = doc_budget - total_chars
                 if remaining > 100:
                     parts.append(entry[:remaining] + "...")
                 break
             parts.append(entry)
             total_chars += len(entry)
 
-        return "\n".join(parts)
+        body = "\n".join(parts)
+        if header or instruction:
+            return f"{header}{body}{instruction}"
+        return body

@@ -183,6 +183,7 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
       toast.error(msg);
     } finally {
       setTesting((prev) => ({ ...prev, [configId]: false }));
+      await load(true);
     }
   };
 
@@ -245,14 +246,43 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
       setConnectError("Please select a model.");
       return;
     }
+    const isGoogleSTT =
+      selectedModel.provider_name === "google-cloud-stt" ||
+      selectedModel.credential_requirements.includes(
+        "GOOGLE_APPLICATION_CREDENTIALS_JSON"
+      );
+
     if (
       selectedModel.credential_requirements.length > 0 &&
       !connectForm.credential_plaintext
     ) {
       setConnectError(
-        `API key required for ${selectedModel.provider_name}.`
+        isGoogleSTT
+          ? "Service Account JSON is required for Google Cloud STT."
+          : `API key required for ${selectedModel.provider_name}.`
       );
       return;
+    }
+
+    if (isGoogleSTT && connectForm.credential_plaintext) {
+      try {
+        const parsed = JSON.parse(connectForm.credential_plaintext.trim());
+        if (
+          typeof parsed !== "object" ||
+          parsed === null ||
+          (parsed.type && parsed.type !== "service_account")
+        ) {
+          setConnectError(
+            'Google Cloud STT requires a valid Service Account JSON key (must contain \'"type": "service_account"\'). API keys are not supported.'
+          );
+          return;
+        }
+      } catch {
+        setConnectError(
+          "Invalid JSON format. Please paste the full contents of your Google Cloud Service Account .json key file."
+        );
+        return;
+      }
     }
 
     // Validate extra_params JSON for LLM
@@ -298,9 +328,35 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
 
   // ── credential rotate ──
   const handleRotate = async (providerName: string) => {
+    const isGoogleSTT = providerName === "google-cloud-stt";
     if (!rotateValue) {
-      setRotateError("New API key is required.");
+      setRotateError(
+        isGoogleSTT
+          ? "Service Account JSON is required."
+          : "New API key is required."
+      );
       return;
+    }
+
+    if (isGoogleSTT) {
+      try {
+        const parsed = JSON.parse(rotateValue.trim());
+        if (
+          typeof parsed !== "object" ||
+          parsed === null ||
+          (parsed.type && parsed.type !== "service_account")
+        ) {
+          setRotateError(
+            'Google Cloud STT requires a valid Service Account JSON key (must contain \'"type": "service_account"\'). API keys are not supported.'
+          );
+          return;
+        }
+      } catch {
+        setRotateError(
+          "Invalid JSON format. Please paste the full contents of your Google Cloud Service Account .json key file."
+        );
+        return;
+      }
     }
     setRotateSaving(true);
     setRotateError(null);
@@ -362,6 +418,32 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardBody className="py-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-text-primary">{capability.toUpperCase()} setup path</p>
+              <p className="mt-0.5 text-xs text-text-secondary">A telecalling agent needs one tested, active cloud provider for this capability.</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              {[
+                ["1", "Connect", configs.length > 0],
+                ["2", "Test", configs.some((config) => config.last_test_result === "ok")],
+                ["3", "Activate", Boolean(activeConfig)],
+              ].map(([step, label, complete]) => (
+                <React.Fragment key={label as string}>
+                  <span className={`inline-flex items-center gap-1.5 ${complete ? "text-success" : "text-text-muted"}`}>
+                    <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold ${complete ? "bg-[#EBF7F2]" : "bg-surface-subtle"}`}>{complete ? "✓" : step}</span>
+                    {label}
+                  </span>
+                  {label !== "Activate" && <span className="h-px w-4 bg-border" />}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+
       {/* ── Active Configuration ── */}
       <Card>
         <CardHeader>
@@ -673,14 +755,29 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
 
                       {isRotating && (
                         <div className="mt-2 space-y-2">
-                          <input
-                            type="password"
-                            autoComplete="new-password"
-                            placeholder="New API key"
-                            value={rotateValue}
-                            onChange={(e) => setRotateValue(e.target.value)}
-                            className="w-full h-9 rounded-md border border-border bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-                          />
+                          {provName === "google-cloud-stt" ? (
+                            <div>
+                              <p className="text-xs text-text-muted mb-1.5">
+                                Paste the contents of your Google Cloud Service Account JSON key (roles/speech.client):
+                              </p>
+                              <textarea
+                                rows={5}
+                                placeholder={`{\n  "type": "service_account",\n  "project_id": "...",\n  "private_key": "..."\n}`}
+                                value={rotateValue}
+                                onChange={(e) => setRotateValue(e.target.value)}
+                                className="w-full rounded-md border border-border bg-surface px-3 py-2 text-xs font-mono text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30 resize-y"
+                              />
+                            </div>
+                          ) : (
+                            <input
+                              type="password"
+                              autoComplete="new-password"
+                              placeholder="New API key"
+                              value={rotateValue}
+                              onChange={(e) => setRotateValue(e.target.value)}
+                              className="w-full h-9 rounded-md border border-border bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+                            />
+                          )}
                           {rotateError && (
                             <p className="text-xs text-danger">{rotateError}</p>
                           )}
@@ -720,7 +817,7 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
       <Modal
         isOpen={showConnect}
         onClose={() => setShowConnect(false)}
-        title="Add Provider Configuration"
+        title={`Connect ${capability.toUpperCase()} provider — Step 1 of 3`}
         size="md"
       >
         <div className="space-y-4">
@@ -755,31 +852,63 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
             </select>
           </div>
 
-          {/* API key — only when credentials required */}
+          {/* API key / Service Account JSON — only when credentials required */}
           {selectedModel && selectedModel.credential_requirements.length > 0 && (
             <div>
-              <label className="block text-xs font-medium text-text-primary mb-1">
-                API Key{" "}
-                <span className="text-danger" aria-hidden>
-                  *
-                </span>
-                <span className="ml-1 text-text-muted font-normal">
-                  (required: {selectedModel.credential_requirements.join(", ")})
-                </span>
-              </label>
-              <input
-                type="password"
-                autoComplete="new-password"
-                placeholder="Paste your API key"
-                value={connectForm.credential_plaintext}
-                onChange={(e) =>
-                  setConnectForm((f) => ({
-                    ...f,
-                    credential_plaintext: e.target.value,
-                  }))
-                }
-                className="w-full h-9 rounded-md border border-border bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-              />
+              {selectedModel.provider_name === "google-cloud-stt" ||
+              selectedModel.credential_requirements.includes(
+                "GOOGLE_APPLICATION_CREDENTIALS_JSON"
+              ) ? (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-medium text-text-primary">
+                      Service Account JSON Key{" "}
+                      <span className="text-danger" aria-hidden>*</span>
+                    </label>
+                    <span className="text-[11px] text-accent font-medium">
+                      roles/speech.client
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-text-muted mb-1.5 leading-relaxed">
+                    Google Cloud Speech-to-Text requires a Service Account JSON key file. API keys are not supported by the Google Cloud Speech API.
+                  </p>
+                  <textarea
+                    rows={5}
+                    placeholder={`{\n  "type": "service_account",\n  "project_id": "your-project-id",\n  "private_key": "-----BEGIN PRIVATE KEY-----...",\n  "client_email": "...@...iam.gserviceaccount.com"\n}`}
+                    value={connectForm.credential_plaintext}
+                    onChange={(e) =>
+                      setConnectForm((f) => ({
+                        ...f,
+                        credential_plaintext: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-md border border-border bg-surface px-3 py-2 text-xs font-mono text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30 resize-y"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-medium text-text-primary mb-1">
+                    API Key{" "}
+                    <span className="text-danger" aria-hidden>*</span>
+                    <span className="ml-1 text-text-muted font-normal">
+                      (required: {selectedModel.credential_requirements.join(", ")})
+                    </span>
+                  </label>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Paste your API key"
+                    value={connectForm.credential_plaintext}
+                    onChange={(e) =>
+                      setConnectForm((f) => ({
+                        ...f,
+                        credential_plaintext: e.target.value,
+                      }))
+                    }
+                    className="w-full h-9 rounded-md border border-border bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -876,6 +1005,7 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
           )}
 
           {/* Actions */}
+          <p className="text-xs text-text-muted">Next: run a safe test inference, then activate only after it passes.</p>
           <div className="flex justify-end gap-2 pt-1">
             <Button
               variant="secondary"

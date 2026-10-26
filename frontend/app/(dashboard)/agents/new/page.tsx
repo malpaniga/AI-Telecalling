@@ -91,12 +91,36 @@ export default function NewAgentPage() {
         voice_profile_version: voiceProfileVersion,
         description,
       });
+
+      const selectedTpl = templates.find((t) => t.slug === templateSlug);
+      const baseConfig = (selectedTpl?.default_configuration as Record<string, unknown>) || {};
+
       const configuration: Record<string, unknown> = {
-        goal: goal || undefined,
-        tone,
-        greeting: greeting || undefined,
-        primary_language: language,
+        ...baseConfig,
+        agent_name: name,
+        goal: goal || baseConfig.goal,
+        tone: tone || baseConfig.tone,
+        greeting: greeting || baseConfig.greeting || "Hello, thank you for connecting with {partnerName}. My name is {salesRepName}. How may I help you today?",
+        primary_language: language || baseConfig.primary_language || "en-IN",
+        system_prompt: baseConfig.system_prompt || (
+          "# Role & Persona\n" +
+          `- **Agent Name**: {salesRepName}\n` +
+          `- **Role**: Assistant at {partnerName}\n` +
+          `- **Tone**: ${tone}\n\n` +
+          "## Conversational Rules\n" +
+          "1. Under 25 words per turn.\n" +
+          "2. Strictly one question per turn.\n" +
+          "3. Acknowledge before asking."
+        ),
+        input_variables: baseConfig.input_variables || {
+          partnerName: "Our Company",
+          salesRepName: name,
+          userName: "",
+          productCategory: "Services",
+        },
+        output_variables: baseConfig.output_variables || ["disposition", "chosen_next_step"],
       };
+
       await api.agents.versions.create(agent.id, {
         configuration,
         description: "Initial version",

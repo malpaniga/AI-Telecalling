@@ -1,0 +1,67 @@
+services:
+  caddy:
+    image: caddy:alpine
+    container_name: telecalling_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-92.5.149.29.sslip.io}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+  redis:
+    image: redis:7-alpine
+    container_name: telecalling_redis
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: telecalling_api
+    restart: unless-stopped
+    env_file:
+      - backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - APP_PORT=8080
+      - APP_HOST=0.0.0.0
+    volumes:
+      - ./models:/app/models
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: telecalling_worker
+    restart: unless-stopped
+    env_file:
+      - backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./models:/app/models
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  caddy_data:
+  caddy_config:
+  redisdata:

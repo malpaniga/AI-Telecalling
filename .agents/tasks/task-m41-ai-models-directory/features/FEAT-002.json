@@ -1,0 +1,36 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Backend tests: backend/tests/test_m41_model_directory.py covering all 14 acceptance test cases (catalogue search, credential management, connection flows, test inference, activation, audit, quota guard, tenant isolation). Uses mongomock-motor for DB, existing run() pattern, mock adapters for deterministic results. This feature is independent of FEAT-003 (frontend) but depends on FEAT-001 (backend).",
+  "status": "completed",
+  "steps": [
+    "1. Create backend/tests/test_m41_model_directory.py using the established run(coro) pattern (asyncio.new_event_loop, no pytest-asyncio). Import mongomock_motor; skip tests that need it if not installed using @pytest.mark.skipif as in test_m10_provider_router.py.",
+    "2. Test 1 — catalogue_search_and_capability_filter: Call seed_model_catalogue(db), then ModelDirectoryService.list_catalogue(). Assert 12 entries returned. Filter capability='tts', assert 5 entries. Filter capability='llm', assert 3. search='groq', assert entries with provider_name containing 'groq'. search='ollama', assert llama3.2 entry present.",
+    "3. Test 2 — provider_connection_valid_credentials: Call connect_provider with provider_name='groq', model_id='whisper-large-v3-turbo', capability='stt', credential_plaintext='test-key-1234'. Assert ProviderConfiguration stored with is_active=False. Assert ProviderCredential stored with key_hint='1234'. Assert plaintext NOT present anywhere in stored documents.",
+    "4. Test 3 — provider_connection_invalid_empty_credential: For providers requiring credentials, call connect_provider with credential_plaintext=''. Assert ValueError raised with message about empty credential.",
+    "5. Test 4 — secret_masking: After connect_provider, call list_credentials('groq'). Assert response dict contains 'key_hint' but NOT 'encrypted_value' and NOT the original plaintext. Assert CredentialStore.decrypt round-trip works.",
+    "6. Test 5 — authorization_enforcement: Instantiate ModelDirectoryService and call connect_provider with a mock CurrentUser whose role='organization_admin'. Assert PermissionError raised. Repeat for list_credentials — same expectation.",
+    "7. Test 6 — local_runtime_detection_ollama: In ModelTestService, patch httpx.AsyncClient.get to raise httpx.ConnectError. Call test_llm('ollama', 'llama3.2', credential=None). Assert result['status'] == 'unavailable' and 'runtime' in result['error'].lower().",
+    "8. Test 7 — local_runtime_detection_ollama_reachable: Patch httpx.AsyncClient to return mock responses (GET /api/tags returns 200, POST /api/generate returns {response:'Hello!'}). Call test_llm('ollama', 'llama3.2', credential=None). Assert result['status'] == 'ok' and result['latency_ms'] >= 0.",
+    "9. Test 8 — actual_tts_sample_groq_sarvam_mock: Patch SarvamEngine.synthesize to return (b'pcm_data', 22050). Call test_tts('sarvam', 'bulbul-v3', credential='test-key', voice='kavya', language='en-IN'). Assert result['status']=='ok' and result['latency_ms'] >= 0.",
+    "10. Test 9 — actual_stt_transcription_mock: Patch STTClient.transcribe to return 'hello test'. Call test_stt('groq-whisper', 'whisper-large-v3-turbo', credential='test-key', language='en'). Assert result['status']=='ok' and result['transcript']=='hello test'.",
+    "11. Test 10 — actual_llm_inference_mock: Patch LLMClient.complete to return 'This is a test response.'. Call test_llm('groq', 'llama-3.3-70b-versatile', credential='test-key'). Assert result['status']=='ok' and len(result['response']) > 0.",
+    "12. Test 11 — model_activation_and_audit: connect_provider for groq LLM, then test_provider (mock result: ok), then activate_provider. Assert ProviderConfiguration.is_active==True. Assert AuditLog entry exists with action containing 'provider.activate' and resource_id==config_id.",
+    "13. Test 12 — unsupported_language_rejection: Try connect_provider for ai4bharat IndicConformer with language='fr' (French not in supported_languages). Assert ValueError raised mentioning unsupported language.",
+    "14. Test 13 — credential_rotation_and_deletion: connect_provider with cred 'old-key-1234'. rotate_credential('ai4bharat', 'new-key-5678'). Assert new ProviderCredential stored. delete_credential('groq'). Assert ProviderCredential for groq is gone and linked configs removed.",
+    "15. Test 14 — free_tier_quota_guard: In ModelDirectoryService, add a test_quota_guard method that counts test calls per provider per hour from a provider_test_log collection. In the test, insert 10 existing test-call documents for 'groq' within the last hour. Then call test_provider. Assert the 11th call raises a RateLimitError with message about quota guard (max 10 tests/hour/provider).",
+    "16. Test 15 (bonus — customer_tenant_isolation): Ensure GET /api/v1/model-directory/catalogue with an org-level token (role='organization_admin') returns 403. Use TestClient from fastapi.testclient with a mocked get_current_user returning an org-scoped user."
+  ],
+  "acceptance_criteria": [
+    "python -m pytest backend/tests/test_m41_model_directory.py -v passes all test cases",
+    "All existing M1-M40 tests continue to pass (regression)",
+    "No test imports or uses real external API keys — all network calls are mocked or patched",
+    "Tests labeled 'mock' in their docstrings to satisfy the requirement of clearly labeling mock-based tests"
+  ],
+  "verification": [
+    "cd backend && python -m pytest tests/test_m41_model_directory.py -v",
+    "cd backend && python -m pytest tests/ -x -q  (full regression)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

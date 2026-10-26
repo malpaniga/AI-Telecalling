@@ -1,0 +1,7 @@
+{
+  "task_id": "task-m41-ai-models-directory",
+  "task_description": "Implement M41: Free AI Models Directory and One-Click Provider Setup. Extends Super Admin with a searchable AI model catalogue (LLM/TTS/STT), encrypted credential store, provider configuration endpoints, one-click connect/test/activate workflows, fallback configuration, and four new admin frontend pages. Preserves all M40 functionality.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

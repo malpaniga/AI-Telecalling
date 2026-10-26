@@ -18,14 +18,26 @@ STAGES = [GREETING, QUALIFICATION, OBJECTION, BOOKING, END]
 # The qualification payload we must collect.
 SLOT_KEYS = ["budget", "timeline", "city", "property_type"]
 
+# Sarvam AI enterprise discovery output variables
+OUTPUT_VARIABLE_KEYS = [
+    "disposition",
+    "pain_points_mentioned",
+    "current_state_of_solving",
+    "budget_indication",
+    "timeline_to_decide",
+    "chosen_next_step",
+    "next_step_date_time",
+]
+
 Message = dict[str, str]
 
 
-class ConversationState(TypedDict):
+class ConversationState(TypedDict, total=False):
     stage: str
     slots: dict[str, str | None]
     flags: dict[str, bool]
     messages: list[Message]
+    output_variables: dict[str, str | None]
 
 
 def new_conversation_state() -> ConversationState:
@@ -34,6 +46,7 @@ def new_conversation_state() -> ConversationState:
         "slots": {k: None for k in SLOT_KEYS},
         "flags": {},
         "messages": [],
+        "output_variables": {k: None for k in OUTPUT_VARIABLE_KEYS},
     }
 
 

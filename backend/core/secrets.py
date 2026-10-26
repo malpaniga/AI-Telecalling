@@ -55,14 +55,28 @@ class CredentialStore:
 
     @staticmethod
     def key_hint(plaintext: str) -> str:
-        """Return the last 4 characters of the plaintext for display purposes.
+        """Return the last 4 characters of the plaintext for display purposes,
+        or a formatted hint for structured credentials like service accounts.
 
         Returns '****' if the string is shorter than 4 characters.
         Never logs the full plaintext.
         """
-        if len(plaintext) < 4:
+        if not plaintext or len(plaintext) < 4:
             return "****"
-        return plaintext[-4:]
+        stripped = plaintext.strip()
+        if stripped.startswith("{") and stripped.endswith("}"):
+            try:
+                import json
+                info = json.loads(stripped)
+                if isinstance(info, dict):
+                    if "client_email" in info:
+                        email = info["client_email"]
+                        return f"sa:{email.split('@')[0]}"[-14:]
+                    if "project_id" in info:
+                        return f"proj:{info['project_id']}"[-14:]
+            except Exception:
+                pass
+        return stripped[-4:]
 
 
 # Module-level singleton — import this in other modules.

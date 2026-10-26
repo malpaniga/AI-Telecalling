@@ -58,7 +58,7 @@ class ElevenLabsTTSProviderV2(TTSProvider):
     ) -> None:
         if not api_key:
             raise ValueError("ELEVENLABS_API_KEY must be provided")
-        self.voice_id = voice_id
+        self.voice_id = voice_id or DEFAULT_VOICE_ID
         self.model = model
         self.output_format = output_format
         self.timeout = timeout
@@ -87,7 +87,7 @@ class ElevenLabsTTSProviderV2(TTSProvider):
         """
         import asyncio
 
-        voice_id = kwargs.get("voice_id", self.voice_id)
+        voice_id = kwargs.get("voice_id") or self.voice_id or DEFAULT_VOICE_ID
         model = kwargs.get("model", self.model)
         text = text.strip()
         if not text:
@@ -106,7 +106,7 @@ class ElevenLabsTTSProviderV2(TTSProvider):
     def _synthesize_sync(self, text: str, voice_id: str, model: str) -> bytes:
         """Synchronous synthesis — called in a thread pool."""
         audio_iter = self._client.text_to_speech.convert(
-            voice_id=voice_id,
+            voice_id=voice_id or DEFAULT_VOICE_ID,
             text=text,
             model_id=model,
             output_format=self.output_format,
@@ -124,7 +124,7 @@ class ElevenLabsTTSProviderV2(TTSProvider):
         """
         import asyncio
 
-        voice_id = kwargs.get("voice_id", self.voice_id)
+        voice_id = kwargs.get("voice_id") or self.voice_id or DEFAULT_VOICE_ID
         model = kwargs.get("model", self.model)
         text = text.strip()
         if not text:
@@ -145,8 +145,8 @@ class ElevenLabsTTSProviderV2(TTSProvider):
     ) -> list[bytes]:
         """Collect streaming chunks synchronously (run in thread)."""
         chunks = []
-        for chunk in self._client.text_to_speech.convert_as_stream(
-            voice_id=voice_id,
+        for chunk in self._client.text_to_speech.convert(
+            voice_id=voice_id or DEFAULT_VOICE_ID,
             text=text,
             model_id=model,
             output_format=self.output_format,

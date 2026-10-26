@@ -2,8 +2,9 @@
 
 import React from "react";
 import { clsx } from "clsx";
-import { Menu, Bell, ChevronRight } from "lucide-react";
+import { Menu, Bell, ChevronRight, Phone } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { useTestAgent } from "@/contexts/test-agent-context";
 
 export interface TopbarProps {
   title: string;
@@ -19,6 +20,7 @@ export function Topbar({
   className,
 }: TopbarProps) {
   const { user } = useAuth();
+  const { openTestAgent } = useTestAgent();
 
   const initials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
@@ -72,8 +74,17 @@ export function Topbar({
         )}
       </div>
 
-      {/* Right: org name + notifications + avatar */}
-      <div className="flex items-center gap-2 shrink-0">
+      {/* Right: Test Agent button + notifications + avatar */}
+      <div className="flex items-center gap-2.5 shrink-0">
+        <button
+          onClick={() => openTestAgent()}
+          title="Try the agent in the playground"
+          className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-black hover:bg-neutral-800 text-white dark:bg-white dark:text-black dark:hover:bg-neutral-200 shadow-sm transition-all active:scale-[0.98]"
+        >
+          <Phone className="h-3.5 w-3.5 fill-current" />
+          <span>Test agent</span>
+        </button>
+
         {/* Notifications placeholder */}
         <button
           className="flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors"

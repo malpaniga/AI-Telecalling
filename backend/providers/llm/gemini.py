@@ -3,20 +3,14 @@
 Uses google.genai (v1+), NOT the deprecated google.generativeai package.
 Documentation: https://ai.google.dev/gemini-api/docs
 
-Supported models (verified 2025-Q3):
-  gemini-2.0-flash-lite  — free tier, fast, efficient
-  gemini-2.0-flash       — higher quality
-  gemini-1.5-flash-8b    — free tier fallback
-  gemini-1.5-pro         — highest quality (paid)
-
-Free-tier limits (as of 2025-Q3, subject to change):
-  gemini-2.0-flash-lite: 1500 req/day, 1M TPM
-  Check https://ai.google.dev/pricing for current quotas.
-
-Never logs credentials. Credentials are passed at construction time from the
-decrypted credential store — not read from settings directly.
+Supported models:
+  gemini-3.1-flash-lite  — ultra low-latency (~1s), reliable, no thinking overhead
+  gemini-3.5-flash-lite  — quality conversational model
+  gemini-3.5-flash       — fast general-purpose
+  gemini-3.8-flash       — high-capacity model
 """
 
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from typing import Any
@@ -25,16 +19,65 @@ from backend.providers.base import LLMProvider
 
 log = logging.getLogger("providers.llm.gemini")
 
-# Safe default — not preview-only, has free tier
-DEFAULT_MODEL = "gemini-2.0-flash-lite"
+# Safe default — ultra low-latency active model
+DEFAULT_MODEL = "gemini-3.1-flash-lite"
 
-# Models known to be available on the free tier (verified 2025-Q3)
 FREE_TIER_MODELS = {
-    "gemini-2.0-flash-lite",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash-8b",
-    "gemini-1.5-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
+    "gemini-3.5-flash",
+    "gemini-3.8-flash",
 }
+
+# Automatic aliases from deprecated / legacy model IDs to current active models
+MODEL_ALIASES = {
+    "gemini-2.0-flash-lite": "gemini-3.1-flash-lite",
+    "gemini-2.5-flash-lite": "gemini-3.1-flash-lite",
+    "gemini-2.0-flash": "gemini-3.5-flash",
+    "gemini-2.5-flash": "gemini-3.5-flash",
+    "gemini-1.5-flash": "gemini-3.1-flash-lite",
+    "gemini-1.5-flash-8b": "gemini-3.1-flash-lite",
+    "gemini-flash-latest": "gemini-3.5-flash",
+    "gemini-flash-lite-latest": "gemini-3.1-flash-lite",
+}
+
+
+def _get_candidate_models(primary_model: str) -> list[str]:
+    """Return ordered list of models to try: primary model first, then compatible fallbacks."""
+    primary = MODEL_ALIASES.get(primary_model, primary_model)
+    candidates = [primary]
+    fallbacks = [
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-3.8-flash",
+    ]
+    for m in fallbacks:
+        if m not in candidates:
+            candidates.append(m)
+    return candidates
+
+
+def _is_transient_error(exc: Exception) -> bool:
+    """Return True if the error is temporary (503 high demand, 429 rate limit, network timeout)."""
+    msg_str = str(exc)
+    return any(
+        t in msg_str
+        for t in [
+            "503",
+            "500",
+            "502",
+            "504",
+            "429",
+            "high demand",
+            "Service Unavailable",
+            "UNAVAILABLE",
+            "RESOURCE_EXHAUSTED",
+            "DEADLINE_EXCEEDED",
+            "timed out",
+            "timeout",
+        ]
+    )
 
 
 class GeminiLLMProvider(LLMProvider):
@@ -53,7 +96,6 @@ class GeminiLLMProvider(LLMProvider):
         timeout: float = 30.0,
         max_output_tokens: int = 512,
         temperature: float = 0.6,
-        # Inject a pre-built client for testing
         _client: Any | None = None,
     ) -> None:
         if not api_key:
@@ -62,13 +104,17 @@ class GeminiLLMProvider(LLMProvider):
         self.timeout = timeout
         self.max_output_tokens = max_output_tokens
         self.temperature = temperature
-        # Lazily import to avoid import-time failure when google-genai not installed
+        self._clean_key = api_key.strip().strip("'\"")
         if _client is not None:
             self._client = _client
         else:
             from google import genai
-            self._client = genai.Client(api_key=api_key)
-        # Do not log api_key
+            self._client = genai.Client(api_key=self._clean_key)
+
+    def _sanitize(self, msg: str) -> str:
+        if self._clean_key and self._clean_key in msg:
+            return msg.replace(self._clean_key, "[REDACTED]")
+        return msg
 
     def get_capabilities(self) -> dict:
         return {
@@ -81,30 +127,19 @@ class GeminiLLMProvider(LLMProvider):
         }
 
     async def generate(self, messages: list[dict], **kwargs: Any) -> str:
-        """Generate a reply for the given conversation messages.
-
-        messages: list of {"role": "user"|"model"|"system", "content": str}
-        Returns the text of the first candidate.
-
-        Raises:
-            RuntimeError — authentication error, rate limit, model unavailable
-            ValueError — empty or malformed response
-        """
-        from google import genai
+        """Generate a reply for the given conversation messages."""
         from google.genai import types as gtypes
 
         model = kwargs.get("model", self.model)
         temperature = kwargs.get("temperature", self.temperature)
-        max_tokens = kwargs.get("max_output_tokens", self.max_output_tokens)
+        max_tokens = kwargs.get("max_output_tokens") or kwargs.get("max_tokens") or self.max_output_tokens
         system_prompt: str | None = kwargs.get("system_prompt")
 
-        # Build contents — Gemini uses "model" not "assistant"
         contents: list[gtypes.Content] = []
         for msg in messages:
             role = msg.get("role", "user")
             content = msg.get("content", "")
             if role == "system":
-                # Handled via system_instruction below; skip from contents
                 if not system_prompt:
                     system_prompt = content
                 continue
@@ -116,58 +151,80 @@ class GeminiLLMProvider(LLMProvider):
                 )
             )
 
-        config = gtypes.GenerateContentConfig(
-            temperature=temperature,
-            max_output_tokens=max_tokens,
-        )
+        config_kwargs: dict[str, Any] = {
+            "temperature": temperature,
+            "max_output_tokens": max_tokens,
+        }
         if system_prompt:
-            config.system_instruction = system_prompt
+            config_kwargs["system_instruction"] = system_prompt
 
-        try:
-            response = await self._client.aio.models.generate_content(
-                model=model,
-                contents=contents,
-                config=config,
-            )
-        except Exception as exc:
-            # Sanitize: never put the API key in the exception message
-            msg_str = str(exc)
-            if "API_KEY" in msg_str.upper() or "INVALID_ARGUMENT" in msg_str:
-                raise RuntimeError(
-                    f"Gemini API error for model '{model}': authentication or request error"
-                ) from exc
+        config = gtypes.GenerateContentConfig(**config_kwargs)
+        candidate_models = _get_candidate_models(model)
+        last_exc: Exception | None = None
+
+        for cand_idx, cand_model in enumerate(candidate_models):
+            for attempt in range(2):
+                try:
+                    response = await self._client.aio.models.generate_content(
+                        model=cand_model,
+                        contents=contents,
+                        config=config,
+                    )
+                    text = ""
+                    try:
+                        text = response.text or ""
+                    except Exception:
+                        text = ""
+
+                    if text.strip():
+                        return text.strip()
+                except Exception as exc:
+                    last_exc = exc
+                    msg_str = str(exc)
+                    if ("API_KEY" in msg_str.upper() or "PERMISSION_DENIED" in msg_str or "UNAUTHENTICATED" in msg_str) and "thinking" not in msg_str.lower():
+                        raise RuntimeError(
+                            "Gemini authentication failed: Invalid or expired API key. "
+                            "Please verify your key at aistudio.google.com"
+                        ) from exc
+
+                    if _is_transient_error(exc) or "400" in msg_str:
+                        if attempt == 0:
+                            await asyncio.sleep(0.35)
+                            continue
+                        elif cand_idx + 1 < len(candidate_models):
+                            next_model = candidate_models[cand_idx + 1]
+                            log.warning(
+                                "Gemini generate failed on '%s' (%s). Retrying with fallback model '%s'",
+                                cand_model,
+                                self._sanitize(msg_str[:120]),
+                                next_model,
+                            )
+                            break
+                    break
+
+        if last_exc:
+            msg_str = self._sanitize(str(last_exc))
             if "RESOURCE_EXHAUSTED" in msg_str or "429" in msg_str:
                 raise RuntimeError(
                     f"Gemini rate limit or quota exceeded for model '{model}'"
-                ) from exc
-            if "MODEL_NOT_FOUND" in msg_str or "404" in msg_str:
+                ) from last_exc
+            if "NOT_FOUND" in msg_str or "404" in msg_str:
                 raise RuntimeError(
-                    f"Gemini model '{model}' not found or unavailable"
-                ) from exc
-            raise RuntimeError(f"Gemini generate failed: {type(exc).__name__}") from exc
+                    f"Gemini model '{model}' not found or deprecated: {msg_str}"
+                ) from last_exc
+            raise RuntimeError(f"Gemini generate failed: {msg_str}") from last_exc
 
-        # Extract text
-        try:
-            text = response.text or ""
-        except Exception:
-            # Some responses have no candidates (blocked)
-            text = ""
-
-        if not text.strip():
-            raise ValueError(f"Gemini returned empty response for model '{model}'")
-
-        return text.strip()
+        raise ValueError(f"Gemini returned empty response for model '{model}'")
 
     async def stream(
         self, messages: list[dict], **kwargs: Any
     ) -> AsyncIterator[str]:
-        """Stream text deltas from Gemini."""
-        from google import genai
+        """Stream text deltas from Gemini with automatic retry and model fallback."""
         from google.genai import types as gtypes
 
         model = kwargs.get("model", self.model)
         temperature = kwargs.get("temperature", self.temperature)
-        max_tokens = kwargs.get("max_output_tokens", self.max_output_tokens)
+        max_tokens = kwargs.get("max_output_tokens") or kwargs.get("max_tokens") or self.max_output_tokens
         system_prompt: str | None = kwargs.get("system_prompt")
 
         contents: list[gtypes.Content] = []
@@ -186,24 +243,82 @@ class GeminiLLMProvider(LLMProvider):
                 )
             )
 
-        config = gtypes.GenerateContentConfig(
-            temperature=temperature,
-            max_output_tokens=max_tokens,
-        )
+        config_kwargs: dict[str, Any] = {
+            "temperature": temperature,
+            "max_output_tokens": max_tokens,
+        }
         if system_prompt:
-            config.system_instruction = system_prompt
+            config_kwargs["system_instruction"] = system_prompt
 
-        try:
-            async for chunk in await self._client.aio.models.generate_content_stream(
-                model=model,
-                contents=contents,
-                config=config,
-            ):
-                delta = chunk.text or ""
-                if delta:
-                    yield delta
-        except Exception as exc:
-            raise RuntimeError(f"Gemini stream failed: {type(exc).__name__}") from exc
+        config = gtypes.GenerateContentConfig(**config_kwargs)
+        candidate_models = _get_candidate_models(model)
+        last_exc: Exception | None = None
+        yielded_any = False
+
+        for cand_idx, cand_model in enumerate(candidate_models):
+            if yielded_any:
+                break
+            for attempt in range(2):
+                if yielded_any:
+                    break
+                try:
+                    stream_res = await self._client.aio.models.generate_content_stream(
+                        model=cand_model,
+                        contents=contents,
+                        config=config,
+                    )
+
+                    async for chunk in stream_res:
+                        delta = ""
+                        try:
+                            delta = chunk.text or ""
+                        except Exception:
+                            delta = ""
+                        if delta:
+                            yielded_any = True
+                            yield delta
+
+                    if yielded_any:
+                        return
+                except Exception as exc:
+                    last_exc = exc
+                    msg_str = str(exc)
+                    if yielded_any:
+                        log.warning("Gemini stream interrupted mid-generation: %s", exc)
+                        return
+
+                    if ("API_KEY" in msg_str.upper() or "PERMISSION_DENIED" in msg_str or "UNAUTHENTICATED" in msg_str) and "thinking" not in msg_str.lower():
+                        raise RuntimeError(
+                            "Gemini authentication failed: Invalid or expired API key. "
+                            "Please verify your key at aistudio.google.com"
+                        ) from exc
+
+                    if _is_transient_error(exc) or "thinking" in msg_str.lower() or "400" in msg_str:
+                        if attempt == 0:
+                            await asyncio.sleep(0.35)
+                            continue
+                        elif cand_idx + 1 < len(candidate_models):
+                            next_model = candidate_models[cand_idx + 1]
+                            log.warning(
+                                "Gemini stream failed on '%s' (%s). Retrying with fallback model '%s'",
+                                cand_model,
+                                self._sanitize(msg_str[:120]),
+                                next_model,
+                            )
+                            break
+                    break
+
+        if not yielded_any and last_exc:
+            msg_str = self._sanitize(str(last_exc))
+            if "RESOURCE_EXHAUSTED" in msg_str or "429" in msg_str:
+                raise RuntimeError(
+                    f"Gemini rate limit or quota exceeded for model '{model}'"
+                ) from last_exc
+            if "NOT_FOUND" in msg_str or "404" in msg_str:
+                raise RuntimeError(
+                    f"Gemini model '{model}' not found or deprecated: {msg_str}"
+                ) from last_exc
+            raise RuntimeError(f"Gemini stream failed: {msg_str}") from last_exc
 
     async def get_models(self) -> list[str]:
         return list(FREE_TIER_MODELS)

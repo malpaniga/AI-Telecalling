@@ -55,7 +55,11 @@ class UsageEventRepository(BaseRepository):
             description=description,
             idempotency_key=idempotency_key,
         )
-        await self.insert(event)
+        try:
+            await self.insert(event)
+        except DuplicateKeyError:
+            log.debug("usage_event idempotent skip (concurrent) key=%s", idempotency_key)
+            return None
         return event
 
     async def list_for_org(

@@ -115,9 +115,21 @@ async def _ensure_indexes(db: AsyncIOMotorDatabase) -> None:
     ])
 
     # wallet_transactions
+    try:
+        existing_txn_indexes = await db["wallet_transactions"].index_information()
+        if "idempotency_key_1" in existing_txn_indexes:
+            if "partialFilterExpression" not in existing_txn_indexes["idempotency_key_1"]:
+                await db["wallet_transactions"].drop_index("idempotency_key_1")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("failed to migrate legacy wallet_transactions idempotency index: %s", exc)
+
     await db["wallet_transactions"].create_indexes([
         IndexModel([("organization_id", ASCENDING), ("created_at", DESCENDING)]),
-        IndexModel([("idempotency_key", ASCENDING)], unique=True, sparse=True),
+        IndexModel(
+            [("idempotency_key", ASCENDING)],
+            unique=True,
+            partialFilterExpression={"idempotency_key": {"$type": "string"}},
+        ),
         IndexModel([("call_id", ASCENDING)], sparse=True),
     ])
 
@@ -208,6 +220,12 @@ async def _ensure_indexes(db: AsyncIOMotorDatabase) -> None:
         IndexModel([("provider_name", ASCENDING), ("rotated_at", ASCENDING)]),
     ])
 
+    # provider_rate_cards (dynamic pricing & loss prevention)
+    await db["provider_rate_cards"].create_indexes([
+        IndexModel([("capability", ASCENDING), ("provider_name", ASCENDING), ("model_id", ASCENDING)], unique=True),
+        IndexModel([("capability", ASCENDING)]),
+    ])
+
     # agents
     await db["agents"].create_indexes([
         IndexModel([("organization_id", ASCENDING)]),
@@ -231,9 +249,17 @@ async def _ensure_indexes(db: AsyncIOMotorDatabase) -> None:
     ])
 
     # leads
+    try:
+        existing_lead_indexes = await db["leads"].index_information()
+        if "organization_id_1_phone_1" in existing_lead_indexes:
+            if "partialFilterExpression" not in existing_lead_indexes["organization_id_1_phone_1"]:
+                await db["leads"].drop_index("organization_id_1_phone_1")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("failed to migrate legacy lead index: %s", exc)
+
     await db["leads"].create_indexes([
         IndexModel([("organization_id", ASCENDING), ("created_at", DESCENDING)]),
-        IndexModel([("organization_id", ASCENDING), ("phone", ASCENDING)], unique=True, sparse=True),
+        IndexModel([("organization_id", ASCENDING), ("phone", ASCENDING)], unique=True, partialFilterExpression={"phone": {"$type": "string"}}),
         IndexModel([("organization_id", ASCENDING), ("status", ASCENDING)]),
         IndexModel([("campaign_id", ASCENDING)], sparse=True),
     ])
@@ -272,10 +298,22 @@ async def _ensure_indexes(db: AsyncIOMotorDatabase) -> None:
     ])
 
     # usage_events
+    try:
+        existing_usage_indexes = await db["usage_events"].index_information()
+        if "idempotency_key_1" in existing_usage_indexes:
+            if "partialFilterExpression" not in existing_usage_indexes["idempotency_key_1"]:
+                await db["usage_events"].drop_index("idempotency_key_1")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("failed to migrate legacy usage_events idempotency index: %s", exc)
+
     await db["usage_events"].create_indexes([
         IndexModel([("organization_id", ASCENDING), ("created_at", DESCENDING)]),
         IndexModel([("call_id", ASCENDING)]),
-        IndexModel([("idempotency_key", ASCENDING)], unique=True, sparse=True),
+        IndexModel(
+            [("idempotency_key", ASCENDING)],
+            unique=True,
+            partialFilterExpression={"idempotency_key": {"$type": "string"}},
+        ),
     ])
 
     # provider_usage

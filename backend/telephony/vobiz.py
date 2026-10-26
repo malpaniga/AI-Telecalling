@@ -79,7 +79,65 @@ class VobizTransport:
         await self.ws.send_text(json.dumps(msg))
 
     async def notify(self, event: dict) -> None:
-        return
+        if event.get("type") == "hangup":
+            # Schedule delayed websocket close to give time for final TTS sentence to be heard by caller
+            async def _close():
+                import asyncio
+                await asyncio.sleep(3.5)
+                await self.close()
+            import asyncio
+            asyncio.create_task(_close())
+
+    async def close(self, code: int = 1000, reason: str = "call_completed") -> None:
+        try:
+            await self.ws.close(code=code, reason=reason)
+        except Exception:
+            pass
+
+
+_active_transports: dict[str, VobizTransport] = {}
+
+
+def get_active_transport(call_id: str) -> Optional[VobizTransport]:
+    return _active_transports.get(call_id)
+
+
+async def hangup_vobiz_call(call_id: str, db: object = None) -> bool:
+    """Terminates an active Vobiz call via WebSocket close and REST API fallback."""
+    terminated = False
+    transport = _active_transports.get(call_id)
+    if transport:
+        try:
+            await transport.close()
+            terminated = True
+        except Exception as exc:
+            log.warning("Failed closing vobiz transport for call %s: %s", call_id, exc)
+
+    if db is not None:
+        try:
+            call_doc = await db.calls.find_one({"_id": call_id})
+            if call_doc and call_doc.get("provider") == "vobiz":
+                provider_res_id = call_doc.get("provider_resource_id") or call_doc.get("provider_call_id")
+                from_num = call_doc.get("from_number")
+                if provider_res_id and from_num:
+                    pn_doc = await db.phone_numbers.find_one({"number": from_num})
+                    if pn_doc:
+                        meta = pn_doc.get("provider_metadata") or {}
+                        auth_id = meta.get("vobiz_auth_id")
+                        auth_token = meta.get("vobiz_auth_token")
+                        if auth_id and auth_token:
+                            from backend.providers.telephony.vobiz import VobizTelephonyProvider
+                            vobiz_provider = VobizTelephonyProvider()
+                            await vobiz_provider.hangup_call(
+                                provider_resource_id=provider_res_id,
+                                auth_id=auth_id,
+                                auth_token=auth_token,
+                            )
+                            terminated = True
+        except Exception as exc:
+            log.warning("Failed REST API hangup for vobiz call %s: %s", call_id, exc)
+
+    return terminated
 
 
 def _stream_wss_url(call_id: Optional[str] = None, agent_id: Optional[str] = None, lang: str = "en-IN") -> str:
@@ -102,6 +160,7 @@ def _vobiz_xml(call_id: Optional[str] = None, agent_id: Optional[str] = None, la
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<Response>\n'
         f'  <Stream bidirectional="true" keepCallAlive="true" streamTimeout="7200" contentType="audio/x-l16;rate=16000">{xml_url}</Stream>\n'
+        '  <Hangup/>\n'
         '</Response>'
     )
 
@@ -139,6 +198,17 @@ async def vobiz_voice(request: Request) -> Response:
 
     # Outbound call: already has call_id and agent configured
     if call_id:
+        db = get_db()
+        if db is not None:
+            try:
+                c_doc = await db.calls.find_one({"_id": call_id})
+                if c_doc and c_doc.get("status") in ("completed", "failed", "cancelled"):
+                    return Response(
+                        content='<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n  <Hangup/>\n</Response>',
+                        media_type="application/xml",
+                    )
+            except Exception:
+                pass
         return Response(
             content=_vobiz_xml(call_id=call_id, agent_id=agent_id, lang=language),
             media_type="application/xml",
@@ -265,6 +335,13 @@ async def ws_vobiz(ws: WebSocket):
         log.warning("failed to load cloud call pipeline: %s", exc)
 
     log.info("Vobiz websocket connected: call_id=%s agent_id=%s lang=%s", call_id, agent_id, language)
+    if call_id:
+        _active_transports[call_id] = transport
+        try:
+            from backend.telephony.broadcaster import call_broadcaster
+            await call_broadcaster.broadcast(call_id, {"type": "connected", "call_id": call_id})
+        except Exception:
+            pass
 
     media_format = {}
     encoding = "audio/x-l16"
@@ -290,6 +367,13 @@ async def ws_vobiz(ws: WebSocket):
                     inbound_sample_rate = int(media_format.get("sampleRate", inbound_sample_rate))
                 log.info("Vobiz stream started: stream_id=%s call_id=%s agent_id=%s lang=%s encoding=%s sr=%s",
                          transport.stream_id, call_id, agent_id, language, encoding, inbound_sample_rate)
+
+                if call_id and db is not None:
+                    try:
+                        from backend.repositories.call_repo import CallRepository
+                        await CallRepository(db).mark_connected(call_id)
+                    except Exception as e:
+                        log.warning("failed marking call connected for %s: %s", call_id, e)
 
                 custom_greeting = None
                 system_prompt = None
@@ -368,10 +452,12 @@ async def ws_vobiz(ws: WebSocket):
                         variables=variables,
                         voice_id=voice_id,
                         barge_in_sensitivity=barge_in_sensitivity,
+                        call_id=call_id,
                     )
-                    if call_id:
-                        session.call_id = call_id
                     await session.start()
+                    if call_id:
+                        from backend.telephony.broadcaster import call_broadcaster
+                        await call_broadcaster.broadcast(call_id, {"type": "connected", "call_id": call_id})
                     started = True
                     log.info("CallSession started for vobiz call %s", call_id)
 
@@ -409,23 +495,42 @@ async def ws_vobiz(ws: WebSocket):
     except Exception as exc:
         log.exception("Vobiz streaming error: %s", exc)
     finally:
+        if call_id:
+            _active_transports.pop(call_id, None)
         if session is not None:
             await session.finalize()
-        # Settle credits if call record exists
+        if call_id:
+            try:
+                from backend.telephony.broadcaster import call_broadcaster
+                await call_broadcaster.broadcast(call_id, {"type": "hangup", "reason": "call_disconnected", "call_id": call_id})
+            except Exception:
+                pass
+        # Finalize call status and settle credits if call record exists
         if call_id and db is not None:
             try:
                 from backend.repositories.call_repo import CallRepository
                 from backend.services.credit_service import CreditService
+                from backend.models.base import utcnow
                 call_repo = CallRepository(db)
                 c_doc = await call_repo.find_by_id(call_id)
                 if c_doc:
-                    credit_svc = CreditService(db)
-                    duration = c_doc.duration_s or 60
+                    started_at = c_doc.started_at or c_doc.created_at
+                    duration = int((utcnow() - started_at).total_seconds()) if started_at else 60
                     consumed = max(1, (duration + 59) // 60) * 10
+                    qualification = session.state.get("output_variables") if session else None
+                    await call_repo.finalize(
+                        call_id=call_id,
+                        organization_id=c_doc.organization_id,
+                        status="completed",
+                        duration_s=duration,
+                        credits_consumed=consumed,
+                        qualification=qualification,
+                    )
+                    credit_svc = CreditService(db)
                     await credit_svc.settle(
                         organization_id=c_doc.organization_id,
                         call_id=call_id,
                         actual_credits=consumed,
                     )
             except Exception as e:
-                log.warning("Failed settling credits for Vobiz call %s: %s", call_id, e)
+                log.warning("Failed finalizing/settling Vobiz call %s: %s", call_id, e)

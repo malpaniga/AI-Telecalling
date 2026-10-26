@@ -40,7 +40,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from backend.config import settings
 from backend.logging_setup import configure_logging
-from backend.core.db import init_db, close_db
+from backend.core.db import init_db, close_db, get_db
 from backend.core.redis import init_redis, close_redis
 from backend.core.health import check_all
 
@@ -461,3 +461,42 @@ try:
     app.include_router(vobiz_router)
 except Exception as exc:  # noqa: BLE001
     log.warning("Vobiz router not loaded: %s", exc)
+
+# ---------------------------------------------------------------------------
+# Real-time Call Live Stream / Monitoring (for Studio Phone Testing & Live Dash)
+# ---------------------------------------------------------------------------
+@app.websocket("/ws/calls/{call_id}")
+async def ws_call_monitor(ws: WebSocket, call_id: str):
+    await ws.accept()
+    from backend.telephony.broadcaster import call_broadcaster
+
+    queue = call_broadcaster.subscribe(call_id)
+    try:
+        # Replay in-memory recent history so frontend immediately gets past turns
+        history = call_broadcaster.get_history(call_id)
+        if history:
+            for evt in history:
+                await ws.send_json(evt)
+        else:
+            # If broadcaster was restarted or empty, read turns from MongoDB
+            db = get_db()
+            if db is not None:
+                turns = await db.turns.find({"call_id": call_id}).sort("ts", 1).to_list(60)
+                for t in turns:
+                    await ws.send_json({
+                        "type": t.get("role"),
+                        "text": t.get("text"),
+                    })
+
+        while True:
+            event = await queue.get()
+            await ws.send_json(event)
+            if event.get("type") == "hangup":
+                await asyncio.sleep(1.0)
+                break
+    except WebSocketDisconnect:
+        pass
+    except Exception as exc:
+        log.warning("ws_call_monitor error for call %s: %s", call_id, exc)
+    finally:
+        call_broadcaster.unsubscribe(call_id, queue)

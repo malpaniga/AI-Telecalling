@@ -1,0 +1,19 @@
+# 1. Automatic HTTPS for your domain
+{$DOMAIN:92.5.149.29.sslip.io} {
+    reverse_proxy api:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# 2. Direct HTTP access via raw IP (no domain required)
+:80 {
+    reverse_proxy api:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

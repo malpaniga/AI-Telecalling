@@ -129,6 +129,16 @@ export default function SarvamAgentStudioPage() {
     tts: boolean;
   }>({ stt: false, llm: false, tts: false });
 
+  // Live Phone Call Testing State
+  const [phoneCallActive, setPhoneCallActive] = useState(false);
+  const [activePhoneCallId, setActivePhoneCallId] = useState<string | null>(null);
+  const [phoneCallStatus, setPhoneCallStatus] = useState<string>("Disconnected");
+  const [phoneTranscript, setPhoneTranscript] = useState<ChatMessage[]>([]);
+  const [phoneExtractedVariables, setPhoneExtractedVariables] = useState<Record<string, string>>({});
+  const phoneWsRef = useRef<WebSocket | null>(null);
+  const phonePollRef = useRef<NodeJS.Timeout | null>(null);
+  const phoneTranscriptEndRef = useRef<HTMLDivElement | null>(null);
+
   // Audio refs
   const wsRef = useRef<WebSocket | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -147,6 +157,25 @@ export default function SarvamAgentStudioPage() {
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript]);
+
+  // Scroll phone transcript to bottom
+  useEffect(() => {
+    phoneTranscriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [phoneTranscript]);
+
+  // Cleanup phone testing connections on unmount
+  useEffect(() => {
+    return () => {
+      if (phoneWsRef.current) {
+        try {
+          phoneWsRef.current.close();
+        } catch {}
+      }
+      if (phonePollRef.current) {
+        clearInterval(phonePollRef.current);
+      }
+    };
+  }, []);
 
   // Load organization's assigned phone numbers for phone testing
   useEffect(() => {
@@ -879,7 +908,120 @@ export default function SarvamAgentStudioPage() {
     }
   }
 
-  // Trigger Phone Test
+  // Trigger Phone Test & Connect Realtime Stream
+  function connectPhoneCallStream(callId: string) {
+    if (phoneWsRef.current) {
+      try { phoneWsRef.current.close(); } catch {}
+      phoneWsRef.current = null;
+    }
+    if (phonePollRef.current) {
+      clearInterval(phonePollRef.current);
+      phonePollRef.current = null;
+    }
+
+    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.hostname;
+    const port = "8000";
+    const wsUrl = `${proto}//${host}:${port}/ws/calls/${encodeURIComponent(callId)}`;
+
+    try {
+      const ws = new WebSocket(wsUrl);
+      phoneWsRef.current = ws;
+
+      ws.onopen = () => {
+        setPhoneCallStatus("Ringing · Waiting for answer");
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "connected" || msg.type === "ready") {
+            setPhoneCallStatus("In Call · Live");
+          } else if (msg.type === "agent") {
+            setPhoneCallStatus("In Call · Speaking");
+            setPhoneTranscript((prev) => {
+              if (prev.length > 0 && prev[prev.length - 1].sender === "agent" && prev[prev.length - 1].text === msg.text) {
+                return prev;
+              }
+              return [
+                ...prev,
+                {
+                  id: Math.random().toString(),
+                  sender: "agent",
+                  text: msg.text,
+                  time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+                },
+              ];
+            });
+          } else if (msg.type === "user") {
+            setPhoneCallStatus("In Call · Listening");
+            setPhoneTranscript((prev) => {
+              if (prev.length > 0 && prev[prev.length - 1].sender === "user" && prev[prev.length - 1].text === msg.text) {
+                return prev;
+              }
+              return [
+                ...prev,
+                {
+                  id: Math.random().toString(),
+                  sender: "user",
+                  text: msg.text,
+                  time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+                },
+              ];
+            });
+          } else if (msg.type === "state") {
+            if (msg.output_variables) {
+              setPhoneExtractedVariables(msg.output_variables);
+            }
+          } else if (msg.type === "hangup") {
+            setPhoneCallStatus("Call Completed");
+            setPhoneCallActive(false);
+          }
+        } catch {}
+      };
+
+      ws.onerror = () => {
+        // Fallback polling will handle updates
+      };
+
+      ws.onclose = () => {
+        // Closed
+      };
+    } catch {}
+
+    // Backup polling every 2.5s to ensure transcript is updated even if network drops
+    phonePollRef.current = setInterval(async () => {
+      try {
+        const transcriptData = await api.calls.getTranscript(callId);
+        if (transcriptData && transcriptData.turns && transcriptData.turns.length > 0) {
+          setPhoneTranscript((prev) => {
+            if (transcriptData.turns.length >= prev.length) {
+              return transcriptData.turns.map((t) => ({
+                id: t.id || Math.random().toString(),
+                sender: (t.role === "user" ? "user" : "agent") as "user" | "agent",
+                text: t.text,
+                time: t.ts ? new Date(t.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "",
+              }));
+            }
+            return prev;
+          });
+          setPhoneCallStatus((prev) => (prev.includes("Ringing") || prev.includes("Dialing") ? "In Call · Live" : prev));
+        }
+        if (transcriptData.output_variables && Object.keys(transcriptData.output_variables).length > 0) {
+          setPhoneExtractedVariables(transcriptData.output_variables);
+        }
+        if (transcriptData.status === "completed" || transcriptData.status === "failed") {
+          setPhoneCallStatus("Call Completed");
+          setPhoneCallActive(false);
+          if (phonePollRef.current) {
+            clearInterval(phonePollRef.current);
+            phonePollRef.current = null;
+          }
+        }
+      } catch {}
+    }, 2500);
+  }
+
   async function handleDialPhone() {
     if (!outboundPhone.trim() || outboundPhone.trim().length < 8) {
       return toast.error("Please enter a valid phone number with country code");
@@ -888,19 +1030,64 @@ export default function SarvamAgentStudioPage() {
       return toast.error("Please select an assigned Calling Number");
     }
     setDialingOutbound(true);
+    setPhoneTranscript([]);
+    setPhoneExtractedVariables({});
+    setPhoneCallStatus("Dialing phone...");
+    setPhoneCallActive(true);
+
     try {
-      await api.calls.initiate({
+      const res = await api.calls.initiate({
         to_number: outboundPhone.trim(),
         from_number: selectedCallingNumber,
         agent_id: agent?.id,
         agent_version: activeVersion?.version ?? 1,
       });
-      toast.success(`Outbound call queued to ${outboundPhone} from ${selectedCallingNumber}`);
+      const callId = res.call_id;
+      setActivePhoneCallId(callId);
+      toast.success(`Outbound call queued to ${outboundPhone}`);
+      connectPhoneCallStream(callId);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Outbound call failed");
+      setPhoneCallActive(false);
+      setPhoneCallStatus("Failed to dial");
     } finally {
       setDialingOutbound(false);
     }
+  }
+
+  async function handleHangupPhoneCall() {
+    if (activePhoneCallId) {
+      try {
+        await api.calls.hangup(activePhoneCallId);
+        toast.success("Call hangup signaled");
+      } catch {}
+    }
+    if (phoneWsRef.current) {
+      try { phoneWsRef.current.close(); } catch {}
+      phoneWsRef.current = null;
+    }
+    if (phonePollRef.current) {
+      clearInterval(phonePollRef.current);
+      phonePollRef.current = null;
+    }
+    setPhoneCallActive(false);
+    setPhoneCallStatus("Call Ended");
+  }
+
+  function handleResetPhoneCall() {
+    if (phoneWsRef.current) {
+      try { phoneWsRef.current.close(); } catch {}
+      phoneWsRef.current = null;
+    }
+    if (phonePollRef.current) {
+      clearInterval(phonePollRef.current);
+      phonePollRef.current = null;
+    }
+    setPhoneCallActive(false);
+    setActivePhoneCallId(null);
+    setPhoneTranscript([]);
+    setPhoneExtractedVariables({});
+    setPhoneCallStatus("Disconnected");
   }
 
   if (loading) {
@@ -1953,7 +2140,129 @@ export default function SarvamAgentStudioPage() {
             )}
 
             {/* Test Tab: PHONE MODE */}
-            {testTab === "phone" && (
+            {testTab === "phone" && (phoneCallActive || phoneTranscript.length > 0 || dialingOutbound) ? (
+              <div className="flex-1 flex flex-col p-4 justify-between overflow-hidden">
+                {/* Phone Call Visualizer & Status */}
+                <div className="p-3.5 rounded-xl border border-border/60 bg-secondary/20 flex flex-col items-center justify-center space-y-2">
+                  {/* Status Indicator Pill */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-card border border-border shadow-sm">
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        phoneCallActive
+                          ? phoneCallStatus.includes("Speaking") || phoneCallStatus.includes("Live")
+                            ? "bg-emerald-400 animate-ping"
+                            : "bg-emerald-400"
+                          : phoneCallStatus.includes("Failed")
+                          ? "bg-rose-400"
+                          : "bg-gray-400"
+                      }`}
+                    />
+                    <span className="text-text-primary">{phoneCallStatus}</span>
+                  </div>
+
+                  {/* Destination & Caller ID Info */}
+                  <div className="text-[10px] text-text-muted flex items-center gap-2">
+                    <span>To: <strong className="text-text-primary font-mono">{outboundPhone}</strong></span>
+                    <span>·</span>
+                    <span>Caller ID: <strong className="text-text-primary font-mono">{selectedCallingNumber}</strong></span>
+                  </div>
+
+                  {/* Pulsing Audio Waves */}
+                  <div className="flex items-center gap-1.5 h-8 py-1">
+                    {[40, 75, 50, 90, 60, 30, 80, 65, 45, 95, 70, 40].map((h, i) => (
+                      <span
+                        key={i}
+                        className={`w-1 rounded-full transition-all duration-150 ${
+                          phoneCallStatus.includes("Speaking")
+                            ? "bg-emerald-400"
+                            : phoneCallActive
+                            ? "bg-primary/60"
+                            : "bg-border"
+                        }`}
+                        style={{
+                          height: phoneCallActive ? `${h}%` : "15%",
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Call Controls: End Call / Dial Another */}
+                  <div className="flex items-center gap-3 pt-0.5">
+                    {phoneCallActive ? (
+                      <button
+                        onClick={handleHangupPhoneCall}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-900/30 transition-all hover:scale-105"
+                      >
+                        <PhoneOff className="w-3.5 h-3.5" /> End Phone Call
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleResetPhoneCall}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all hover:scale-105"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" /> Call Another Number
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Real-time Phone Conversation Transcript */}
+                <div className="flex-1 my-3 overflow-y-auto space-y-2.5 pr-1 scrollbar-thin">
+                  {phoneTranscript.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center p-4 text-text-muted">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-2 animate-pulse">
+                        <Phone className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-medium text-text-primary">Connecting phone call...</p>
+                      <p className="text-[11px] text-text-muted mt-1">Answer your phone on {outboundPhone} to start speaking with {agentName}.</p>
+                    </div>
+                  ) : (
+                    phoneTranscript.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`flex flex-col ${
+                          msg.sender === "user" ? "items-end" : "items-start"
+                        }`}
+                      >
+                        <span className="text-[10px] text-text-muted mb-0.5 px-1">
+                          {msg.sender === "user" ? "You (Phone)" : agentName} · {msg.time}
+                        </span>
+                        <div
+                          className={`max-w-[85%] px-3 py-2 rounded-2xl text-xs leading-relaxed ${
+                            msg.sender === "user"
+                              ? "bg-primary text-primary-foreground rounded-tr-none"
+                              : "bg-secondary text-text-primary rounded-tl-none border border-border/70"
+                          }`}
+                        >
+                          {msg.text}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <div ref={phoneTranscriptEndRef} />
+                </div>
+
+                {/* Real-time Output Variables Disposition Card */}
+                <div className="p-3 rounded-xl border border-border/60 bg-secondary/30 space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-text-primary">
+                    <span>Live Extracted Disposition</span>
+                    <span className="text-[10px] text-primary font-mono">
+                      {Object.keys(phoneExtractedVariables).length} slots
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                    {outputVariables.slice(0, 4).map((k) => (
+                      <div key={k} className="p-1.5 rounded-lg bg-card border border-border/40 truncate">
+                        <span className="text-text-muted block truncate">{k}:</span>
+                        <span className="font-semibold text-text-primary truncate">
+                          {phoneExtractedVariables[k] || "—"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : testTab === "phone" ? (
               <div className="flex-1 p-5 flex flex-col justify-center space-y-4 text-center">
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
                   <Phone className="w-6 h-6" />
@@ -1961,7 +2270,7 @@ export default function SarvamAgentStudioPage() {
                 <div>
                   <h4 className="font-bold text-sm text-text-primary">Call Your Real Phone</h4>
                   <p className="text-xs text-text-muted mt-1 leading-relaxed">
-                    Test this agent live on your phone using your organization&apos;s assigned calling number.
+                    Test this agent live on your phone using your organization&apos;s assigned calling number. Real-time transcript will appear once connected.
                   </p>
                 </div>
 
@@ -2006,7 +2315,7 @@ export default function SarvamAgentStudioPage() {
                   </Button>
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Bottom Pipeline Setup Pill */}
             <div className="px-3.5 py-2 border-t border-border/50 bg-secondary/40 text-[10px] text-text-muted flex items-center justify-between">

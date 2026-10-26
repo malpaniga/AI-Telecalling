@@ -102,14 +102,19 @@ def _rms_dbfs(frame_i16: np.ndarray) -> float:
 # Endpointer state machine (shared by both backends)
 # ---------------------------------------------------------------------------
 class VADEndpointer:
-    def __init__(self, sample_rate: int | None = None):
+    def __init__(
+        self,
+        sample_rate: int | None = None,
+        speech_prob: float | None = None,
+        energy_floor_dbfs: float | None = None,
+    ):
         self.sample_rate = sample_rate or settings.audio_sample_rate
         backend = settings.vad_backend.lower()
 
         if backend == "silero":
-            import os
-            model_path = settings.silero_model_path
-            if not os.path.exists(model_path):
+            from pathlib import Path
+            model_path = str(Path(settings.silero_model_path).resolve())
+            if not Path(model_path).exists():
                 log.warning(
                     "Silero VAD model not found at %s — falling back to webrtc backend",
                     model_path,
@@ -118,17 +123,17 @@ class VADEndpointer:
             else:
                 self._clf = SileroVAD(model_path, self.sample_rate)
                 self.window = SileroVAD.WINDOW
-                self.speech_prob = settings.vad_speech_prob
+                self.speech_prob = speech_prob if speech_prob is not None else settings.vad_speech_prob
 
         if backend != "silero":
             self._clf = _WebRTCVAD(self.sample_rate, settings.vad_aggressiveness)
             self.window = self._clf.window
-            self.speech_prob = 0.5
-        log.info("VAD backend=%s window=%d samples", backend, self.window)
+            self.speech_prob = speech_prob if speech_prob is not None else 0.5
+        log.info("VAD backend=%s window=%d samples prob=%.2f", backend, self.window, self.speech_prob)
 
         self.window_bytes = self.window * 2
         self.window_ms = self.window / self.sample_rate * 1000.0
-        self.energy_floor_dbfs = settings.vad_energy_floor_dbfs
+        self.energy_floor_dbfs = energy_floor_dbfs if energy_floor_dbfs is not None else settings.vad_energy_floor_dbfs
 
         def _n(ms: int) -> int:
             return max(1, round(ms / self.window_ms))

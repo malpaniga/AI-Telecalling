@@ -73,8 +73,30 @@ class UsageService:
         idem_key = f"call_usage:{call_id}"
         customer_charge = credits_consumed * credit_rate_paise
 
-        # Estimate provider costs
-        costs = provider_costs or {}
+        # Dynamic real provider costs lookup
+        costs = dict(provider_costs or {})
+        try:
+            from backend.repositories.pricing_repo import ProviderRateCardRepository
+            rate_repo = ProviderRateCardRepository(self.db)
+            if stt_provider and "stt" not in costs:
+                stt_card = await rate_repo.get_by_provider_and_model("stt", stt_provider, "")
+                if stt_card:
+                    costs["stt"] = int(round(duration_s * (stt_card.blended_cost_per_sec_inr * 100)))
+            if llm_provider and "llm" not in costs:
+                llm_card = await rate_repo.get_by_provider_and_model("llm", llm_provider, "")
+                if llm_card:
+                    costs["llm"] = int(round(duration_s * (llm_card.blended_cost_per_sec_inr * 100)))
+            if tts_provider and "tts" not in costs:
+                tts_card = await rate_repo.get_by_provider_and_model("tts", tts_provider, "")
+                if tts_card:
+                    costs["tts"] = int(round(duration_s * (tts_card.blended_cost_per_sec_inr * 100)))
+            if telephony_provider and "telephony" not in costs:
+                tel_card = await rate_repo.get_by_provider_and_model("telephony", telephony_provider, "")
+                if tel_card:
+                    costs["telephony"] = int(round(duration_s * (tel_card.blended_cost_per_sec_inr * 100)))
+        except Exception as exc:
+            log.warning("could not resolve dynamic provider rate: %s", exc)
+
         tel_cost = costs.get("telephony", duration_s * DEFAULT_PROVIDER_COSTS["telephony_paise_per_s"])
         stt_cost = costs.get("stt", duration_s * DEFAULT_PROVIDER_COSTS["stt_paise_per_s"])
         llm_cost = costs.get("llm", duration_s * DEFAULT_PROVIDER_COSTS["llm_paise_per_s"])

@@ -23,6 +23,8 @@ class BusinessTemplateRepository(BaseRepository):
         description: str = "",
         configuration: Optional[dict] = None,
         slot_definitions: Optional[list] = None,
+        category: str = "Lead qualification",
+        icon_color: str = "blue",
     ) -> BusinessTemplate:
         existing = await self.find_one({"slug": slug})
         if existing:
@@ -34,6 +36,8 @@ class BusinessTemplateRepository(BaseRepository):
             description=description,
             configuration=configuration or {},
             slot_definitions=slot_definitions or [],
+            category=category,
+            icon_color=icon_color,
         )
         await self.insert(tmpl)
         return tmpl

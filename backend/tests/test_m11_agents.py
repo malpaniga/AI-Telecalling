@@ -281,6 +281,9 @@ class TestAgentVersions:
             # Should be published and active
             updated_agent = await svc.get_agent(agent.id, "org-ver")
             assert updated_agent.active_version == version.version
+            # Subsequent publish should succeed idempotently
+            republished = await svc.publish_version(agent.id, version.id, "org-ver")
+            assert republished.status == "published"
         run(_t())
 
     def test_version_numbers_increment(self):

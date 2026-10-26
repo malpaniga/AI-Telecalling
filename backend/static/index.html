@@ -145,6 +145,10 @@
         else if (msg.type === "state") renderState(msg.stage, msg.slots);
         else if (msg.type === "interrupt") stopPlayback();
         else if (msg.type === "ready") statusEl.textContent = "Listening — just talk. You can interrupt anytime.";
+        else if (msg.type === "hangup") {
+          statusEl.textContent = "Call completed.";
+          setTimeout(endCall, 2000);
+        }
       };
 
       processor.onaudioprocess = (e) => {

@@ -15,6 +15,8 @@ from backend.telephony.vobiz import (
     VobizTransport,
     _vobiz_xml,
     _vobiz_unavailable_xml,
+    hangup_vobiz_call,
+    _active_transports,
     router as vobiz_router,
 )
 
@@ -35,6 +37,7 @@ class TestVobizStreaming:
         assert 'keepCallAlive="true"' in xml
         assert "call_id=c_123" in xml
         assert "</Stream>" in xml
+        assert "<Hangup/>" in xml
         assert "</Response>" in xml
 
     def test_vobiz_unavailable_xml_generation(self):
@@ -70,6 +73,23 @@ class TestVobizStreaming:
             clear_json = json.loads(clear_str)
             assert clear_json["event"] == "clearAudio"
             assert clear_json["streamId"] == "stream_xyz_789"
+
+            # Test close
+            await transport.close()
+            assert mock_ws.close.called
+
+        run(_t())
+
+    def test_hangup_vobiz_call_helper(self):
+        async def _t():
+            mock_ws = AsyncMock()
+            transport = VobizTransport(mock_ws)
+            _active_transports["call_active_123"] = transport
+
+            res = await hangup_vobiz_call("call_active_123")
+            assert res is True
+            assert mock_ws.close.called
+            assert "call_active_123" not in _active_transports or mock_ws.close.called
 
         run(_t())
 

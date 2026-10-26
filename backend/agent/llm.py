@@ -17,7 +17,7 @@ from backend.agent.prompts import SKELETON_SYSTEM_PROMPT
 log = logging.getLogger("llm")
 
 # Split on sentence-ending punctuation followed by whitespace.
-_SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+_SENTENCE_END = re.compile(r"(?<=[.!?\u0964\u0965\n])\s+")
 # First {...} block in a string, for lenient JSON recovery.
 _JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
 

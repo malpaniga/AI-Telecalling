@@ -87,8 +87,17 @@ class TwilioTransport:
         )
 
     async def notify(self, event: dict) -> None:
-        # Phone calls have no side-channel UI; transcripts are already persisted.
-        return
+        if event.get("type") == "hangup":
+            async def _close():
+                await asyncio.sleep(3.5)
+                await self.close()
+            asyncio.create_task(_close())
+
+    async def close(self, code: int = 1000, reason: str = "call_completed") -> None:
+        try:
+            await self.ws.close(code=code, reason=reason)
+        except Exception:
+            pass
 
 
 def _stream_wss_url() -> str:
@@ -96,14 +105,19 @@ def _stream_wss_url() -> str:
     return base.replace("https://", "wss://").replace("http://", "ws://") + "/ws/twilio"
 
 
-def _voice_twiml(language: str) -> str:
+def _voice_twiml(language: str, agent_id: str | None = None, call_id: str | None = None) -> str:
     response = VoiceResponse()
     connect = Connect()
     stream = Stream(url=_stream_wss_url())
     # Twilio delivers this back to us in the "start" event customParameters.
     stream.parameter(name="lang", value=language)
+    if agent_id:
+        stream.parameter(name="agent_id", value=agent_id)
+    if call_id:
+        stream.parameter(name="call_id", value=call_id)
     connect.append(stream)
     response.append(connect)
+    response.hangup()
     return str(response)
 
 
@@ -111,8 +125,18 @@ def _voice_twiml(language: str) -> str:
 async def twiml_voice(request: Request) -> Response:
     """Twilio fetches this when a call connects; we hand it a media stream."""
     language = request.query_params.get("lang", "en-IN")
-    log.info("serving voice TwiML (lang=%s) -> %s", language, _stream_wss_url())
-    return Response(content=_voice_twiml(language), media_type="application/xml")
+    agent_id = request.query_params.get("agent_id")
+    call_id = request.query_params.get("call_id")
+    if request.method == "POST":
+        try:
+            form = await request.form()
+            agent_id = agent_id or form.get("agent_id")
+            call_id = call_id or form.get("call_id")
+            language = language or form.get("lang", "en-IN")
+        except Exception:
+            pass
+    log.info("serving voice TwiML (lang=%s agent=%s call=%s) -> %s", language, agent_id, call_id, _stream_wss_url())
+    return Response(content=_voice_twiml(language, agent_id, call_id), media_type="application/xml")
 
 
 @router.websocket("/ws/twilio")
@@ -131,8 +155,63 @@ async def ws_twilio(ws: WebSocket):
             if event == "start":
                 start = msg["start"]
                 transport.stream_sid = start["streamSid"]
-                language = (start.get("customParameters") or {}).get("lang", "en-IN")
-                log.info("twilio stream started sid=%s lang=%s", transport.stream_sid, language)
+                custom_params = start.get("customParameters") or {}
+                language = custom_params.get("lang", "en-IN")
+                agent_id = custom_params.get("agent_id")
+                call_id = custom_params.get("call_id")
+                log.info("twilio stream started sid=%s lang=%s agent_id=%s call_id=%s", transport.stream_sid, language, agent_id, call_id)
+
+                custom_greeting = None
+                system_prompt = None
+                agent_name = None
+                voice_id = None
+                variables = {}
+
+                # Resolve agent prompts and active configuration from database
+                if agent_id or call_id:
+                    try:
+                        from backend.core.db import get_db
+                        db = get_db()
+
+                        if call_id and not agent_id:
+                            call_doc = await db.calls.find_one({"_id": call_id})
+                            if call_doc:
+                                agent_id = call_doc.get("agent_id")
+
+                        if agent_id:
+                            agent_doc = await db.agents.find_one({"_id": agent_id})
+                            if agent_doc:
+                                agent_name = agent_doc.get("name")
+                                org_id = agent_doc.get("organization_id")
+                                active_vid = agent_doc.get("active_version_id")
+                                version_doc = None
+                                if active_vid:
+                                    version_doc = await db.agent_versions.find_one({"_id": active_vid})
+                                if not version_doc:
+                                    version_doc = await db.agent_versions.find_one(
+                                        {"agent_id": agent_id}, sort=[("version", -1)]
+                                    )
+
+                                if version_doc:
+                                    cfg = version_doc.get("configuration") or {}
+                                    custom_greeting = cfg.get("greeting")
+                                    system_prompt = cfg.get("system_prompt")
+                                    language = cfg.get("primary_language", language)
+                                    voice_id = cfg.get("voice_id")
+                                    variables = cfg.get("input_variables") or {}
+                                    strictness = cfg.get("knowledge_strictness", "flexible")
+
+                                    # Ground with Knowledge Base if associated
+                                    if org_id:
+                                        from backend.services.knowledge_service import KnowledgeService
+                                        kb_svc = KnowledgeService(db)
+                                        kb_context = await kb_svc.get_context_for_agent(agent_id, org_id, mode=strictness)
+                                        if kb_context:
+                                            system_prompt = (system_prompt or "") + f"\n\n{kb_context}"
+                                            log.info("injected knowledge base context into twilio call for agent=%s", agent_id)
+                    except Exception as exc:
+                        log.warning("failed to resolve agent config for twilio call: %s", exc)
+
                 session = CallSession(
                     transport=transport,
                     stt=ws.app.state.stt,
@@ -141,6 +220,11 @@ async def ws_twilio(ws: WebSocket):
                     store=ws.app.state.session_store,
                     direction="outbound",
                     language=language,
+                    agent_name=agent_name,
+                    custom_greeting=custom_greeting,
+                    system_prompt=system_prompt,
+                    variables=variables,
+                    voice_id=voice_id,
                 )
                 await session.start()  # greet once the stream is live
                 started = True
@@ -164,7 +248,12 @@ async def ws_twilio(ws: WebSocket):
 
 
 @router.post("/calls/outbound")
-async def place_outbound_call(to: str = Form(...), lang: str = Form("en-IN")) -> JSONResponse:
+async def place_outbound_call(
+    to: str = Form(...),
+    lang: str = Form("en-IN"),
+    agent_id: str | None = Form(None),
+    call_id: str | None = Form(None),
+) -> JSONResponse:
     """Dial `to` (must be verified while on a Twilio trial) and connect Ava."""
     missing = [
         name
@@ -183,10 +272,17 @@ async def place_outbound_call(to: str = Form(...), lang: str = Form("en-IN")) ->
 
     to = "".join(to.split())  # strip any spaces the admin typed in the number
     client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
+
+    query_params = f"lang={quote(lang)}"
+    if agent_id:
+        query_params += f"&agent_id={quote(agent_id)}"
+    if call_id:
+        query_params += f"&call_id={quote(call_id)}"
+
     call = client.calls.create(
         to=to,
         from_=settings.twilio_phone_number,
-        url=f"{settings.public_base_url.rstrip('/')}/twiml/voice?lang={quote(lang)}",
+        url=f"{settings.public_base_url.rstrip('/')}/twiml/voice?{query_params}",
     )
-    log.info("placed outbound call sid=%s to=%s lang=%s", call.sid, to, lang)
-    return JSONResponse({"status": "calling", "call_sid": call.sid, "to": to, "lang": lang})
+    log.info("placed outbound call sid=%s to=%s lang=%s agent=%s", call.sid, to, lang, agent_id)
+    return JSONResponse({"status": "calling", "call_sid": call.sid, "to": to, "lang": lang, "agent_id": agent_id})

@@ -365,6 +365,32 @@ class TestKnowledgeService:
             assert len(context) <= 600   # some slack for truncation message
         run(_t())
 
+    def test_get_context_strict_and_flexible_modes(self):
+        async def _t():
+            svc = self._svc()
+            kb = await svc.create_kb("org-1", "Mode KB")
+            await svc.add_document("org-1", kb.id, "Plan Overview", "Premium plan is $99/month.")
+            await svc.associate_agent("org-1", kb.id, "agent-mode")
+
+            strict_ctx = await svc.get_context_for_agent("agent-mode", "org-1", mode="strict")
+            assert "Strict Mode" in strict_ctx
+            assert "CRITICAL INSTRUCTION" in strict_ctx
+            assert "Plan Overview" in strict_ctx
+
+            flex_ctx = await svc.get_context_for_agent("agent-mode", "org-1", mode="flexible")
+            assert "Strict Mode" not in flex_ctx
+            assert "Reference Knowledge Base" in flex_ctx
+            assert "primary source of truth" in flex_ctx
+
+            raw_ctx = await svc.get_context_for_agent("agent-mode", "org-1", mode="raw")
+            assert "CRITICAL INSTRUCTION" not in raw_ctx
+            assert "primary source of truth" not in raw_ctx
+            assert "Plan Overview" in raw_ctx
+
+            no_kb_ctx = await svc.get_context_for_agent("agent-without-kb", "org-1", mode="strict")
+            assert no_kb_ctx == ""
+        run(_t())
+
     def test_tenant_isolation_add_doc(self):
         async def _t():
             svc = self._svc()
@@ -486,6 +512,13 @@ class TestKnowledgeHTTP:
                                headers=self._auth(self.token_a))
         assert resp.status_code == 200
         assert "char_count" in resp.json()
+        assert resp.json()["mode"] == "flexible"
+
+        resp_strict = self.client.get("/api/v1/knowledge/context/agent-http-1?mode=strict",
+                                      headers=self._auth(self.token_a))
+        assert resp_strict.status_code == 200
+        assert "Strict Mode" in resp_strict.json()["context"]
+        assert resp_strict.json()["mode"] == "strict"
 
     def test_update_document_creates_new_version(self):
         r = self.client.post("/api/v1/knowledge", json={"name": "Version KB"},

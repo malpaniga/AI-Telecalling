@@ -106,13 +106,13 @@ class Settings(BaseSettings):
     audio_sample_rate: int = 16000
     vad_backend: str = "silero"
     silero_model_path: str = "./models/silero/silero_vad.onnx"
-    vad_speech_prob: float = 0.5
-    vad_energy_floor_dbfs: float = -50.0
+    vad_speech_prob: float = 0.55
+    vad_energy_floor_dbfs: float = -45.0
     vad_frame_ms: int = 20
-    vad_aggressiveness: int = 3
-    vad_silence_ms: int = 800
-    vad_min_speech_ms: int = 250
-    vad_speech_confirm_ms: int = 200
+    vad_aggressiveness: int = 2
+    vad_silence_ms: int = 280
+    vad_min_speech_ms: int = 120
+    vad_speech_confirm_ms: int = 100
     vad_max_utterance_ms: int = 20000
 
     @property

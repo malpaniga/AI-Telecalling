@@ -272,6 +272,17 @@ class WalletService:
         if credits_delta == 0:
             raise ValueError("credits_delta cannot be zero")
 
+        # Check idempotency
+        if idempotency_key:
+            existing = await self.txn_repo.find_one({"idempotency_key": idempotency_key})
+            if existing:
+                return {
+                    "credits_delta": 0,
+                    "transaction_id": existing.id,
+                    "new_balance": wallet.available_credits,
+                    "idempotent": True,
+                }
+
         if credits_delta > 0:
             updated = await self.wallet_repo.atomic_add(
                 wallet.id, credits_delta, field="total_bonus"
@@ -288,28 +299,58 @@ class WalletService:
                     f"Available: {wallet.available_credits}"
                 )
 
-        txn = await self.txn_repo.record(
-            organization_id=organization_id,
-            wallet_id=wallet.id,
-            transaction_type="admin_adjustment",
-            credits_delta=credits_delta,
-            available_delta=credits_delta,
-            reserved_delta=0,
-            balance_after=updated["available_credits"],
-            description=reason,
-            idempotency_key=idempotency_key,
-            created_by=admin_user_id,
-        )
-
-        if credits_delta > 0 and txn:
-            await self.lot_repo.create(
+        try:
+            txn = await self.txn_repo.record(
                 organization_id=organization_id,
                 wallet_id=wallet.id,
-                transaction_id=txn.id,
-                credits=credits_delta,
-                source="admin_adjustment",
-                validity_days=365,
+                transaction_type="admin_adjustment",
+                credits_delta=credits_delta,
+                available_delta=credits_delta,
+                reserved_delta=0,
+                balance_after=updated["available_credits"],
+                description=reason,
+                idempotency_key=idempotency_key,
+                created_by=admin_user_id,
             )
+
+            if txn is None and idempotency_key:
+                # Concurrent duplicate prevented; roll back speculative balance update
+                if credits_delta > 0:
+                    await self.wallet_repo.atomic_add(
+                        wallet.id, -credits_delta, field="total_bonus"
+                    )
+                else:
+                    await self.wallet_repo.atomic_credit_available(
+                        wallet.id, abs(credits_delta)
+                    )
+                existing = await self.txn_repo.find_one({"idempotency_key": idempotency_key})
+                return {
+                    "credits_delta": 0,
+                    "transaction_id": existing.id if existing else None,
+                    "new_balance": wallet.available_credits,
+                    "idempotent": True,
+                }
+
+            if credits_delta > 0 and txn:
+                await self.lot_repo.create(
+                    organization_id=organization_id,
+                    wallet_id=wallet.id,
+                    transaction_id=txn.id,
+                    credits=credits_delta,
+                    source="admin_adjustment",
+                    validity_days=365,
+                )
+        except Exception:
+            # Roll back atomic wallet balance change on ledger failure
+            if credits_delta > 0:
+                await self.wallet_repo.atomic_add(
+                    wallet.id, -credits_delta, field="total_bonus"
+                )
+            else:
+                await self.wallet_repo.atomic_credit_available(
+                    wallet.id, abs(credits_delta)
+                )
+            raise
 
         log.info("admin_adjustment org=%s delta=%d by=%s", organization_id, credits_delta, admin_user_id)
         return {

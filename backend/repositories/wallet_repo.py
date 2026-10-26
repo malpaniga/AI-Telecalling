@@ -270,7 +270,11 @@ class WalletTransactionRepository(BaseRepository):
             idempotency_key=idempotency_key,
             created_by=created_by,
         )
-        await self.insert(txn)
+        try:
+            await self.insert(txn)
+        except DuplicateKeyError:
+            log.info("duplicate transaction prevented key=%s", idempotency_key)
+            return None
         return txn
 
     async def list_for_org(

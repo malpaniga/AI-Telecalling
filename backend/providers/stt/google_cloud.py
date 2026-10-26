@@ -34,7 +34,10 @@ Audio requirements:
 """
 
 import asyncio
+import json
 import logging
+import os
+import re
 from typing import Any
 
 from backend.providers.base import STTProvider
@@ -91,9 +94,34 @@ class GoogleCloudSTTProvider(STTProvider):
             return self._client
         from google.cloud import speech
         if self.credentials_json:
-            import json
             from google.oauth2.service_account import Credentials
-            info = json.loads(self.credentials_json)
+            raw = self.credentials_json.strip()
+            # If path to a file on disk, read it
+            if os.path.isfile(raw):
+                try:
+                    with open(raw, "r", encoding="utf-8") as f:
+                        info = json.load(f)
+                except Exception as err:
+                    raise ValueError(f"Failed to read service account JSON file from '{raw}': {err}") from err
+            else:
+                try:
+                    info = json.loads(raw)
+                except json.JSONDecodeError as err:
+                    raise ValueError(
+                        "Google Cloud STT credentials must be a valid Service Account JSON string "
+                        "(API keys are not supported by the Google Cloud Speech API)."
+                    ) from err
+
+            if not isinstance(info, dict) or info.get("type") != "service_account":
+                raise ValueError(
+                    "Google Cloud STT requires a Service Account JSON key (must contain '\"type\": \"service_account\"'). "
+                    "API keys are not supported."
+                )
+
+            # Auto-extract project_id if self.project_id was default or empty
+            if (not self.project_id or self.project_id == "test-project") and info.get("project_id"):
+                self.project_id = info["project_id"]
+
             creds = Credentials.from_service_account_info(
                 info,
                 scopes=["https://www.googleapis.com/auth/cloud-platform"],
@@ -207,10 +235,22 @@ def _detect_encoding(audio: bytes) -> tuple[int, bytes]:
 def _sanitize_google_error(exc: Exception) -> str:
     """Return a sanitized error message — never includes credentials."""
     msg = str(exc)
+    if isinstance(exc, (json.JSONDecodeError, ValueError)):
+        if "json" in msg.lower() or isinstance(exc, json.JSONDecodeError) or "service account" in msg.lower():
+            return "Google Cloud STT requires a valid Service Account JSON key (API keys are not supported)"
+        return f"Google Cloud STT configuration error: {msg}"
+    if "API keys are not supported" in msg:
+        return "Google Cloud STT does not support API keys — use a Service Account JSON key"
+    if "MalformedError" in type(exc).__name__ or "service account info" in msg.lower():
+        return "Google Cloud STT invalid Service Account JSON — missing required fields (client_email, private_key, etc.)"
     if "401" in msg or "UNAUTHENTICATED" in msg or "credentials" in msg.lower():
-        return "Google Cloud STT authentication failed — check GOOGLE_APPLICATION_CREDENTIALS"
+        return "Google Cloud STT authentication failed — check service account permissions and key validity"
+    if "SERVICE_DISABLED" in msg or "has not been used in project" in msg or ("disabled" in msg.lower() and "enable" in msg.lower()):
+        match = re.search(r"https://console[^\s'\",\)]+", msg)
+        url = match.group(0).rstrip(".\",'\n") if match else "https://console.cloud.google.com/apis/library/speech.googleapis.com"
+        return f"Google Cloud Speech-to-Text API is not enabled in your project. Enable it at: {url}"
     if "403" in msg or "PERMISSION_DENIED" in msg:
-        return "Google Cloud STT permission denied — check service account IAM roles"
+        return "Google Cloud STT permission denied — check service account IAM roles (roles/speech.client required)"
     if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
         return "Google Cloud STT quota exceeded or rate limit hit"
     if "404" in msg or "NOT_FOUND" in msg:

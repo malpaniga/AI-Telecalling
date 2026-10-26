@@ -162,10 +162,30 @@ class ModelDirectoryService:
                     f"Required: {catalogue_entry.credential_requirements}"
                 )
 
+        # Validate Google Cloud STT service account JSON
+        if provider_name == "google-cloud-stt" and credential_plaintext:
+            import json
+            try:
+                parsed = json.loads(credential_plaintext.strip())
+                if not isinstance(parsed, dict):
+                    raise ValueError("Not a JSON object")
+                if "type" in parsed and parsed.get("type") != "service_account":
+                    raise ValueError("Not a service_account JSON")
+            except Exception as err:
+                raise ValueError(
+                    "Google Cloud STT requires a valid Service Account JSON key (must contain '\"type\": \"service_account\"'). "
+                    "API keys are not supported by the Google Cloud Speech API."
+                ) from err
+            extra = req.get("extra_params") or {}
+            if not extra.get("project_id") and parsed.get("project_id"):
+                extra["project_id"] = parsed["project_id"]
+                req["extra_params"] = extra
+
         # Encrypt and store credential
         if credential_plaintext:
-            hint = credential_store.key_hint(credential_plaintext)
-            encrypted = credential_store.encrypt(credential_plaintext)
+            clean_cred = credential_plaintext.strip().strip("'\"")
+            hint = credential_store.key_hint(clean_cred)
+            encrypted = credential_store.encrypt(clean_cred)
             cred = ProviderCredential(
                 _id=new_id(),
                 provider_name=provider_name,
@@ -397,6 +417,21 @@ class ModelDirectoryService:
         """Encrypt and store a new credential, marking the old one as rotated."""
         if not new_plaintext:
             raise ValueError("New credential must not be empty")
+
+        if provider_name == "google-cloud-stt":
+            import json
+            try:
+                parsed = json.loads(new_plaintext.strip())
+                if not isinstance(parsed, dict):
+                    raise ValueError("Not a JSON object")
+                if "type" in parsed and parsed.get("type") != "service_account":
+                    raise ValueError("Not a service_account JSON")
+            except Exception as err:
+                raise ValueError(
+                    "Google Cloud STT requires a valid Service Account JSON key (must contain '\"type\": \"service_account\"'). "
+                    "API keys are not supported by the Google Cloud Speech API."
+                ) from err
+
         hint = credential_store.key_hint(new_plaintext)
         encrypted = credential_store.encrypt(new_plaintext)
         await self._cred_repo.mark_rotated(provider_name)

@@ -11,6 +11,9 @@ import {
   Server,
   HardDrive,
   AlertTriangle,
+  Wand2,
+  Sparkles,
+  Phone,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Card, CardBody } from "@/components/ui/card";
@@ -19,6 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { api, AIModelCatalogue } from "@/lib/api";
+import { ModelConnectCard } from "@/components/model-directory/ModelConnectCard";
+import { useTestAgent } from "@/contexts/test-agent-context";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -71,6 +76,13 @@ function formatFreeTierInfo(
   return values.join(" · ");
 }
 
+function freeTierDetails(freeTierInfo: AIModelCatalogue["free_tier_info"]) {
+  if (!freeTierInfo || typeof freeTierInfo === "string") return [];
+  return Object.entries(freeTierInfo).filter(
+    ([key, value]) => key !== "note" && value !== null && value !== undefined && value !== ""
+  );
+}
+
 // ---------------------------------------------------------------------------
 // ModelCard component
 // ---------------------------------------------------------------------------
@@ -91,6 +103,11 @@ function ModelCard({
   const freeTierStale =
     model.free_tier_info != null && isStale(model.free_tier_verified_date);
   const freeTierInfo = formatFreeTierInfo(model.free_tier_info);
+  const freeTierDetailsList = freeTierDetails(model.free_tier_info);
+  const freeTierNote =
+    typeof model.free_tier_info === "object" && model.free_tier_info && typeof model.free_tier_info.note === "string"
+      ? model.free_tier_info.note
+      : null;
 
   const statusVariant =
     model.implementation_status === "supported"
@@ -152,20 +169,24 @@ function ModelCard({
 
         {/* Free tier / pricing */}
         {freeTierInfo && (
-          <div
-            className={`rounded-md px-3 py-2 text-xs ${
-              freeTierStale
-                ? "bg-[#FEF6E7] text-warning border border-[#F5D99A]"
-                : "bg-[#EBF7F2] text-success border border-[#C0E8D5]"
-            }`}
-          >
-            {freeTierStale ? (
-              <span className="flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3 shrink-0" />
-                Pricing data may be stale — {freeTierInfo}
-              </span>
-            ) : (
-              freeTierInfo
+          <div className="rounded-md border border-border bg-surface-subtle p-3 text-xs">
+            <p className="font-medium text-text-primary">Free-tier limits</p>
+            {freeTierDetailsList.length > 0 && (
+              <dl className="mt-2 grid grid-cols-2 gap-2">
+                {freeTierDetailsList.map(([key, value]) => (
+                  <div key={key} className="rounded bg-surface px-2 py-1.5">
+                    <dt className="capitalize text-text-muted">{key.replace(/_/g, " ")}</dt>
+                    <dd className="mt-0.5 font-medium text-text-primary">{String(value)}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {freeTierNote && <p className="mt-2 leading-5 text-text-secondary">{String(freeTierNote)}</p>}
+            {freeTierStale && (
+              <p className="mt-2 flex items-start gap-1.5 rounded bg-[#FEF6E7] px-2 py-1.5 leading-5 text-warning">
+                <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+                Limits were last verified {model.free_tier_verified_date ?? "on an unknown date"}. Confirm them with the provider before relying on them.
+              </p>
             )}
           </div>
         )}
@@ -249,6 +270,7 @@ function ModelCard({
 
 export default function AdminModelsPage() {
   const router = useRouter();
+  const { openTestAgent } = useTestAgent();
   const [models, setModels] = useState<AIModelCatalogue[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -322,13 +344,34 @@ export default function AdminModelsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-lg font-semibold text-text-primary">
-          AI Models Directory
-        </h2>
-        <p className="text-sm text-text-secondary mt-0.5">
-          Browse and connect AI providers for TTS, STT, and LLM capabilities.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-text-primary">
+            AI Models Directory
+          </h2>
+          <p className="text-sm text-text-secondary mt-0.5">
+            Browse and connect AI providers for TTS, STT, and LLM capabilities.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            size="sm"
+            onClick={() => openTestAgent()}
+            className="gap-1.5 bg-black hover:bg-neutral-800 text-white dark:bg-white dark:text-black shadow-sm"
+          >
+            <Phone className="h-3.5 w-3.5 fill-current" />
+            Test Agent
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => router.push("/admin/wizard")}
+            className="gap-2 bg-[#E07038] hover:bg-[#C85D26] text-white shadow-sm"
+          >
+            <Wand2 className="h-4 w-4" />
+            Launch Setup Wizard
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -388,9 +431,9 @@ export default function AdminModelsPage() {
           description="Try adjusting your search or filters."
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {models.map((model) => (
-            <ModelCard
+            <ModelConnectCard
               key={model.id}
               model={model}
               onConnect={handleConnect}

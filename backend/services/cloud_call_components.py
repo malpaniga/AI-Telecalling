@@ -5,11 +5,12 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import AsyncIterator
+from typing import Any
 from dataclasses import dataclass
 
 from backend.providers.base import LLMProvider, STTProvider, TTSProvider
 
-_SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+_SENTENCE_END = re.compile(r"(?<=[.!?।॥\n])\s+")
 _JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
 
 
@@ -25,18 +26,21 @@ class CloudCallLLM:
     async def stream_sentences(
         self, history: list[dict], system_prompt: str | None = None
     ) -> AsyncIterator[str]:
+        # Keep only the most recent 6 messages to prevent prompt bloat and keep generation under 1 second
+        bounded_history = history[-6:] if len(history) > 6 else history
         buffer = ""
-        async for delta in self._provider.stream(history, system_prompt=system_prompt):
+        async for delta in self._provider.stream(bounded_history, system_prompt=system_prompt):
             buffer += delta
             parts = _SENTENCE_END.split(buffer)
-            while len(parts) > 1:
-                sentence = parts.pop(0).strip()
-                if sentence:
-                    yield sentence
-                buffer = _SENTENCE_END.split(buffer, maxsplit=1)[1]
-                parts = _SENTENCE_END.split(buffer)
-        if buffer.strip():
-            yield buffer.strip()
+            if len(parts) > 1:
+                for sentence in parts[:-1]:
+                    s = sentence.strip()
+                    if s:
+                        yield s
+                buffer = parts[-1]
+        tail = buffer.strip()
+        if tail:
+            yield tail
 
     async def complete_json(self, system_prompt: str, user_content: str) -> dict:
         """Best-effort extraction; a malformed model answer cannot end a call."""
@@ -46,6 +50,7 @@ class CloudCallLLM:
                 system_prompt=system_prompt,
                 temperature=0,
                 max_tokens=150,
+                max_output_tokens=150,
             )
             return _parse_json(raw)
         except Exception:  # call engine treats extraction as non-critical
@@ -59,14 +64,14 @@ class CloudCallTTS:
         self._provider = provider
         self.sample_rate = int(provider.get_capabilities().get("sample_rate", 16000))
 
-    async def synthesize(self, text: str, language: str | None = None) -> tuple[bytes, int]:
-        result = await self._provider.synthesize(text, language=language)
+    async def synthesize(self, text: str, language: str | None = None, **kwargs: Any) -> tuple[bytes, int]:
+        result = await self._provider.synthesize(text, language=language, **kwargs)
         return result.get("audio", b""), int(result.get("sample_rate", self.sample_rate))
 
     async def synthesize_stream(
-        self, text: str, language: str | None = None
+        self, text: str, language: str | None = None, **kwargs: Any
     ) -> AsyncIterator[tuple[bytes, int]]:
-        async for result in self._provider.stream(text, language=language):
+        async for result in self._provider.stream(text, language=language, **kwargs):
             audio = result.get("audio", b"")
             if audio:
                 yield audio, int(result.get("sample_rate", self.sample_rate))

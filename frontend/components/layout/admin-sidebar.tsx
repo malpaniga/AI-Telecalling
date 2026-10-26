@@ -23,6 +23,7 @@ import {
   Volume2,
   AudioWaveform,
   Bot,
+  Wand2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -32,6 +33,7 @@ import { useAuth } from "@/contexts/auth-context";
 
 const ADMIN_LINKS = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/wizard", label: "Setup Wizard", icon: Wand2 },
   { href: "/admin/organizations", label: "Organizations", icon: Building2 },
   { href: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard },
   { href: "/admin/calling-packs", label: "Calling Packs", icon: Package },

@@ -916,6 +916,24 @@ export const api = {
     }) => apiRequest<{ call_id: string; status: string }>(
       "POST", "/api/v1/calls/initiate", body
     ),
+    getTranscript: (callId: string) =>
+      apiRequest<{
+        call_id: string;
+        status: string;
+        turns: Array<{
+          id: string;
+          role: string;
+          text: string;
+          stage?: string;
+          latency_ms?: number;
+          ts?: string;
+        }>;
+        output_variables?: Record<string, string>;
+      }>("GET", `/api/v1/calls/${callId}/transcript`),
+    hangup: (callId: string) =>
+      apiRequest<{ status: string; call_id: string }>(
+        "POST", `/api/v1/calls/${callId}/hangup`
+      ),
   },
 
   // ── Appointments ──────────────────────────────────────────────────────────

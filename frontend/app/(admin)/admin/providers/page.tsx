@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { RefreshCw, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Wand2, Phone } from "lucide-react";
 import toast from "react-hot-toast";
+import { useTestAgent } from "@/contexts/test-agent-context";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusBadge } from "@/components/ui/badge";
@@ -63,6 +65,8 @@ function statusIcon(status: string) {
 }
 
 export default function AdminProvidersPage() {
+  const router = useRouter();
+  const { openTestAgent } = useTestAgent();
   const [health, setHealth] = useState<HealthSummary | null>(null);
   const [metrics, setMetrics] = useState<ProviderMetric[]>([]);
   const [latency, setLatency] = useState<LatencyStats | null>(null);
@@ -121,15 +125,33 @@ export default function AdminProvidersPage() {
             </div>
           )}
         </div>
-        <Button
-          size="sm"
-          variant="secondary"
-          loading={refreshing}
-          onClick={() => load(true)}
-        >
-          <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => openTestAgent()}
+            className="gap-1.5 bg-black hover:bg-neutral-800 text-white dark:bg-white dark:text-black shadow-sm"
+          >
+            <Phone className="h-3.5 w-3.5 fill-current" />
+            Test Agent
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => router.push("/admin/wizard")}
+            className="gap-1.5 bg-[#E07038] hover:bg-[#C85D26] text-white"
+          >
+            <Wand2 className="h-3.5 w-3.5" />
+            Setup Wizard
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={refreshing}
+            onClick={() => load(true)}
+          >
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Latency cards */}

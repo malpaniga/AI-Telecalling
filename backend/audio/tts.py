@@ -16,6 +16,7 @@ import logging
 import time
 import wave
 from abc import ABC, abstractmethod
+from typing import Any
 from collections.abc import AsyncIterator
 from pathlib import Path
 
@@ -54,20 +55,20 @@ class TTSEngine(ABC):
     sample_rate: int
 
     @abstractmethod
-    async def synthesize(self, text: str, language: str | None = None) -> tuple[bytes, int]:
+    async def synthesize(self, text: str, language: str | None = None, **kwargs: Any) -> tuple[bytes, int]:
         ...
 
-    async def synthesize_wav(self, text: str, language: str | None = None) -> bytes:
-        pcm, sr = await self.synthesize(text, language)
+    async def synthesize_wav(self, text: str, language: str | None = None, **kwargs: Any) -> bytes:
+        pcm, sr = await self.synthesize(text, language, **kwargs)
         return pcm_to_wav(pcm, sr)
 
     async def synthesize_stream(
-        self, text: str, language: str | None = None
+        self, text: str, language: str | None = None, **kwargs: Any
     ) -> AsyncIterator[tuple[bytes, int]]:
         """Yield (pcm16_chunk, sample_rate) as audio is produced. Default: one
         chunk (full synthesis). Engines that support progressive audio override
         this to start speaking sooner."""
-        pcm, sr = await self.synthesize(text, language)
+        pcm, sr = await self.synthesize(text, language, **kwargs)
         if pcm:
             yield pcm, sr
 
@@ -92,7 +93,7 @@ class PiperEngine(TTSEngine):
             chunks.extend(chunk.audio_int16_bytes)
         return bytes(chunks)
 
-    async def synthesize(self, text: str, language: str | None = None) -> tuple[bytes, int]:
+    async def synthesize(self, text: str, language: str | None = None, **kwargs: Any) -> tuple[bytes, int]:
         # Piper voice is English-only; language is ignored.
         text = text.strip()
         if not text:
@@ -132,17 +133,18 @@ class SarvamEngine(TTSEngine):
             self.model, self.speaker, self.language,
         )
 
-    async def synthesize(self, text: str, language: str | None = None) -> tuple[bytes, int]:
+    async def synthesize(self, text: str, language: str | None = None, **kwargs: Any) -> tuple[bytes, int]:
         text = text.strip()
         if not text:
             return b"", self.sample_rate
+        speaker = kwargs.get("voice_id") or kwargs.get("speaker") or self.speaker
         started = time.perf_counter()
         resp = await self._client.post(
             self._URL,
             json={
                 "text": text,
                 "target_language_code": language or self.language,
-                "speaker": self.speaker,
+                "speaker": speaker,
                 "model": self.model,
                 "speech_sample_rate": self.sample_rate,
             },
@@ -159,18 +161,19 @@ class SarvamEngine(TTSEngine):
         return pcm, sr
 
     async def synthesize_stream(
-        self, text: str, language: str | None = None
+        self, text: str, language: str | None = None, **kwargs: Any
     ) -> AsyncIterator[tuple[bytes, int]]:
         """Progressive synthesis via Sarvam's streaming endpoint (linear16 = raw
         headerless PCM16). First audio arrives in ~0.5 s instead of ~2.5 s."""
         text = text.strip()
         if not text:
             return
+        speaker = kwargs.get("voice_id") or kwargs.get("speaker") or self.speaker
         sr = self.sample_rate
         body = {
             "text": text,
             "target_language_code": language or self.language,
-            "speaker": self.speaker,
+            "speaker": speaker,
             "model": self.model,
             "speech_sample_rate": sr,
             "output_audio_codec": "linear16",
@@ -207,7 +210,7 @@ class OrpheusEngine(TTSEngine):
             "OrpheusEngine is not wired yet. Use TTS_ENGINE=piper or sarvam."
         )
 
-    async def synthesize(self, text: str, language: str | None = None) -> tuple[bytes, int]:  # pragma: no cover
+    async def synthesize(self, text: str, language: str | None = None, **kwargs: Any) -> tuple[bytes, int]:  # pragma: no cover
         raise NotImplementedError
 
 

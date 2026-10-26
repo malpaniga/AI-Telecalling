@@ -601,3 +601,42 @@ def test_tts_catalogue_uses_verified_sarvam_and_elevenlabs_model_ids():
 
     assert {"bulbul:v3", "bulbul:v4-flash"}.issubset(sarvam_models)
     assert eleven_models == SUPPORTED_MODELS
+
+
+def test_google_cloud_stt_invalid_credential_error_message():
+    """Google Cloud STT gives clear error when credential is not service account JSON."""
+    from backend.providers.stt.google_cloud import GoogleCloudSTTProvider, _sanitize_google_error
+
+    # Non-JSON string (like an API key)
+    provider = GoogleCloudSTTProvider(
+        project_id="test-project",
+        credentials_json="AIzaSyFakeApiKey12345",
+    )
+    with pytest.raises(ValueError) as excinfo:
+        provider._get_client()
+    assert "Service Account JSON" in str(excinfo.value)
+    sanitized = _sanitize_google_error(excinfo.value)
+    assert "Service Account JSON" in sanitized
+    assert "API keys are not supported" in sanitized
+
+    # Valid JSON but not service account
+    provider2 = GoogleCloudSTTProvider(
+        project_id="test-project",
+        credentials_json='{"api_key": "some-key"}',
+    )
+    with pytest.raises(ValueError) as excinfo2:
+        provider2._get_client()
+    assert "Service Account JSON" in str(excinfo2.value)
+
+
+def test_credential_hint_service_account():
+    """key_hint formats service account credentials cleanly."""
+    from backend.core.secrets import credential_store
+
+    plain_api_key = "AIzaSyFakeKey12345"
+    assert credential_store.key_hint(plain_api_key) == "2345"
+
+    sa_json = '{"type": "service_account", "client_email": "my-sa@my-proj.iam.gserviceaccount.com"}'
+    hint = credential_store.key_hint(sa_json)
+    assert "my-sa" in hint or "sa:" in hint
+

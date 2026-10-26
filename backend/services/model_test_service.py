@@ -84,7 +84,7 @@ class ModelTestService:
         started = time.perf_counter()
         try:
             if provider_name == "sarvam":
-                audio = await self._test_sarvam_tts(credential, language)
+                audio = await self._test_sarvam_tts(credential, language, model_id)
             elif provider_name == "elevenlabs":
                 audio = await self._test_elevenlabs_tts(credential, voice, model_id)
             elif provider_name == "piper":
@@ -104,27 +104,62 @@ class ModelTestService:
             log.warning("TTS test failed for provider=%s: %s", provider_name, type(exc).__name__)
             return {"status": "error", "error": str(exc)}
 
-    async def _test_sarvam_tts(self, credential: str | None, language: str | None) -> bytes:
+    async def _test_sarvam_tts(self, credential: str | None, language: str | None, model_id: str | None = None) -> bytes:
         """[LIVE] Test Sarvam TTS using an injected API key."""
         import httpx
 
         if not credential:
             raise ValueError("SARVAM_API_KEY is required for Sarvam TTS")
+
+        clean_key = credential.strip().strip("'\"")
+        if clean_key.startswith("Bearer "):
+            clean_key = clean_key[7:].strip()
+
         async with httpx.AsyncClient(
             timeout=20.0,
-            headers={"api-subscription-key": credential},
+            headers={"api-subscription-key": clean_key},
         ) as client:
+            target_model = model_id or "bulbul:v4-flash"
+            lang_code = language or "en-IN"
+            if "v4" in target_model.lower():
+                speaker = (
+                    "kavya_hi_conversational" if "hi" in lang_code
+                    else "ishita_mr_conversational" if "mr" in lang_code
+                    else "aditi_en_stories"
+                )
+            else:
+                speaker = "kavya"
+
             resp = await client.post(
                 "https://api.sarvam.ai/text-to-speech",
                 json={
                     "text": "Hello, this is a test.",
-                    "target_language_code": language or "en-IN",
-                    "speaker": "kavya",
-                    "model": "bulbul:v3",
+                    "target_language_code": lang_code,
+                    "speaker": speaker,
+                    "model": target_model,
                     "speech_sample_rate": 22050,
                 },
             )
-            resp.raise_for_status()
+            if resp.status_code != 200:
+                try:
+                    err_json = resp.json()
+                    err_msg = (
+                        err_json.get("error", {}).get("message")
+                        or err_json.get("message")
+                        or err_json.get("detail")
+                        or str(err_json)
+                    )
+                    err_code = err_json.get("error", {}).get("code")
+                    if err_code:
+                        err_msg = f"{err_msg} [{err_code}]"
+                except Exception:
+                    err_msg = resp.text or f"HTTP {resp.status_code}"
+                if resp.status_code == 403 or "invalid_api_key_error" in err_msg:
+                    raise RuntimeError(
+                        f"Sarvam authentication failed (403): {err_msg}. "
+                        "Please verify your API key from dashboard.sarvam.ai"
+                    )
+                raise RuntimeError(f"Sarvam TTS failed ({resp.status_code}): {err_msg}")
             audios = resp.json().get("audios") or []
             if not audios:
                 raise RuntimeError("Sarvam returned no audio in test response")
@@ -186,7 +221,7 @@ class ModelTestService:
             if provider_name == "groq-whisper":
                 transcript = await self._test_groq_stt(credential, language)
             elif provider_name == "sarvam":
-                transcript = await self._test_sarvam_stt(credential, language)
+                transcript = await self._test_sarvam_stt(credential, language, model_id)
             elif provider_name == "google-cloud-stt":
                 transcript = await self._test_google_cloud_stt(credential, language)
             else:
@@ -217,26 +252,60 @@ class ModelTestService:
         )
         return str(resp).strip() if resp else ""
 
-    async def _test_sarvam_stt(self, credential: str | None, language: str | None) -> str:
+    async def _test_sarvam_stt(self, credential: str | None, language: str | None, model_id: str | None = None) -> str:
         """[LIVE] Test Sarvam STT with the injected API key."""
         import httpx
 
         if not credential:
             raise ValueError("SARVAM_API_KEY is required for Sarvam STT")
+
+        clean_key = credential.strip().strip("'\"")
+        if clean_key.startswith("Bearer "):
+            clean_key = clean_key[7:].strip()
+
+        target_model = model_id or "saaras:v4"
+        if "v4" in target_model.lower():
+            target_model = "saaras:v4"
+        elif "v3" in target_model.lower():
+            target_model = "saaras:v3"
+        elif "v2" in target_model.lower():
+            target_model = "saaras:v2"
+        elif target_model.startswith("saaras-"):
+            target_model = "saaras:" + target_model[len("saaras-"):]
+
         async with httpx.AsyncClient(
             timeout=20.0,
-            headers={"api-subscription-key": credential},
+            headers={"api-subscription-key": clean_key},
         ) as client:
             resp = await client.post(
                 "https://api.sarvam.ai/speech-to-text",
                 files={"file": ("test.wav", _SILENT_WAV, "audio/wav")},
                 data={
-                    "model": "saaras:v3",
+                    "model": target_model,
                     "mode": "codemix",
                     "language_code": language or "unknown",
                 },
             )
-            resp.raise_for_status()
+            if resp.status_code != 200:
+                try:
+                    err_json = resp.json()
+                    err_msg = (
+                        err_json.get("error", {}).get("message")
+                        or err_json.get("message")
+                        or err_json.get("detail")
+                        or str(err_json)
+                    )
+                    err_code = err_json.get("error", {}).get("code")
+                    if err_code:
+                        err_msg = f"{err_msg} [{err_code}]"
+                except Exception:
+                    err_msg = resp.text or f"HTTP {resp.status_code}"
+                if resp.status_code == 403 or "invalid_api_key_error" in err_msg:
+                    raise RuntimeError(
+                        f"Sarvam authentication failed (403): {err_msg}. "
+                        "Please verify your API key from dashboard.sarvam.ai"
+                    )
+                raise RuntimeError(f"Sarvam STT failed ({resp.status_code}): {err_msg}")
             return (resp.json().get("transcript") or "").strip()
 
     async def _test_google_cloud_stt(
@@ -250,8 +319,17 @@ class ModelTestService:
                     or None to use Application Default Credentials.
         """
         from backend.providers.stt.google_cloud import GoogleCloudSTTProvider
+        project_id = "test-project"
+        if credential:
+            try:
+                import json
+                info = json.loads(credential.strip())
+                if isinstance(info, dict) and info.get("project_id"):
+                    project_id = info["project_id"]
+            except Exception:
+                pass
         provider = GoogleCloudSTTProvider(
-            project_id="test-project",  # only used for resource names, not auth
+            project_id=project_id,
             language_code=language or "hi-IN",
             credentials_json=credential,
         )

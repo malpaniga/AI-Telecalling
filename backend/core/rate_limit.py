@@ -53,6 +53,8 @@ async def _check_rate_limit(
     try:
         from backend.core.redis import get_redis
         r = get_redis()
+        if r is None:
+            return True, 0, 0  # fail-open if Redis down
     except Exception:  # noqa: BLE001
         return True, 0, 0  # fail-open if Redis down
 

@@ -350,6 +350,25 @@ class TestWalletServiceAdminAdjustment:
             assert final_balance["available_credits"] == 400
         run(_t())
 
+    def test_admin_adjustment_idempotent_with_key(self):
+        async def _t():
+            from backend.services.wallet_service import WalletService
+            svc = WalletService(self.db)
+            res1 = await svc.admin_adjustment("org-idem", 500, "Bonus", "admin-1", idempotency_key="adj-1")
+            assert res1["credits_delta"] == 500
+            assert res1["new_balance"] == 500
+
+            # Repeat with same key
+            res2 = await svc.admin_adjustment("org-idem", 500, "Bonus duplicate", "admin-1", idempotency_key="adj-1")
+            assert res2["idempotent"] is True
+            assert res2["credits_delta"] == 0
+            assert res2["new_balance"] == 500
+
+            # Only one transaction recorded
+            txns = await svc.txn_repo.list_for_org("org-idem")
+            assert len(txns) == 1
+        run(_t())
+
 
 @SKIP
 class TestWalletExpiry:

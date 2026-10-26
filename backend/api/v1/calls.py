@@ -169,3 +169,75 @@ async def get_call(
     if call is None:
         raise HTTPException(status_code=404, detail="Call not found")
     return _call_response(call)
+
+@router.get("/{call_id}/transcript")
+async def get_call_transcript(
+    call_id: str,
+    user: CurrentUser = Depends(get_current_user),
+):
+    org_id = _require_org(user)
+    db = get_db()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database unavailable")
+
+    call = await db.calls.find_one({"_id": call_id, "organization_id": org_id})
+    if not call:
+        raise HTTPException(status_code=404, detail="Call not found")
+
+    turns = await db.turns.find({"call_id": call_id}).sort("ts", 1).to_list(100)
+    qualification = call.get("qualification") or {}
+
+    return {
+        "call_id": call_id,
+        "status": call.get("status", "unknown"),
+        "turns": [
+            {
+                "id": str(t.get("_id")),
+                "role": t.get("role"),
+                "text": t.get("text"),
+                "stage": t.get("stage"),
+                "latency_ms": t.get("latency_ms"),
+                "ts": t.get("ts").isoformat() if hasattr(t.get("ts"), "isoformat") else str(t.get("ts") or ""),
+            }
+            for t in turns
+        ],
+        "output_variables": qualification,
+    }
+
+
+@router.post("/{call_id}/hangup")
+async def hangup_call(
+    call_id: str,
+    user: CurrentUser = Depends(get_current_user),
+):
+    org_id = _require_org(user)
+    db = get_db()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database unavailable")
+    call = await db.calls.find_one({"_id": call_id, "organization_id": org_id})
+    if not call:
+        raise HTTPException(status_code=404, detail="Call not found")
+
+    from backend.telephony.broadcaster import call_broadcaster
+    await call_broadcaster.broadcast(call_id, {"type": "hangup", "reason": "user_cancelled"})
+
+    # Terminate active telephony provider call if running
+    if call.get("provider") == "vobiz":
+        try:
+            from backend.telephony.vobiz import hangup_vobiz_call
+            await hangup_vobiz_call(call_id, db=db)
+        except Exception:
+            pass
+
+    # Mark call status completed in DB
+    from backend.models.base import utcnow
+    await db.calls.update_one(
+        {"_id": call_id, "organization_id": org_id},
+        {"$set": {
+            "status": "completed",
+            "outcome": "cancelled",
+            "ended_at": utcnow(),
+        }},
+    )
+
+    return {"status": "hangup_signaled", "call_id": call_id}

@@ -117,12 +117,13 @@ async def get_kbs_for_agent(
 async def get_agent_context(
     agent_id: str,
     query: Optional[str] = None,
+    mode: str = "flexible",
     user: CurrentUser = Depends(get_current_user),
 ):
     org_id = _require_org(user)
     svc = KnowledgeService(get_db())
-    context = await svc.get_context_for_agent(agent_id, org_id, query_text=query)
-    return {"agent_id": agent_id, "context": context, "char_count": len(context)}
+    context = await svc.get_context_for_agent(agent_id, org_id, query_text=query, mode=mode)
+    return {"agent_id": agent_id, "context": context, "char_count": len(context), "mode": mode}
 
 
 @router.post("/search")

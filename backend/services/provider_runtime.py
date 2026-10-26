@@ -90,10 +90,13 @@ class CloudProviderRuntime:
                     **_llm_options(params),
                 )
         if config.capability == "tts" and config.provider_name == "elevenlabs":
-            from backend.providers.tts.elevenlabs_v2 import ElevenLabsTTSProviderV2
+            from backend.providers.tts.elevenlabs_v2 import (
+                DEFAULT_VOICE_ID,
+                ElevenLabsTTSProviderV2,
+            )
             return ElevenLabsTTSProviderV2(
                 api_key=_required_credential(config, credential),
-                voice_id=config.voice or "",
+                voice_id=config.voice or DEFAULT_VOICE_ID,
                 model=config.model_id,
                 **_tts_options(params),
             )
@@ -101,18 +104,43 @@ class CloudProviderRuntime:
             from backend.providers.tts.sarvam import SarvamTTSProvider
             return SarvamTTSProvider(api_key=_required_credential(config, credential), model=config.model_id,
                                      voice_id=config.voice, language=config.language or "en-IN", timeout=_timeout(params))
-        if config.capability == "stt" and config.provider_name == "google-cloud-stt":
-            from backend.providers.stt.google_cloud import GoogleCloudSTTProvider
-            project_id = params.get("project_id")
-            if not isinstance(project_id, str) or not project_id.strip():
-                raise ValueError("Google Cloud STT configuration requires extra_params.project_id")
-            return GoogleCloudSTTProvider(
-                project_id=project_id,
-                language_code=config.language or "hi-IN",
-                model=config.model_id,
-                credentials_json=credential,
-                timeout=_timeout(params),
-            )
+        if config.capability == "stt":
+            if config.provider_name == "sarvam":
+                from backend.providers.stt.sarvam import SarvamSTTProvider
+                return SarvamSTTProvider(
+                    api_key=_required_credential(config, credential),
+                    model=config.model_id,
+                    language=config.language or "en-IN",
+                    timeout=_timeout(params),
+                )
+            if config.provider_name in ("groq", "groq-whisper"):
+                from backend.providers.stt.groq import GroqSTTProvider
+                return GroqSTTProvider(
+                    api_key=_required_credential(config, credential),
+                    model=config.model_id,
+                    language=config.language,
+                    timeout=_timeout(params),
+                )
+            if config.provider_name == "google-cloud-stt":
+                from backend.providers.stt.google_cloud import GoogleCloudSTTProvider
+                project_id = params.get("project_id")
+                if not project_id and credential:
+                    try:
+                        import json
+                        cred_info = json.loads(credential.strip())
+                        if isinstance(cred_info, dict) and cred_info.get("project_id"):
+                            project_id = cred_info["project_id"]
+                    except Exception:
+                        pass
+                if not isinstance(project_id, str) or not project_id.strip():
+                    raise ValueError("Google Cloud STT configuration requires extra_params.project_id or a service account JSON with project_id")
+                return GoogleCloudSTTProvider(
+                    project_id=project_id,
+                    language_code=config.language or "hi-IN",
+                    model=config.model_id,
+                    credentials_json=credential,
+                    timeout=_timeout(params),
+                )
         raise ValueError(
             f"No managed-cloud runtime adapter for {config.capability}/{config.provider_name}"
         )
