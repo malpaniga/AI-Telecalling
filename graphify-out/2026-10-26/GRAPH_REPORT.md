@@ -1,7 +1,7 @@
 # Graph Report - saas  (2026-10-26)
 
 ## Corpus Check
-- 342 files · ~256,783 words
+- 342 files · ~256,840 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `25826c22`
+- Built from commit: `6596b93d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -578,8 +578,8 @@ Cohesion: 0.11
 Nodes (9): MockLLMProvider, MockTelephonyProvider, MockTTSProvider, M8 provider contracts and registry tests., run(), test_demo_registry_registers_all_runtime_provider_categories(), test_live_http_adapters_normalize_provider_responses_without_network(), test_mock_providers_implement_offline_calling_media_and_llm_flow() (+1 more)
 
 ### Community 74 - "TestPreflightChecks"
-Cohesion: 0.11
-Nodes (10): SKIP, Calling hours check fails when current time is outside window., Low credits (above minimum) generate a warning, not a failure., All failing checks are reported — not just the first., Campaign with no subscription/credits/etc must not start., Campaign with all pre-flight checks passing can start., skip_preflight=True starts even if checks would fail., run() (+2 more)
+Cohesion: 0.17
+Nodes (5): Calling hours check fails when current time is outside window., Low credits (above minimum) generate a warning, not a failure., All failing checks are reported — not just the first., run(), TestPreflightChecks
 
 ### Community 75 - "Issues Log — post-Sarvam call testing (2026-07)"
 Cohesion: 0.09
@@ -958,8 +958,8 @@ Cohesion: 0.28
 Nodes (4): Any, AsyncClient, Progressive low-latency streaming TTS using Sarvam /stream endpoint., SarvamTTSProvider
 
 ### Community 184 - "test_m14_preflight.py"
-Cohesion: 0.13
-Nodes (13): _get_mock_db(), _make_campaign(), _make_redis(), M14 tests — Campaign Pre-flight. Tests: 1. All checks pass → campaign can start…, Create a published agent version., Create an active platform voice profile with a version., Create leads for the org., Create an active subscription for the org. (+5 more)
+Cohesion: 0.09
+Nodes (18): _get_mock_db(), _make_campaign(), _make_redis(), SKIP, M14 tests — Campaign Pre-flight. Tests: 1. All checks pass → campaign can start…, Create a published agent version., Create an active platform voice profile with a version., Create leads for the org. (+10 more)
 
 ### Community 185 - "CampaignRepository"
 Cohesion: 0.15

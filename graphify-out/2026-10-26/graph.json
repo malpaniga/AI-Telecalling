@@ -1801,7 +1801,7 @@
       "label": "Settings",
       "file_type": "code",
       "source_file": "backend/config.py",
-      "source_location": "L15",
+      "source_location": "L16",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2550,6 +2550,19 @@
       "community": 183,
       "community_name": "TestPreflightHTTP",
       "norm_label": "testpreflighthttp"
+    },
+    {
+      "label": "TestPreflightBlocksStart",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L418",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart",
+      "community": 184,
+      "community_name": "test_m14_preflight.py",
+      "norm_label": "testpreflightblocksstart"
     },
     {
       "label": "CampaignRepository",
@@ -5761,19 +5774,6 @@
       "community": 73,
       "community_name": "test_m8_provider_abstraction.py",
       "norm_label": "mockttsprovider"
-    },
-    {
-      "label": "TestPreflightBlocksStart",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L418",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart",
-      "community": 74,
-      "community_name": "TestPreflightChecks",
-      "norm_label": "testpreflightblocksstart"
     },
     {
       "label": "TestPreflightChecks",
@@ -15270,7 +15270,7 @@
       "label": ".effective_sarvam_key()",
       "file_type": "code",
       "source_file": "backend/config.py",
-      "source_location": "L119",
+      "source_location": "L126",
       "_callable": true,
       "_origin": "ast",
       "id": "backend_config_settings_effective_sarvam_key",
@@ -15282,7 +15282,7 @@
       "label": ".redis_host()",
       "file_type": "code",
       "source_file": "backend/config.py",
-      "source_location": "L124",
+      "source_location": "L131",
       "_callable": true,
       "_origin": "ast",
       "id": "backend_config_settings_redis_host",
@@ -15294,7 +15294,7 @@
       "label": ".redis_port()",
       "file_type": "code",
       "source_file": "backend/config.py",
-      "source_location": "L131",
+      "source_location": "L138",
       "_callable": true,
       "_origin": "ast",
       "id": "backend_config_settings_redis_port",
@@ -20365,6 +20365,54 @@
       "community": 184,
       "community_name": "test_m14_preflight.py",
       "norm_label": ".setup_method()"
+    },
+    {
+      "label": "._svc()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L423",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart_svc",
+      "community": 184,
+      "community_name": "test_m14_preflight.py",
+      "norm_label": "._svc()"
+    },
+    {
+      "label": ".test_invalid_campaign_cannot_start()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L435",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart_test_invalid_campaign_cannot_start",
+      "community": 184,
+      "community_name": "test_m14_preflight.py",
+      "norm_label": ".test_invalid_campaign_cannot_start()"
+    },
+    {
+      "label": ".test_skip_preflight_bypasses_validation()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L490",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart_test_skip_preflight_bypasses_validation",
+      "community": 184,
+      "community_name": "test_m14_preflight.py",
+      "norm_label": ".test_skip_preflight_bypasses_validation()"
+    },
+    {
+      "label": ".test_valid_campaign_can_start()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L459",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart_test_valid_campaign_can_start",
+      "community": 184,
+      "community_name": "test_m14_preflight.py",
+      "norm_label": ".test_valid_campaign_can_start()"
     },
     {
       "label": ".setup_method()",
@@ -35691,54 +35739,6 @@
       "norm_label": "run()"
     },
     {
-      "label": "._svc()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L423",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart_svc",
-      "community": 74,
-      "community_name": "TestPreflightChecks",
-      "norm_label": "._svc()"
-    },
-    {
-      "label": ".test_invalid_campaign_cannot_start()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L435",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart_test_invalid_campaign_cannot_start",
-      "community": 74,
-      "community_name": "TestPreflightChecks",
-      "norm_label": ".test_invalid_campaign_cannot_start()"
-    },
-    {
-      "label": ".test_skip_preflight_bypasses_validation()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L490",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart_test_skip_preflight_bypasses_validation",
-      "community": 74,
-      "community_name": "TestPreflightChecks",
-      "norm_label": ".test_skip_preflight_bypasses_validation()"
-    },
-    {
-      "label": ".test_valid_campaign_can_start()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L459",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_testpreflightblocksstart_test_valid_campaign_can_start",
-      "community": 74,
-      "community_name": "TestPreflightChecks",
-      "norm_label": ".test_valid_campaign_can_start()"
-    },
-    {
       "label": "._preflight()",
       "file_type": "code",
       "source_file": "backend/tests/test_m14_preflight.py",
@@ -45870,9 +45870,9 @@
       "label": "Return whichever Sarvam key is set.",
       "file_type": "rationale",
       "source_file": "backend/config.py",
-      "source_location": "L120",
+      "source_location": "L127",
       "_origin": "ast",
-      "id": "backend_config_rationale_120",
+      "id": "backend_config_rationale_127",
       "community": 149,
       "community_name": "Settings",
       "norm_label": "return whichever sarvam key is set."
@@ -45881,9 +45881,9 @@
       "label": "Legacy compat for existing session.py.",
       "file_type": "rationale",
       "source_file": "backend/config.py",
-      "source_location": "L125",
+      "source_location": "L132",
       "_origin": "ast",
-      "id": "backend_config_rationale_125",
+      "id": "backend_config_rationale_132",
       "community": 149,
       "community_name": "Settings",
       "norm_label": "legacy compat for existing session.py."
@@ -48444,6 +48444,17 @@
       "norm_label": "test_m14_preflight.py"
     },
     {
+      "label": "SKIP",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_py_skip",
+      "community": 184,
+      "community_name": "test_m14_preflight.py",
+      "norm_label": "skip"
+    },
+    {
       "label": "M14 tests \u2014 Campaign Pre-flight. Tests: 1. All checks pass \u2192 campaign can start\u2026",
       "file_type": "rationale",
       "source_file": "backend/tests/test_m14_preflight.py",
@@ -48486,6 +48497,39 @@
       "community": 184,
       "community_name": "test_m14_preflight.py",
       "norm_label": "create leads for the org."
+    },
+    {
+      "label": "Campaign with no subscription/credits/etc must not start.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L436",
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_rationale_436",
+      "community": 184,
+      "community_name": "test_m14_preflight.py",
+      "norm_label": "campaign with no subscription/credits/etc must not start."
+    },
+    {
+      "label": "Campaign with all pre-flight checks passing can start.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L460",
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_rationale_460",
+      "community": 184,
+      "community_name": "test_m14_preflight.py",
+      "norm_label": "campaign with all pre-flight checks passing can start."
+    },
+    {
+      "label": "skip_preflight=True starts even if checks would fail.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L491",
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_rationale_491",
+      "community": 184,
+      "community_name": "test_m14_preflight.py",
+      "norm_label": "skip_preflight=true starts even if checks would fail."
     },
     {
       "label": "Create an active subscription for the org.",
@@ -59390,17 +59434,6 @@
       "norm_label": "m8 provider contracts and registry tests."
     },
     {
-      "label": "SKIP",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_py_skip",
-      "community": 74,
-      "community_name": "TestPreflightChecks",
-      "norm_label": "skip"
-    },
-    {
       "label": "Calling hours check fails when current time is outside window.",
       "file_type": "rationale",
       "source_file": "backend/tests/test_m14_preflight.py",
@@ -59432,39 +59465,6 @@
       "community": 74,
       "community_name": "TestPreflightChecks",
       "norm_label": "all failing checks are reported \u2014 not just the first."
-    },
-    {
-      "label": "Campaign with no subscription/credits/etc must not start.",
-      "file_type": "rationale",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L436",
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_rationale_436",
-      "community": 74,
-      "community_name": "TestPreflightChecks",
-      "norm_label": "campaign with no subscription/credits/etc must not start."
-    },
-    {
-      "label": "Campaign with all pre-flight checks passing can start.",
-      "file_type": "rationale",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L460",
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_rationale_460",
-      "community": 74,
-      "community_name": "TestPreflightChecks",
-      "norm_label": "campaign with all pre-flight checks passing can start."
-    },
-    {
-      "label": "skip_preflight=True starts even if checks would fail.",
-      "file_type": "rationale",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L491",
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_rationale_491",
-      "community": 74,
-      "community_name": "TestPreflightChecks",
-      "norm_label": "skip_preflight=true starts even if checks would fail."
     },
     {
       "label": "ISSUES.md",
@@ -139873,7 +139873,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/config.py",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_config",
@@ -155999,7 +155999,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/config.py",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_config_settings",
@@ -158232,7 +158232,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/config.py",
-      "source_location": "L119",
+      "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_config_settings",
@@ -158243,7 +158243,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/config.py",
-      "source_location": "L124",
+      "source_location": "L131",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_config_settings",
@@ -158254,7 +158254,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/config.py",
-      "source_location": "L131",
+      "source_location": "L138",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_config_settings",
@@ -180727,10 +180727,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/config.py",
-      "source_location": "L120",
+      "source_location": "L127",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_config_rationale_120",
+      "source": "backend_config_rationale_127",
       "target": "backend_config_settings_effective_sarvam_key",
       "confidence_score": 1.0
     },
@@ -180738,10 +180738,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/config.py",
-      "source_location": "L125",
+      "source_location": "L132",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "backend_config_rationale_125",
+      "source": "backend_config_rationale_132",
       "target": "backend_config_settings_redis_host",
       "confidence_score": 1.0
     },
@@ -197111,5 +197111,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "25826c22926cd061c7112946159b30819ce21ce1"
+  "built_at_commit": "6596b93db22417d255c3b2609684cd9cdbe50aa3"
 }

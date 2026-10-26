@@ -1,7 +1,7 @@
 # Graph Report - saas  (2026-10-26)
 
 ## Corpus Check
-- 342 files · ~256,840 words
+- 342 files · ~257,001 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6596b93d`
+- Built from commit: `9ccca36c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -43,7 +43,7 @@
 - AgentService
 - test_m33_e2e_acceptance.py
 - auth-context.tsx
-- ConversationEngine
+- call_session.py
 - subscriptions.py
 - rate_limit.py
 - billing_portal.py
@@ -85,8 +85,8 @@
 - TestDeveloperGuide
 - AI Telecalling SaaS — Technical Decisions Log
 - AI Telecalling SaaS — Test Status
-- backend/telephony/twilio.py
-- call_session.py
+- config.py
+- ProviderConfigPanel.tsx
 - SubscriptionPlanRepository
 - test_m8_provider_abstraction.py
 - TestPreflightChecks
@@ -121,7 +121,7 @@
 - TestLeadsHTTP
 - AnalyticsService
 - run
-- config.py
+- LLMClient
 - GeminiLLMProvider
 - VoiceProfileService
 - TestAppointmentsHTTP
@@ -152,7 +152,7 @@
 - LLMProvider
 - AI Telecalling SaaS — Developer Guide
 - Getting Started — Real Estate Voice Agent
-- ModelSetupWizard.tsx
+- button.tsx
 - test_agent_kb_integration.py
 - TestBillingHTTP
 - test_test_agent.py
@@ -230,7 +230,7 @@
 - Testing
 - 36. DOCUMENTATION FILES MAINTAINED DURING EXECUTION
 - test_m1_mongodb.py
-- button.tsx
+- agents/page.tsx
 - Adding a New Provider
 - Installation
 - nav.tsx
@@ -397,9 +397,9 @@ Nodes (19): _get_mock_db(), _make_redis(), SKIP, M33 tests — Final End-to-End 
 Cohesion: 0.09
 Nodes (31): AdminGuard(), PLATFORM_ROLES, SignupPage(), handleSubmit(), AuthGuard(), SettingsPage(), ADMIN_LINKS, AdminSidebar() (+23 more)
 
-### Community 28 - "ConversationEngine"
+### Community 28 - "call_session.py"
 Cohesion: 0.09
-Nodes (22): ConversationEngine, _decide_stage(), TypedDict, The conversation engine: a LangGraph state machine that drives the call. Per…, Advance the conversation by one user turn. Updates `state` in place (stage,…, Ephemeral state passed through the graph for a single turn., Pure transition logic. Order matters: end > objection > booking > qualify., Extract slots + output variables + intent flags from the latest user message. (+14 more)
+Nodes (23): ConversationEngine, _decide_stage(), TypedDict, The conversation engine: a LangGraph state machine that drives the call. Per…, Advance the conversation by one user turn. Updates `state` in place (stage,…, Ephemeral state passed through the graph for a single turn., Pure transition logic. Order matters: end > objection > booking > qualify., Extract slots + output variables + intent flags from the latest user message. (+15 more)
 
 ### Community 29 - "subscriptions.py"
 Cohesion: 0.09
@@ -561,13 +561,13 @@ Nodes (21): AI Telecalling SaaS — Technical Decisions Log, D001 — MongoDB At
 Cohesion: 0.09
 Nodes (21): AI Telecalling SaaS — Test Status, Frontend Coverage (TypeScript + ESLint), Known Gaps (not test failures — require external setup), Known Issues at M0, Known Issues at M1, Known Issues at M7, Known Issues at M8, M0 — Repository Audit (+13 more)
 
-### Community 70 - "backend/telephony/twilio.py"
-Cohesion: 0.12
-Nodes (16): _mulaw8k_to_pcm16k(), place_outbound_call(), api_route, post, Request, Response, WebSocket, Twilio telephony via Media Streams. Twilio speaks a websocket protocol carrying… (+8 more)
+### Community 70 - "config.py"
+Cohesion: 0.11
+Nodes (17): Central configuration for the AI Telecalling SaaS platform. Loads backend/.env…, _mulaw8k_to_pcm16k(), place_outbound_call(), api_route, post, Request, Response, WebSocket (+9 more)
 
-### Community 71 - "call_session.py"
-Cohesion: 0.14
-Nodes (11): _looks_like_noise(), Transport-agnostic call pipeline. `CallSession` owns everything that makes a…, True if the transcript is almost certainly a hallucination or noise blip., Supported call languages (Indian-focused, backed by Sarvam Bulbul). Each entry…, Return (canonical_code, info). Falls back to the default if unknown., resolve(), configure_logging(), Structured logging with a per-turn/trace correlation id. Every log line carries… (+3 more)
+### Community 71 - "ProviderConfigPanel.tsx"
+Cohesion: 0.23
+Nodes (6): configStatus(), formatDate(), ProviderConfigPanel(), ProviderConfigPanelProps, truncate(), ProviderCredentialMeta
 
 ### Community 72 - "SubscriptionPlanRepository"
 Cohesion: 0.14
@@ -590,8 +590,8 @@ Cohesion: 0.09
 Nodes (18): Streaming voice-activity detection + endpointing. Fed continuous 16-bit mono…, Silero VAD v5 over onnxruntime. Returns P(speech) for a 512-sample window., Fallback: webrtcvad on 20 ms frames -> boolean speech., _rms_dbfs(), SileroVAD, VADEndpointer, _WebRTCVAD, reset() should clear accumulated state. (+10 more)
 
 ### Community 77 - "CallSession"
-Cohesion: 0.12
-Nodes (10): CallSession, Return custom greeting, or generate one in the call language., Handle explicit caller interrupt event (barge-in)., Feed a chunk of caller audio; drives VAD, barge-in, and responses., Build a CallSession with mocked dependencies., BrowserTransport implements the Transport protocol., CallSession.Transport protocol has play/clear/notify., CallSession starts with empty latency list. (+2 more)
+Cohesion: 0.11
+Nodes (13): CallSession, _looks_like_noise(), Return custom greeting, or generate one in the call language., Handle explicit caller interrupt event (barge-in)., Feed a chunk of caller audio; drives VAD, barge-in, and responses., True if the transcript is almost certainly a hallucination or noise blip., set_trace_id(), Build a CallSession with mocked dependencies. (+5 more)
 
 ### Community 78 - "LeadRepository"
 Cohesion: 0.15
@@ -697,9 +697,9 @@ Nodes (33): get_arpu(), get_costs(), get_daily_analytics(), get_full_report(), g
 Cohesion: 0.09
 Nodes (13): _get_mock_db(), SKIP, Org A cannot see Org B numbers., get_number_for_org returns None if number belongs to a different org., Provider details must not leak into any customer-facing response., Only one org can claim the same number — concurrent request safety., 5 concurrent assign attempts for the same number: exactly 1 wins., 5 concurrent assigns for 5 different numbers: all succeed. (+5 more)
 
-### Community 106 - "config.py"
-Cohesion: 0.15
-Nodes (11): _extract_json(), LLMClient, Groq gpt-oss client (OpenAI-compatible), async + streaming. Streaming matters:…, Yield complete sentences as soon as they're ready, so TTS can start speaking…, Non-streaming convenience helper (used by smoke tests)., Structured extraction. Never raises: returns {} if extraction fails. gpt-oss on…, Best-effort parse of a JSON object from model output. None on failure., Yield raw text deltas as the model generates them. gpt-oss on Groq… (+3 more)
+### Community 106 - "LLMClient"
+Cohesion: 0.18
+Nodes (10): _extract_json(), LLMClient, Groq gpt-oss client (OpenAI-compatible), async + streaming. Streaming matters:…, Yield complete sentences as soon as they're ready, so TTS can start speaking…, Non-streaming convenience helper (used by smoke tests)., Structured extraction. Never raises: returns {} if extraction fails. gpt-oss on…, Best-effort parse of a JSON object from model output. None on failure., Yield raw text deltas as the model generates them. gpt-oss on Groq… (+2 more)
 
 ### Community 107 - "GeminiLLMProvider"
 Cohesion: 0.13
@@ -726,12 +726,12 @@ Cohesion: 0.21
 Nodes (3): CRITICAL: provider details must never appear in customer API response., Org A cannot see Org B's assigned numbers via /my endpoint., TestPhoneNumberHTTP
 
 ### Community 115 - "TestCallPipelinePreserved"
-Cohesion: 0.18
-Nodes (5): Verify the original call_session.py pipeline is intact., CallSession must import without errors., Silero VAD endpointer must import without errors., Transport protocol (play/clear/notify) is still intact., TestCallPipelinePreserved
+Cohesion: 0.12
+Nodes (8): Supported call languages (Indian-focused, backed by Sarvam Bulbul). Each entry…, Return (canonical_code, info). Falls back to the default if unknown., resolve(), Verify the original call_session.py pipeline is intact., CallSession must import without errors., Silero VAD endpointer must import without errors., Transport protocol (play/clear/notify) is still intact., TestCallPipelinePreserved
 
 ### Community 116 - "main.py"
-Cohesion: 0.15
-Nodes (11): BrowserTransport, health(), index(), info(), get, WebSocket, FastAPI entrypoint. Routes: /health — MongoDB + Redis + provider key checks / —…, Speaks to the browser. Streams PCM chunks (4-byte sample-rate header + PCM). (+3 more)
+Cohesion: 0.11
+Nodes (15): configure_logging(), Structured logging with a per-turn/trace correlation id. Every log line carries…, _TraceFilter, BrowserTransport, health(), index(), info(), get (+7 more)
 
 ### Community 117 - "UsageEvent"
 Cohesion: 0.09
@@ -805,9 +805,9 @@ Nodes (15): AI Telecalling SaaS — Developer Guide, AI Voice Profiles, Architec
 Cohesion: 0.13
 Nodes (14): 0. Prerequisites (already on this machine), 1. Why this stack (read once), 2.1 Environment file, 2.2 Start Postgres + Redis, 2.3 Python environment, 2.4 Download the TTS voice, 2. One-time setup, 3. Smoke test each piece independently (+6 more)
 
-### Community 137 - "ModelSetupWizard.tsx"
-Cohesion: 0.05
-Nodes (49): AdminModelsPage(), Capability, capabilityVariant(), formatFreeTierInfo(), freeTierDetails(), hostingIcon(), hostingLabel(), isStale() (+41 more)
+### Community 137 - "button.tsx"
+Cohesion: 0.06
+Nodes (51): AdminModelsPage(), Capability, capabilityVariant(), formatFreeTierInfo(), freeTierDetails(), hostingIcon(), hostingLabel(), isStale() (+43 more)
 
 ### Community 138 - "test_agent_kb_integration.py"
 Cohesion: 0.29
@@ -1042,12 +1042,12 @@ Cohesion: 0.40
 Nodes (5): 36. DOCUMENTATION FILES MAINTAINED DURING EXECUTION, MVP_ARCHITECTURE.md, MVP_DECISIONS.md, MVP_PROGRESS.md, MVP_TEST_STATUS.md
 
 ### Community 216 - "test_m1_mongodb.py"
-Cohesion: 0.16
+Cohesion: 0.17
 Nodes (8): hash_password(), verify_password(), get_mock_db(), M1 tests — MongoDB foundation. Tests run against mongomock (in-memory MongoDB…, Return a mongomock-backed async Motor database substitute., health.check_all should return the correct structure (mocked)., TestHealthCheck, TestPasswordHashing
 
-### Community 217 - "button.tsx"
-Cohesion: 0.09
-Nodes (16): LoginPage(), handleSubmit(), AgentsPage(), DAYS_OF_WEEK, NewCampaignPage(), TIMEZONE_OPTIONS, Button(), ButtonProps (+8 more)
+### Community 217 - "agents/page.tsx"
+Cohesion: 0.14
+Nodes (8): AgentsPage(), DAYS_OF_WEEK, NewCampaignPage(), TIMEZONE_OPTIONS, Agent, MarketplaceTemplate, SARVAM_CATALOG, TEMPLATE_CATEGORIES
 
 ### Community 218 - "Adding a New Provider"
 Cohesion: 0.50
@@ -1117,9 +1117,9 @@ Nodes (3): Any, Serialize for MongoDB insertion (use `_id`, not `id`)., Deserial
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `test_m12_leads.py`, `run`, `Call`, `repository.py`, `create_token_pair`, `test_m15_calls.py`, `test_m5_wallet.py`, `test_m4_payment.py`, `test_m26_provider_ops.py`, `agent_repo.py`, `UsageEventRepository`, `test_m33_e2e_acceptance.py`, `Campaign`, `AuditLogRepository`, `run`, `test_m3_subscriptions.py`, `AgentVersionRepository`, `test_m20_post_call.py`, `VoiceProfileRepository`, `InvoiceRepository`, `test_m17_tools_handoff.py`, `TestCustomerBillingPortal`, `Appointment`, `ReconciliationService`, `test_m14_preflight.py`, `ModelDirectoryService`, `Lead`, `PhoneNumberAssignment`, `AgentRepository`, `TestModels`, `SubscriptionPlan`, `PhoneNumberRepository`, `SubscriptionPlanRepository`, `LeadRepository`, `test_m13_campaigns.py`, `SubscriptionRepository`, `BaseRepository`, `PhoneNumber`, `test_m1_mongodb.py`, `DNCRepository`, `OrderRepository`, `PaymentRepository`, `VoiceProfileVersionRepository`, `UsageEvent`, `TranscriptRepository`, `PostCallService`?**
+- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `test_m12_leads.py`, `run`, `Call`, `repository.py`, `create_token_pair`, `test_m15_calls.py`, `test_m5_wallet.py`, `test_m4_payment.py`, `test_m26_provider_ops.py`, `agent_repo.py`, `UsageEventRepository`, `test_m33_e2e_acceptance.py`, `Campaign`, `AuditLogRepository`, `run`, `test_m3_subscriptions.py`, `AgentVersionRepository`, `test_m20_post_call.py`, `VoiceProfileRepository`, `InvoiceRepository`, `test_m17_tools_handoff.py`, `TestCustomerBillingPortal`, `Appointment`, `ReconciliationService`, `test_m14_preflight.py`, `ModelDirectoryService`, `Lead`, `PhoneNumberAssignment`, `AgentRepository`, `TestModels`, `SubscriptionPlan`, `PhoneNumberRepository`, `SubscriptionPlanRepository`, `LeadRepository`, `UserRepository`, `test_m13_campaigns.py`, `SubscriptionRepository`, `BaseRepository`, `PhoneNumber`, `test_m1_mongodb.py`, `DNCRepository`, `OrderRepository`, `PaymentRepository`, `VoiceProfileVersionRepository`, `UsageEvent`, `TranscriptRepository`, `PostCallService`?**
   _High betweenness centrality (0.096) - this node is a cross-community bridge._
-- **Why does `get_db()` connect `get_db` to `WalletService`, `repository.py`, `dashboard.py`, `CurrentUser`, `db.py`, `HTTPException`, `appointments.py`, `credits.py`, `AgentService`, `subscriptions.py`, `billing_portal.py`, `AuditLogRepository`, `lifespan`, `transcripts.py`, `LeadService`, `UsageService`, `KnowledgeService`, `campaigns.py`, `v1/auth.py`, `vobiz_voice`, `backend/telephony/twilio.py`, `PhoneNumberService`, `AnalyticsService`, `main.py`, `PricingSyncService`, `CallService`?**
+- **Why does `get_db()` connect `get_db` to `WalletService`, `repository.py`, `dashboard.py`, `CurrentUser`, `db.py`, `HTTPException`, `appointments.py`, `credits.py`, `AgentService`, `subscriptions.py`, `billing_portal.py`, `AuditLogRepository`, `lifespan`, `transcripts.py`, `LeadService`, `UsageService`, `KnowledgeService`, `campaigns.py`, `v1/auth.py`, `vobiz_voice`, `config.py`, `PhoneNumberService`, `AnalyticsService`, `main.py`, `PricingSyncService`, `CallService`?**
   _High betweenness centrality (0.067) - this node is a cross-community bridge._
 - **Why does `utcnow()` connect `new_id` to `AppointmentRepository`, `run`, `repository.py`, `CreditService`, `test_m5_wallet.py`, `test_m26_provider_ops.py`, `agent_repo.py`, `test_m33_e2e_acceptance.py`, `PreflightService`, `CampaignService`, `KnowledgeService`, `test_m17_tools_handoff.py`, `test_m14_preflight.py`, `CampaignRepository`, `Lead`, `ModelDirectoryService`, `ProviderRateCardRepository`, `PhoneNumberRepository`, `SubscriptionPlanRepository`, `LeadRepository`, `UserRepository`, `WebhookEventRepository`, `SubscriptionRepository`, `BaseRepository`, `CallRepository`, `VoiceProfileVersionRepository`, `OrganizationRepository`, `UsageEvent`, `TranscriptRepository`, `PricingSyncService`, `CallService`, `PostCallService`?**
   _High betweenness centrality (0.058) - this node is a cross-community bridge._

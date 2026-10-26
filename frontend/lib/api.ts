@@ -8,12 +8,44 @@ export const BASE_URL =
 // ---------------------------------------------------------------------------
 
 export class ApiError extends Error {
+  public detail: unknown;
+
   constructor(
     public status: number,
-    public detail: string,
+    detail: unknown,
     message?: string
   ) {
-    super(message ?? detail);
+    let resolvedMessage = message;
+    if (!resolvedMessage) {
+      if (typeof detail === "string") {
+        resolvedMessage = detail;
+      } else if (Array.isArray(detail)) {
+        // FastAPI / Pydantic validation errors: array of { msg, loc, ... }
+        resolvedMessage = detail
+          .map((item) => {
+            if (typeof item === "string") return item;
+            if (item && typeof item === "object") {
+              const obj = item as Record<string, unknown>;
+              const loc = Array.isArray(obj.loc)
+                ? obj.loc.filter((p) => p !== "body").join(".")
+                : "";
+              const rawMsg = String(obj.msg || obj.message || JSON.stringify(item));
+              const cleanMsg = rawMsg.replace(/^Value error,\s*/i, "");
+              return loc ? `${loc}: ${cleanMsg}` : cleanMsg;
+            }
+            return String(item);
+          })
+          .join("; ");
+      } else if (detail && typeof detail === "object") {
+        const obj = detail as Record<string, unknown>;
+        resolvedMessage = String(obj.message || obj.error || obj.detail || JSON.stringify(detail));
+      } else {
+        resolvedMessage = `Request failed (${status})`;
+      }
+    }
+    super(resolvedMessage);
+    this.detail = detail;
+    this.name = "ApiError";
   }
 }
 
@@ -643,10 +675,10 @@ export async function apiRequest<T>(
   }
 
   if (!res.ok) {
-    let detail = `Request failed (${res.status})`;
+    let detail: unknown = `Request failed (${res.status})`;
     try {
       const errBody = await res.json();
-      detail = errBody.detail ?? detail;
+      detail = errBody.detail ?? errBody.message ?? detail;
     } catch {
       // ignore parse error
     }

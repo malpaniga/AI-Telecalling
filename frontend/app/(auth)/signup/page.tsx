@@ -33,6 +33,12 @@ export default function SignupPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (form.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await api.auth.signup({
@@ -104,6 +110,7 @@ export default function SignupPage() {
             onChange={set("password")}
             placeholder="Min. 8 characters"
             required
+            minLength={8}
             autoComplete="new-password"
           />
 
