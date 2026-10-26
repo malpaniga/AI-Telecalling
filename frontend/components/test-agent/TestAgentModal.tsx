@@ -414,9 +414,13 @@ export function TestAgentModal() {
       };
 
       ws.onclose = (ev) => {
-        endVoiceCall();
         if (ev.code === 1011) {
+          endVoiceCall("Call pipeline not configured: Please activate STT, LLM & TTS in Wizard");
           toast.error("Call pipeline not configured: Please activate STT, LLM & TTS in Wizard");
+        } else if (ev.code !== 1000 && ev.code !== 1005) {
+          endVoiceCall(`Disconnected (code ${ev.code}). Verify backend WebSocket connection.`);
+        } else {
+          endVoiceCall();
         }
       };
 
@@ -539,11 +543,12 @@ export function TestAgentModal() {
     }
   };
 
-  const endVoiceCall = () => {
+  const endVoiceCall = (status?: string | unknown) => {
     setIsCalling(false);
     setIsSpeaking(false);
     setIsListening(false);
-    setCallStatus("Call ended.");
+    const finalStatus = typeof status === "string" ? status : "Call ended.";
+    setCallStatus(finalStatus);
 
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -1129,7 +1134,7 @@ export function TestAgentModal() {
                       </Button>
                     )}
                     <Button
-                      onClick={endVoiceCall}
+                      onClick={() => endVoiceCall()}
                       variant="danger"
                       className="flex-1 py-4 text-sm font-bold rounded-2xl bg-danger hover:bg-danger/90 text-white shadow-lg transition-transform active:scale-[0.99] gap-2"
                     >

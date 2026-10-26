@@ -1,16 +1,16 @@
 # Graph Report - saas  (2026-10-26)
 
 ## Corpus Check
-- 343 files · ~257,149 words
+- 343 files · ~257,258 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5351 nodes · 11626 edges · 262 communities (223 shown, 39 thin omitted)
+- 5351 nodes · 11626 edges · 263 communities (224 shown, 39 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 752 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8e2d906e`
+- Built from commit: `335de7f1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -45,7 +45,7 @@
 - TestAgentModal.tsx
 - SessionStore
 - subscriptions.py
-- rate_limit.py
+- get_redis
 - billing_portal.py
 - test_m2_auth_rbac.py
 - organizations.py
@@ -102,7 +102,7 @@
 - build_demo_registry
 - SubscriptionRepository
 - BaseRepository
-- PhoneNumber
+- phone_number_repo.py
 - SecurityAuditService
 - AppointmentService
 - PhoneNumberService
@@ -153,7 +153,7 @@
 - AI Telecalling SaaS — Developer Guide
 - Getting Started — Real Estate Voice Agent
 - ModelSetupWizard.tsx
-- _to_customer_view
+- PhoneNumber
 - TestBillingHTTP
 - test_test_agent.py
 - SKIP
@@ -203,6 +203,7 @@
 - CampaignRepository
 - _get_mock_db
 - normalize_phone
+- TestVobizPhoneNumbers
 - run
 - TestModels
 - test_m32_documentation.py
@@ -282,7 +283,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (262 total, 39 thin omitted)
+## Communities (263 total, 39 thin omitted)
 
 ### Community 0 - "AppointmentRepository"
 Cohesion: 0.19
@@ -329,8 +330,8 @@ Cohesion: 0.06
 Nodes (60): admin_adjust_wallet(), admin_costs(), admin_dashboard(), admin_margins(), admin_revenue(), admin_usage(), _date_match(), get_org_wallet() (+52 more)
 
 ### Community 11 - "FastAPI"
-Cohesion: 0.11
-Nodes (8): create_token_pair(), CallingPack, Seed default calling packs. Idempotent., seed_default_packs(), M23 tests — Customer Billing Portal. Tests: 1. /billing-portal/overview —…, M24 tests — Super Admin. Tests: 1. All admin endpoints require platform role…, run(), FastAPI
+Cohesion: 0.16
+Nodes (4): create_token_pair(), M24 tests — Super Admin. Tests: 1. All admin endpoints require platform role…, run(), FastAPI
 
 ### Community 12 - "test_m15_calls.py"
 Cohesion: 0.16
@@ -400,9 +401,9 @@ Nodes (25): _decide_stage(), TypedDict, The conversation engine: a LangGraph sta
 Cohesion: 0.09
 Nodes (34): admin_activate_subscription(), admin_create_plan(), admin_list_plans(), admin_list_subscriptions(), admin_update_plan(), AdminActivateRequest, cancel_my_subscription(), change_my_plan() (+26 more)
 
-### Community 30 - "rate_limit.py"
-Cohesion: 0.15
-Nodes (15): _check_rate_limit(), _client_ip(), Request, rate_limit_api(), rate_limit_auth(), rate_limit_billing(), rate_limit_import(), Rate limiting via Redis sliding-window counters. Per-IP and per-user limits to… (+7 more)
+### Community 30 - "get_redis"
+Cohesion: 0.13
+Nodes (18): _check_rate_limit(), _client_ip(), Request, rate_limit_api(), rate_limit_auth(), rate_limit_billing(), rate_limit_import(), Rate limiting via Redis sliding-window counters. Per-IP and per-user limits to… (+10 more)
 
 ### Community 31 - "billing_portal.py"
 Cohesion: 0.09
@@ -541,8 +542,8 @@ Cohesion: 0.08
 Nodes (22): 10. Reuse vs. Replace Decision Table, 1. Repository Origin, 2.1 Backend — Python / FastAPI, 2.2 Frontend — Next.js 14 / TypeScript / Tailwind, 2.3 Database (Current) — PostgreSQL, 2.4 Runtime (Current) — Redis, 2. Existing Architecture (AS-IS), 3.1 Core Changes (+14 more)
 
 ### Community 66 - "PhoneNumberRepository"
-Cohesion: 0.10
-Nodes (10): PhoneNumberRepository, PhoneNumber, Atomically mark a number as 'reserved' only if it is currently 'available'.…, Finalize assignment: reserved → assigned., Finalize assignment to multiple orgs., Return number to available pool., Create a phone number assigned to the org., _seed_phone_number() (+2 more)
+Cohesion: 0.11
+Nodes (8): PhoneNumberRepository, PhoneNumber, Atomically mark a number as 'reserved' only if it is currently 'available'.…, Finalize assignment: reserved → assigned., Finalize assignment to multiple orgs., Return number to available pool., Two concurrent atomic_reserve calls on same number: only ONE wins., TestPhoneNumberRepository
 
 ### Community 67 - "TestDeveloperGuide"
 Cohesion: 0.09
@@ -601,7 +602,7 @@ Cohesion: 0.16
 Nodes (14): ConversationPhase, ObjectionItem, StructuredInstructionEditor(), compileStructuredToMarkdown(), handleLoadTemplate(), insertPrefix(), insertSnippet(), insertVariable() (+6 more)
 
 ### Community 81 - "test_m4_payment.py"
-Cohesion: 0.16
+Cohesion: 0.15
 Nodes (6): WebhookEventRepository, _get_mock_db(), SKIP, M4 tests — Razorpay payment integration. Tests: 1. Billing models — integer…, TestInvoiceRepository, TestWebhookIdempotency
 
 ### Community 82 - "TestDemoSeedService"
@@ -613,8 +614,8 @@ Cohesion: 0.17
 Nodes (3): run(), TestMockPaymentProvider, TestPaymentService
 
 ### Community 84 - "build_demo_registry"
-Cohesion: 0.17
-Nodes (12): build_demo_registry(), ProviderRegistry, ProviderRouter, Internal provider selection with health, capability, language, and fallback…, ResolvedProvider, skipif, run(), test_router_falls_back_and_records_failover() (+4 more)
+Cohesion: 0.16
+Nodes (13): build_demo_registry(), ProviderRegistry, Typed provider registry; business services resolve providers by capability., ProviderRouter, Internal provider selection with health, capability, language, and fallback…, ResolvedProvider, skipif, run() (+5 more)
 
 ### Community 85 - "SubscriptionRepository"
 Cohesion: 0.14
@@ -624,9 +625,9 @@ Nodes (8): Subscription, Organization subscriptions — one active subscription 
 Cohesion: 0.03
 Nodes (68): Appointment model — generic scheduling. Appointments are generic. Solar uses…, AuditLog, Audit log model. Immutable record of actions in the system. Used for security,…, Audit log entry — immutable after creation., DocumentModel, BaseModel, Base Pydantic models for MongoDB documents. MongoDB uses _id (ObjectId) as the…, Base for MongoDB documents. `id` maps to the document's `_id` field. (+60 more)
 
-### Community 87 - "PhoneNumber"
-Cohesion: 0.10
-Nodes (18): PhoneNumber, PhoneNumberAssignment, Phone number inventory models. IMPORTANT ABSTRACTION: - Customers see: number…, A phone number in the platform inventory., Immutable record of a number assignment to an org. History tracking., PhoneNumberAssignmentRepository, Phone number inventory and assignment repositories. Concurrent reservation…, Phone number service — inventory management. All operations record an immutable… (+10 more)
+### Community 87 - "phone_number_repo.py"
+Cohesion: 0.23
+Nodes (8): PhoneNumberAssignment, Phone number inventory models. IMPORTANT ABSTRACTION: - Customers see: number…, Immutable record of a number assignment to an org. History tracking., PhoneNumberAssignmentRepository, Phone number inventory and assignment repositories. Concurrent reservation…, Phone number service — inventory management. All operations record an immutable…, # NOTE: provider, provider_resource_id, provider_metadata,…, Tests for Vobiz.ai Phone Number provider and multi-organization assignment.
 
 ### Community 88 - "SecurityAuditService"
 Cohesion: 0.07
@@ -674,7 +675,7 @@ Nodes (5): Immutable snapshot of a voice profile's provider configuration. Once 
 
 ### Community 99 - "providers/base.py"
 Cohesion: 0.09
-Nodes (15): PaymentProvider, Provider, ABC, Abstract provider interfaces for the AI Telecalling SaaS platform. Core…, Verify payment signature. Returns True if valid., Fetch payment details from provider. Returns provider payment dict., Issue a refund. Returns provider refund dict., Verify webhook signature. Called synchronously (crypto only, no I/O). Returns… (+7 more)
+Nodes (14): PaymentProvider, Provider, ABC, Abstract provider interfaces for the AI Telecalling SaaS platform. Core…, Verify payment signature. Returns True if valid., Fetch payment details from provider. Returns provider payment dict., Issue a refund. Returns provider refund dict., Verify webhook signature. Called synchronously (crypto only, no I/O). Returns… (+6 more)
 
 ### Community 100 - "run"
 Cohesion: 0.20
@@ -693,8 +694,8 @@ Cohesion: 0.16
 Nodes (19): get_arpu(), get_costs(), get_daily_analytics(), get_full_report(), get_margins(), get_mrr(), get_mrr_movement(), get_revenue() (+11 more)
 
 ### Community 105 - "run"
-Cohesion: 0.08
-Nodes (14): _get_mock_db(), SKIP, M7 tests — Phone Number Inventory. Tests: 1. PhoneNumber model — status…, Org A cannot see Org B numbers., get_number_for_org returns None if number belongs to a different org., Provider details must not leak into any customer-facing response., Only one org can claim the same number — concurrent request safety., 5 concurrent assign attempts for the same number: exactly 1 wins. (+6 more)
+Cohesion: 0.09
+Nodes (13): _get_mock_db(), SKIP, Org A cannot see Org B numbers., get_number_for_org returns None if number belongs to a different org., Provider details must not leak into any customer-facing response., Only one org can claim the same number — concurrent request safety., 5 concurrent assign attempts for the same number: exactly 1 wins., 5 concurrent assigns for 5 different numbers: all succeed. (+5 more)
 
 ### Community 106 - "LLMClient"
 Cohesion: 0.12
@@ -804,9 +805,9 @@ Nodes (14): 0. Prerequisites (already on this machine), 1. Why this stack (read 
 Cohesion: 0.07
 Nodes (38): Capability, capabilityVariant(), formatFreeTierInfo(), freeTierDetails(), hostingIcon(), hostingLabel(), isStale(), ModelCard() (+30 more)
 
-### Community 138 - "_to_customer_view"
-Cohesion: 0.17
-Nodes (7): Get a specific number only if it belongs to this org., Atomically assign an available number to an organization. Returns customer-safe…, Assign an available or assigned number to multiple organizations., Available numbers — customer-safe view (no provider details)., Strip all provider details for customer-facing responses., Numbers assigned to an org — no provider details., _to_customer_view()
+### Community 138 - "PhoneNumber"
+Cohesion: 0.09
+Nodes (17): PhoneNumber, A phone number in the platform inventory., Get a specific number only if it belongs to this org., Atomically assign an available number to an organization. Returns customer-safe…, Assign an available or assigned number to multiple organizations., Available numbers — customer-safe view (no provider details)., Full inventory view for platform admin — includes provider details., Strip all provider details for customer-facing responses. (+9 more)
 
 ### Community 139 - "TestBillingHTTP"
 Cohesion: 0.19
@@ -882,7 +883,7 @@ Nodes (11): 1. Current State (post FEAT-005A), 2. File Structure, 3. Shared Comp
 
 ### Community 161 - "db.py"
 Cohesion: 0.08
-Nodes (33): AsyncIOMotorClient, Central configuration for the AI Telecalling SaaS platform. Loads backend/.env…, close_db(), _ensure_indexes(), get_client(), init_db(), ping_db(), AsyncIOMotorDatabase (+25 more)
+Nodes (34): AsyncIOMotorClient, Central configuration for the AI Telecalling SaaS platform. Loads backend/.env…, close_db(), _ensure_indexes(), get_client(), init_db(), ping_db(), AsyncIOMotorDatabase (+26 more)
 
 ### Community 162 - "CampaignWorker"
 Cohesion: 0.18
@@ -959,6 +960,10 @@ Nodes (7): CampaignRepository, Campaign, All running/scheduled campaigns — for
 ### Community 187 - "normalize_phone"
 Cohesion: 0.27
 Nodes (3): normalize_phone(), Normalize a phone number to E.164 (best-effort for Indian numbers)., TestPhoneNormalization
+
+### Community 188 - "TestVobizPhoneNumbers"
+Cohesion: 0.33
+Nodes (3): Vobiz credentials must be stored in provider_metadata and NEVER exposed in…, run(), TestVobizPhoneNumbers
 
 ### Community 189 - "run"
 Cohesion: 0.13
@@ -1092,11 +1097,11 @@ Nodes (3): Any, Serialize for MongoDB insertion (use `_id`, not `id`)., Deserial
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `test_m12_leads.py`, `run`, `Call`, `repository.py`, `test_m27_reconciliation.py`, `FastAPI`, `test_m15_calls.py`, `CreditService`, `Order`, `test_m26_provider_ops.py`, `test_m5_wallet.py`, `AgentRepository`, `UsageEventRepository`, `AuditLogRepository`, `test_m33_e2e_acceptance.py`, `Campaign`, `billing_portal.py`, `AgentVersionRepository`, `test_m20_post_call.py`, `test_m17_tools_handoff.py`, `Appointment`, `test_m14_preflight.py`, `ModelDirectoryService`, `TestModels`, `payment_service.py`, `PhoneNumberRepository`, `SubscriptionPlanRepository`, `LeadRepository`, `UserRepository`, `test_m13_campaigns.py`, `test_m4_payment.py`, `build_demo_registry`, `SubscriptionRepository`, `BaseRepository`, `PhoneNumber`, `test_m1_mongodb.py`, `DNCRepository`, `OrderRepository`, `PaymentRepository`, `CallRepository`, `VoiceProfileVersionRepository`, `run`, `UsageEvent`, `TranscriptRepository`, `PricingSyncService`, `PostCallService`?**
+- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `test_m12_leads.py`, `run`, `Call`, `repository.py`, `test_m27_reconciliation.py`, `PhoneNumber`, `FastAPI`, `test_m15_calls.py`, `CreditService`, `Order`, `test_m26_provider_ops.py`, `test_m5_wallet.py`, `AgentRepository`, `UsageEventRepository`, `AuditLogRepository`, `test_m33_e2e_acceptance.py`, `Campaign`, `billing_portal.py`, `db.py`, `AgentVersionRepository`, `test_m20_post_call.py`, `test_m17_tools_handoff.py`, `Appointment`, `test_m14_preflight.py`, `ModelDirectoryService`, `TestModels`, `payment_service.py`, `PhoneNumberRepository`, `SubscriptionPlanRepository`, `LeadRepository`, `UserRepository`, `test_m13_campaigns.py`, `test_m4_payment.py`, `build_demo_registry`, `SubscriptionRepository`, `BaseRepository`, `phone_number_repo.py`, `test_m1_mongodb.py`, `DNCRepository`, `OrderRepository`, `PaymentRepository`, `CallRepository`, `VoiceProfileVersionRepository`, `UsageEvent`, `TranscriptRepository`, `PricingSyncService`, `PostCallService`?**
   _High betweenness centrality (0.095) - this node is a cross-community bridge._
 - **Why does `get_db()` connect `get_db` to `WalletService`, `repository.py`, `dashboard.py`, `CurrentUser`, `v1/__init__.py`, `PaymentService`, `test_m26_provider_ops.py`, `appointments.py`, `agents.py`, `subscriptions.py`, `billing_portal.py`, `organizations.py`, `db.py`, `LeadService`, `UsageService`, `KnowledgeService`, `reconciliation_report`, `HTTPException`, `core/auth.py`, `backend/telephony/vobiz.py`, `backend/telephony/twilio.py`, `PhoneNumberService`, `new_id`, `analytics.py`, `VoiceProfileService`, `BrowserTransport`, `calls.py`?**
   _High betweenness centrality (0.067) - this node is a cross-community bridge._
-- **Why does `utcnow()` connect `new_id` to `AppointmentRepository`, `run`, `repository.py`, `CreditService`, `test_m26_provider_ops.py`, `AgentRepository`, `test_m33_e2e_acceptance.py`, `PreflightService`, `CallService`, `CampaignService`, `test_m17_tools_handoff.py`, `test_m14_preflight.py`, `CampaignRepository`, `ModelDirectoryService`, `payment_service.py`, `backend/telephony/vobiz.py`, `PhoneNumberRepository`, `LeadRepository`, `UserRepository`, `test_m4_payment.py`, `build_demo_registry`, `SubscriptionRepository`, `BaseRepository`, `PhoneNumber`, `CallRepository`, `VoiceProfileVersionRepository`, `OrganizationRepository`, `UsageEvent`, `TranscriptRepository`, `PricingSyncService`, `calls.py`, `PostCallService`?**
+- **Why does `utcnow()` connect `new_id` to `AppointmentRepository`, `run`, `repository.py`, `PhoneNumber`, `CreditService`, `test_m26_provider_ops.py`, `AgentRepository`, `test_m33_e2e_acceptance.py`, `PreflightService`, `CallService`, `CampaignService`, `test_m17_tools_handoff.py`, `test_m14_preflight.py`, `CampaignRepository`, `ModelDirectoryService`, `payment_service.py`, `backend/telephony/vobiz.py`, `PhoneNumberRepository`, `LeadRepository`, `UserRepository`, `test_m4_payment.py`, `build_demo_registry`, `SubscriptionRepository`, `BaseRepository`, `phone_number_repo.py`, `CallRepository`, `VoiceProfileVersionRepository`, `OrganizationRepository`, `UsageEvent`, `TranscriptRepository`, `PricingSyncService`, `calls.py`, `PostCallService`?**
   _High betweenness centrality (0.057) - this node is a cross-community bridge._
 - **Are the 134 inferred relationships involving `HTTPException` (e.g. with `call_detail()` and `admin_adjust_wallet()`) actually correct?**
   _`HTTPException` has 134 INFERRED edges - model-reasoned connections that need verification._

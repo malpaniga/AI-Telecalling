@@ -773,10 +773,16 @@ export default function SarvamAgentStudioPage() {
         } catch {}
       };
 
-      ws.onclose = () => {
+      ws.onclose = (ev) => {
         // If an auto-hangup is already scheduled to play out remaining audio, let it finish cleanly
         if (!hangupTimeoutRef.current) {
-          handleEndCall();
+          if (ev.code === 1011) {
+            handleEndCall("Pipeline error: Check Model Directory configuration");
+          } else if (ev.code !== 1000 && ev.code !== 1005) {
+            handleEndCall(`Disconnected (code ${ev.code})`);
+          } else {
+            handleEndCall();
+          }
         }
       };
 
