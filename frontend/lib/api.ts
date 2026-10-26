@@ -1,7 +1,7 @@
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "@/lib/auth";
 
 export const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_BASE || "";
 
 // ---------------------------------------------------------------------------
 // Error type

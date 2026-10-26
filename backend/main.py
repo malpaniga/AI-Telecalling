@@ -146,11 +146,8 @@ app = FastAPI(
 # CORS — allow the Next.js dashboard and any configured frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-    ],
+    allow_origins=["*"],
+    allow_origin_regex=r"https?://.*",
     allow_methods=["*"],
     allow_headers=["*"],
 )

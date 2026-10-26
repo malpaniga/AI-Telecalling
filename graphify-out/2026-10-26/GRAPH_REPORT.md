@@ -1,7 +1,7 @@
-# Graph Report - saas  (2026-10-24)
+# Graph Report - saas  (2026-10-26)
 
 ## Corpus Check
-- 340 files · ~254,491 words
+- 340 files · ~254,596 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -34,7 +34,7 @@
 - wallet_repo.py
 - PaymentService
 - test_m26_provider_ops.py
-- Lead
+- SubscriptionPlan
 - LLMProvider
 - test_m5_wallet.py
 - _config_to_dict
@@ -350,9 +350,9 @@ Nodes (36): create_subscription_order(), CreateSubscriptionOrderRequest, get_inv
 Cohesion: 0.05
 Nodes (25): platform_latency(), provider_health(), provider_metrics(), get, Health summary across all providers., Per-provider metrics: success rate, latency, cost, call count., Platform-wide call latency statistics., Health status of active voice profiles and their provider routes. (+17 more)
 
-### Community 19 - "Lead"
-Cohesion: 0.29
-Nodes (4): Lead, field_validator, A single lead record owned by an organization., TestLeadModel
+### Community 19 - "SubscriptionPlan"
+Cohesion: 0.14
+Nodes (7): field_validator, A plan offered on the platform. Managed by platform admins only., Convenience for display — never use for billing calculations., An organization's active subscription to a plan., Subscription, SubscriptionPlan, TestSubscriptionPlanModel
 
 ### Community 20 - "LLMProvider"
 Cohesion: 0.10
@@ -927,8 +927,8 @@ Cohesion: 0.10
 Nodes (11): CampaignRepository, Campaign, All running/scheduled campaigns — for worker polling., Atomic status update scoped to org., AsyncIOMotorDatabase, _get_mock_db(), _make_redis(), M13 tests — Campaign Engine. Tests: 1. Campaign model — status validation, FSM… (+3 more)
 
 ### Community 186 - "new_id"
-Cohesion: 0.05
-Nodes (27): new_id(), Generate a new UUID4 string., Call, An outbound AI call record., field_validator, A plan offered on the platform. Managed by platform admins only., Convenience for display — never use for billing calculations., An organization's active subscription to a plan. (+19 more)
+Cohesion: 0.07
+Nodes (24): new_id(), Generate a new UUID4 string., Call, An outbound AI call record., Lead, field_validator, A single lead record owned by an organization., ProviderUsage (+16 more)
 
 ### Community 187 - "test_m12_leads.py"
 Cohesion: 0.19
@@ -1054,7 +1054,7 @@ Nodes (6): Architecture & Data Flow, Design: Agent Multi-KB Selector and Grounde
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `WalletRepository`, `test_m20_post_call.py`, `knowledge_repo.py`, `run`, `model_directory_repo.py`, `wallet_repo.py`, `DocumentModel`, `test_m26_provider_ops.py`, `Lead`, `test_m5_wallet.py`, `CallRepository`, `UsageEventRepository`, `test_m33_e2e_acceptance.py`, `Campaign`, `v1/auth.py`, `billing_portal.py`, `repository.py`, `run`, `test_m3_subscriptions.py`, `model_directory_service.py`, `seed_default_packs`, `AgentVersionRepository`, `test_m17_tools_handoff.py`, `TestCustomerBillingPortal`, `Appointment`, `ReconciliationService`, `test_m14_preflight.py`, `CampaignRepository`, `test_m12_leads.py`, `TimestampedModel`, `PhoneNumberRepository`, `SubscriptionPlanRepository`, `LeadRepository`, `UserRepository`, `run`, `build_demo_registry`, `SubscriptionRepository`, `BaseRepository`, `PhoneNumberService`, `_slugify`, `DNCRepository`, `OrderRepository`, `PaymentRepository`, `VoiceProfileVersionRepository`, `utcnow`, `CallingPackRepository`, `VoiceProfileService`, `TranscriptRepository`, `PricingSyncService`, `PostCallService`?**
+- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `WalletRepository`, `test_m20_post_call.py`, `knowledge_repo.py`, `run`, `model_directory_repo.py`, `wallet_repo.py`, `DocumentModel`, `test_m26_provider_ops.py`, `SubscriptionPlan`, `test_m5_wallet.py`, `CallRepository`, `UsageEventRepository`, `test_m33_e2e_acceptance.py`, `Campaign`, `v1/auth.py`, `billing_portal.py`, `repository.py`, `run`, `test_m3_subscriptions.py`, `model_directory_service.py`, `seed_default_packs`, `AgentVersionRepository`, `test_m17_tools_handoff.py`, `TestCustomerBillingPortal`, `Appointment`, `ReconciliationService`, `test_m14_preflight.py`, `CampaignRepository`, `test_m12_leads.py`, `TimestampedModel`, `PhoneNumberRepository`, `SubscriptionPlanRepository`, `LeadRepository`, `UserRepository`, `run`, `build_demo_registry`, `SubscriptionRepository`, `BaseRepository`, `PhoneNumberService`, `_slugify`, `DNCRepository`, `OrderRepository`, `PaymentRepository`, `VoiceProfileVersionRepository`, `utcnow`, `CallingPackRepository`, `VoiceProfileService`, `TranscriptRepository`, `PricingSyncService`, `PostCallService`?**
   _High betweenness centrality (0.101) - this node is a cross-community bridge._
 - **Why does `get_db()` connect `get_db` to `v1/wallet.py`, `routes.py`, `dashboard.py`, `v1/model_directory.py`, `db.py`, `PaymentService`, `test_m26_provider_ops.py`, `HTTPException`, `AgentService`, `subscriptions.py`, `v1/auth.py`, `billing_portal.py`, `repository.py`, `organizations.py`, `main.py`, `redis.py`, `transcripts.py`, `leads.py`, `UsageService`, `CurrentUser`, `campaigns.py`, `FastAPI`, `v1/pricing.py`, `backend/telephony/vobiz.py`, `backend/telephony/twilio.py`, `phone_numbers.py`, `analytics.py`, `CallService`?**
   _High betweenness centrality (0.063) - this node is a cross-community bridge._

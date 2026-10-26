@@ -18,7 +18,7 @@
   "16": "wallet_repo.py",
   "17": "PaymentService",
   "18": "test_m26_provider_ops.py",
-  "19": "Lead",
+  "19": "SubscriptionPlan",
   "20": "LLMProvider",
   "21": "test_m5_wallet.py",
   "22": "_config_to_dict",
