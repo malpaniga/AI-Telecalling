@@ -60,7 +60,15 @@ class VobizTelephonyProvider(TelephonyProvider):
             r = await client.post(endpoint, headers=headers, json=payload)
             r.raise_for_status()
             data = r.json()
-            call_id = data.get("call_id") or data.get("Call", {}).get("Sid") or data.get("id") or "vobiz_call"
+            log.info("Vobiz initiate_call response: %s", data)
+            call_id = (
+                data.get("request_uuid")
+                or data.get("call_uuid")
+                or data.get("call_id")
+                or data.get("Call", {}).get("Sid")
+                or data.get("id")
+                or "vobiz_call"
+            )
             return {
                 "provider_resource_id": str(call_id),
                 "status": data.get("status") or "queued",
@@ -131,3 +139,4 @@ class VobizTelephonyProvider(TelephonyProvider):
             "inbound_calling": True,
             "streaming_audio": True,
         }
+

@@ -133,8 +133,31 @@ class CallService:
         if provider == "vobiz" and phone_doc:
             from backend.providers.telephony.vobiz import VobizTelephonyProvider
             from backend.config import settings
-            base_public = settings.public_base_url.rstrip("/") if getattr(settings, "public_base_url", None) else "http://localhost:8000"
-            answer_url = f"{base_public}/vobiz/voice?call_id={call.id}&agent_id={agent_id or ''}&lang=en-IN"
+            base_public = (
+                settings.public_base_url.rstrip("/")
+                if getattr(settings, "public_base_url", None) and "ngrok" not in settings.public_base_url
+                else "https://92.5.149.29.sslip.io"
+            )
+            call_lang = "en-IN"
+            if agent_id:
+                try:
+                    agent_doc = await self.db.agents.find_one({"_id": agent_id})
+                    if agent_doc:
+                        active_vid = agent_doc.get("active_version_id")
+                        ver_doc = None
+                        if active_vid:
+                            ver_doc = await self.db.agent_versions.find_one({"_id": active_vid})
+                        if not ver_doc:
+                            ver_doc = await self.db.agent_versions.find_one(
+                                {"agent_id": agent_id}, sort=[("version", -1)]
+                            )
+                        if ver_doc:
+                            cfg = ver_doc.get("configuration") or {}
+                            call_lang = cfg.get("primary_language") or call_lang
+                except Exception as e:
+                    log.warning("could not resolve agent language: %s", e)
+
+            answer_url = f"{base_public}/vobiz/voice?call_id={call.id}&agent_id={agent_id or ''}&lang={call_lang}"
             metadata = phone_doc.provider_metadata or {}
             auth_id = metadata.get("vobiz_auth_id")
             auth_token = metadata.get("vobiz_auth_token")

@@ -29,6 +29,7 @@ if hasattr(sys.stderr, "reconfigure"):
 # Increase WebSocket header/line limit from 8KB to 64KB to support rich prompt payloads
 os.environ.setdefault("WEBSOCKETS_MAX_LINE_LENGTH", "65536")
 
+import asyncio
 import logging
 import struct
 from contextlib import asynccontextmanager
@@ -497,3 +498,4 @@ async def ws_call_monitor(ws: WebSocket, call_id: str):
         log.warning("ws_call_monitor error for call %s: %s", call_id, exc)
     finally:
         call_broadcaster.unsubscribe(call_id, queue)
+

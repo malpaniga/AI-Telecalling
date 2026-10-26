@@ -140,8 +140,13 @@ async def hangup_vobiz_call(call_id: str, db: object = None) -> bool:
     return terminated
 
 
-def _stream_wss_url(call_id: Optional[str] = None, agent_id: Optional[str] = None, lang: str = "en-IN") -> str:
-    base = settings.public_base_url.rstrip("/") if settings.public_base_url else "http://localhost:8000"
+def _stream_wss_url(call_id: Optional[str] = None, agent_id: Optional[str] = None, lang: str = "en-IN", base_url: Optional[str] = None) -> str:
+    if base_url:
+        base = base_url.rstrip("/")
+    elif settings.public_base_url and "ngrok" not in settings.public_base_url:
+        base = settings.public_base_url.rstrip("/")
+    else:
+        base = "https://92.5.149.29.sslip.io"
     base = base.replace("https://", "wss://").replace("http://", "ws://")
     params = []
     if call_id:
@@ -153,13 +158,13 @@ def _stream_wss_url(call_id: Optional[str] = None, agent_id: Optional[str] = Non
     return f"{base}/ws/vobiz?{query}"
 
 
-def _vobiz_xml(call_id: Optional[str] = None, agent_id: Optional[str] = None, lang: str = "en-IN") -> str:
-    wss_url = _stream_wss_url(call_id, agent_id, lang)
+def _vobiz_xml(call_id: Optional[str] = None, agent_id: Optional[str] = None, lang: str = "en-IN", base_url: Optional[str] = None) -> str:
+    wss_url = _stream_wss_url(call_id, agent_id, lang, base_url=base_url)
     xml_url = wss_url.replace("&", "&amp;")
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<Response>\n'
-        f'  <Stream bidirectional="true" keepCallAlive="true" streamTimeout="7200" contentType="audio/x-l16;rate=16000">{xml_url}</Stream>\n'
+        f'  <Stream bidirectional="true" keepCallAlive="true" streamTimeout="7200" contentType="audio/x-l16;rate=8000">{xml_url}</Stream>\n'
         '  <Hangup/>\n'
         '</Response>'
     )
@@ -177,6 +182,9 @@ def _vobiz_unavailable_xml() -> str:
 
 @router.api_route("/vobiz/voice", methods=["GET", "POST"], include_in_schema=False)
 async def vobiz_voice(request: Request) -> Response:
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or "92.5.149.29.sslip.io"
+    request_base_url = f"{proto}://{host}"
     """Vobiz calls this when an outbound or inbound call connects."""
     call_id = request.query_params.get("call_id")
     agent_id = request.query_params.get("agent_id")
@@ -210,7 +218,7 @@ async def vobiz_voice(request: Request) -> Response:
             except Exception:
                 pass
         return Response(
-            content=_vobiz_xml(call_id=call_id, agent_id=agent_id, lang=language),
+            content=_vobiz_xml(call_id=call_id, agent_id=agent_id, lang=language, base_url=request_base_url),
             media_type="application/xml",
         )
 
@@ -299,7 +307,7 @@ async def vobiz_voice(request: Request) -> Response:
         log.warning("Failed to reserve credits for inbound call %s: %s", call.id, exc)
 
     return Response(
-        content=_vobiz_xml(call_id=call.id, agent_id=agent_id, lang=language),
+        content=_vobiz_xml(call_id=call.id, agent_id=agent_id, lang=language, base_url=request_base_url),
         media_type="application/xml",
     )
 

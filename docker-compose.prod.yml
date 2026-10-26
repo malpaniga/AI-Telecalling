@@ -53,6 +53,10 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - MONGODB_URI=${MONGODB_URI:-${MONGO_URI:-mongodb://mongodb:27017/telecalling_saas}}
       - MONGODB_DATABASE=${MONGODB_DATABASE:-telecalling_saas}
+      - PUBLIC_BASE_URL=https://${DOMAIN:-92.5.149.29.sslip.io}
+      - DEMO_MODE=false
+      - PUBLIC_BASE_URL=https://${DOMAIN:-92.5.149.29.sslip.io}
+      - DEMO_MODE=false
       - APP_PORT=8080
       - APP_HOST=0.0.0.0
     volumes:
@@ -75,6 +79,8 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - MONGODB_URI=${MONGODB_URI:-${MONGO_URI:-mongodb://mongodb:27017/telecalling_saas}}
       - MONGODB_DATABASE=${MONGODB_DATABASE:-telecalling_saas}
+      - PUBLIC_BASE_URL=https://${DOMAIN:-92.5.149.29.sslip.io}
+      - DEMO_MODE=false
     volumes:
       - ./models:/app/models
     depends_on:
