@@ -32,6 +32,7 @@ from backend.repositories.model_directory_repo import (
     ProviderCredentialRepo,
 )
 from backend.services.model_test_service import ModelTestService
+from backend.languages import is_language_supported, normalize_sarvam_language
 
 log = logging.getLogger("model_directory")
 
@@ -134,17 +135,16 @@ class ModelDirectoryService:
 
         # Validate language against catalogue
         language = req.get("language")
+        if language and provider_name == "sarvam":
+            language = normalize_sarvam_language(language, default=language)
+
         if language:
             catalogue_entry = await self._catalogue_repo.find_one(
                 {"provider_name": provider_name, "model_id": model_id}
             )
             if catalogue_entry:
                 supported = catalogue_entry.supported_languages
-                if (
-                    supported
-                    and "multilingual" not in supported
-                    and language not in supported
-                ):
+                if supported and not is_language_supported(language, supported):
                     raise ValueError(
                         f"Language '{language}' is not supported by "
                         f"{provider_name}/{model_id}. "

@@ -1499,6 +1499,32 @@
       "norm_label": "wizardstatusresponse"
     },
     {
+      "label": "PhoneNumber",
+      "file_type": "code",
+      "source_file": "backend/models/phone_number.py",
+      "source_location": "L28",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_models_phone_number_phonenumber",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "phonenumber"
+    },
+    {
+      "label": "TestPhoneNumberModel",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L57",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "testphonenumbermodel"
+    },
+    {
       "label": "TestBillingHTTP",
       "file_type": "code",
       "source_file": "backend/tests/test_m4_payment.py",
@@ -2615,6 +2641,19 @@
       "community": 187,
       "community_name": "normalize_phone",
       "norm_label": "testphonenormalization"
+    },
+    {
+      "label": "TestVobizPhoneNumbers",
+      "file_type": "code",
+      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
+      "source_location": "L24",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_vobiz_phone_numbers_testvobizphonenumbers",
+      "community": 188,
+      "community_name": "TestVobizPhoneNumbers",
+      "norm_label": "testvobizphonenumbers"
     },
     {
       "label": "TestCreditRelease",
@@ -4147,7 +4186,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m28_security_testratelimiting",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "testratelimiting"
     },
     {
@@ -6387,19 +6426,6 @@
       "norm_label": "knowledgebaseagentrepository"
     },
     {
-      "label": "PhoneNumber",
-      "file_type": "code",
-      "source_file": "backend/models/phone_number.py",
-      "source_location": "L28",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "backend_models_phone_number_phonenumber",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "phonenumber"
-    },
-    {
       "label": "PhoneNumberAssignment",
       "file_type": "code",
       "source_file": "backend/models/phone_number.py",
@@ -6409,7 +6435,7 @@
       "_origin": "ast",
       "id": "backend_models_phone_number_phonenumberassignment",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "phonenumberassignment"
     },
     {
@@ -6422,34 +6448,8 @@
       "_origin": "ast",
       "id": "backend_repositories_phone_number_repo_phonenumberassignmentrepository",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "phonenumberassignmentrepository"
-    },
-    {
-      "label": "TestPhoneNumberModel",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L57",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "testphonenumbermodel"
-    },
-    {
-      "label": "TestVobizPhoneNumbers",
-      "file_type": "code",
-      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
-      "source_location": "L24",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_vobiz_phone_numbers_testvobizphonenumbers",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "testvobizphonenumbers"
     },
     {
       "label": "SecurityAuditCheck",
@@ -8703,18 +8703,6 @@
       "norm_label": "_get_mock_db()"
     },
     {
-      "label": "_mongomock_available()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L37",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers_mongomock_available",
-      "community": 105,
-      "community_name": "run",
-      "norm_label": "_mongomock_available()"
-    },
-    {
       "label": "run()",
       "file_type": "code",
       "source_file": "backend/tests/test_m7_phone_numbers.py",
@@ -9663,18 +9651,6 @@
       "norm_label": "create_token_pair()"
     },
     {
-      "label": "seed_default_packs()",
-      "file_type": "code",
-      "source_file": "backend/services/wallet_service.py",
-      "source_location": "L79",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_services_wallet_service_seed_default_packs",
-      "community": 11,
-      "community_name": "FastAPI",
-      "norm_label": "seed_default_packs()"
-    },
-    {
       "label": ".setup_method()",
       "file_type": "code",
       "source_file": "backend/tests/test_m21_usage_cost.py",
@@ -9685,30 +9661,6 @@
       "community": 11,
       "community_name": "FastAPI",
       "norm_label": ".setup_method()"
-    },
-    {
-      "label": "_get_mock_db()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m23_customer_billing.py",
-      "source_location": "L49",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m23_customer_billing_get_mock_db",
-      "community": 11,
-      "community_name": "FastAPI",
-      "norm_label": "_get_mock_db()"
-    },
-    {
-      "label": "_mongomock_available()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m23_customer_billing.py",
-      "source_location": "L38",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m23_customer_billing_mongomock_available",
-      "community": 11,
-      "community_name": "FastAPI",
-      "norm_label": "_mongomock_available()"
     },
     {
       "label": ".setup_method()",
@@ -14183,7 +14135,7 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_phonenumberservice_assign_to_org",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": ".assign_to_org()"
     },
     {
@@ -14195,7 +14147,7 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_phonenumberservice_assign_to_orgs",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": ".assign_to_orgs()"
     },
     {
@@ -14207,8 +14159,20 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_phonenumberservice_get_number_for_org",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": ".get_number_for_org()"
+    },
+    {
+      "label": ".list_all_admin()",
+      "file_type": "code",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L312",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_phonenumberservice_list_all_admin",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": ".list_all_admin()"
     },
     {
       "label": ".list_available()",
@@ -14219,7 +14183,7 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_phonenumberservice_list_available",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": ".list_available()"
     },
     {
@@ -14231,8 +14195,20 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_phonenumberservice_list_org_numbers",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": ".list_org_numbers()"
+    },
+    {
+      "label": "_to_admin_view()",
+      "file_type": "code",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L74",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_to_admin_view",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "_to_admin_view()"
     },
     {
       "label": "_to_customer_view()",
@@ -14243,8 +14219,92 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_to_customer_view",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": "_to_customer_view()"
+    },
+    {
+      "label": "_seed_phone_number()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L143",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_seed_phone_number",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "_seed_phone_number()"
+    },
+    {
+      "label": "_mongomock_available()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L37",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers_mongomock_available",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "_mongomock_available()"
+    },
+    {
+      "label": ".test_admin_view_includes_provider_fields()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L95",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_admin_view_includes_provider_fields",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": ".test_admin_view_includes_provider_fields()"
+    },
+    {
+      "label": ".test_assignment_model()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L109",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_assignment_model",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": ".test_assignment_model()"
+    },
+    {
+      "label": ".test_customer_view_includes_required_fields()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L83",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_customer_view_includes_required_fields",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": ".test_customer_view_includes_required_fields()"
+    },
+    {
+      "label": ".test_customer_view_strips_provider_fields()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L66",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_customer_view_strips_provider_fields",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": ".test_customer_view_strips_provider_fields()"
+    },
+    {
+      "label": ".test_default_status_available()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L58",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_default_status_available",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": ".test_default_status_available()"
     },
     {
       "label": ".make_valid_webhook_signature()",
@@ -15169,18 +15229,6 @@
       "community": 144,
       "community_name": "MockPaymentProvider",
       "norm_label": "._make_service()"
-    },
-    {
-      "label": ".setup_method()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m4_payment.py",
-      "source_location": "L332",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m4_payment_testpaymentservice_setup_method",
-      "community": 144,
-      "community_name": "MockPaymentProvider",
-      "norm_label": ".setup_method()"
     },
     {
       "label": ".total_inr()",
@@ -17367,18 +17415,6 @@
       "norm_label": "close_redis()"
     },
     {
-      "label": "get_redis()",
-      "file_type": "code",
-      "source_file": "backend/core/redis.py",
-      "source_location": "L24",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_core_redis_get_redis",
-      "community": 161,
-      "community_name": "db.py",
-      "norm_label": "get_redis()"
-    },
-    {
       "label": "init_redis()",
       "file_type": "code",
       "source_file": "backend/core/redis.py",
@@ -17461,6 +17497,42 @@
       "community": 161,
       "community_name": "db.py",
       "norm_label": "main()"
+    },
+    {
+      "label": "seed_default_packs()",
+      "file_type": "code",
+      "source_file": "backend/services/wallet_service.py",
+      "source_location": "L79",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_services_wallet_service_seed_default_packs",
+      "community": 161,
+      "community_name": "db.py",
+      "norm_label": "seed_default_packs()"
+    },
+    {
+      "label": "_get_mock_db()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m23_customer_billing.py",
+      "source_location": "L49",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m23_customer_billing_get_mock_db",
+      "community": 161,
+      "community_name": "db.py",
+      "norm_label": "_get_mock_db()"
+    },
+    {
+      "label": "_mongomock_available()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m23_customer_billing.py",
+      "source_location": "L38",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m23_customer_billing_mongomock_available",
+      "community": 161,
+      "community_name": "db.py",
+      "norm_label": "_mongomock_available()"
     },
     {
       "label": ".run()",
@@ -19002,7 +19074,7 @@
       "label": "connectPhoneCallStream()",
       "file_type": "code",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L911",
+      "source_location": "L917",
       "_callable": true,
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_connectphonecallstream",
@@ -19026,7 +19098,7 @@
       "label": "handleDialPhone()",
       "file_type": "code",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L1022",
+      "source_location": "L1028",
       "_callable": true,
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_handledialphone",
@@ -19038,7 +19110,7 @@
       "label": "handleEndCall()",
       "file_type": "code",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L838",
+      "source_location": "L844",
       "_callable": true,
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_handleendcall",
@@ -19050,7 +19122,7 @@
       "label": "handleHangupPhoneCall()",
       "file_type": "code",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L1055",
+      "source_location": "L1061",
       "_callable": true,
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_handlehangupphonecall",
@@ -19086,7 +19158,7 @@
       "label": "handleResetPhoneCall()",
       "file_type": "code",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L1074",
+      "source_location": "L1080",
       "_callable": true,
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_handleresetphonecall",
@@ -19122,7 +19194,7 @@
       "label": "handleSendChat()",
       "file_type": "code",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L877",
+      "source_location": "L883",
       "_callable": true,
       "_origin": "ast",
       "id": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_handlesendchat",
@@ -20965,6 +21037,54 @@
       "community": 187,
       "community_name": "normalize_phone",
       "norm_label": ".test_strips_formatting()"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
+      "source_location": "L16",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_vobiz_phone_numbers_run",
+      "community": 188,
+      "community_name": "TestVobizPhoneNumbers",
+      "norm_label": "run()"
+    },
+    {
+      "label": ".setup_method()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
+      "source_location": "L25",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_vobiz_phone_numbers_testvobizphonenumbers_setup_method",
+      "community": 188,
+      "community_name": "TestVobizPhoneNumbers",
+      "norm_label": ".setup_method()"
+    },
+    {
+      "label": ".test_multi_organization_assignment_and_listing()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
+      "source_location": "L57",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_vobiz_phone_numbers_testvobizphonenumbers_test_multi_organization_assignment_and_listing",
+      "community": 188,
+      "community_name": "TestVobizPhoneNumbers",
+      "norm_label": ".test_multi_organization_assignment_and_listing()"
+    },
+    {
+      "label": ".test_vobiz_number_model_and_customer_view_privacy()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
+      "source_location": "L31",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_vobiz_phone_numbers_testvobizphonenumbers_test_vobiz_number_model_and_customer_view_privacy",
+      "community": 188,
+      "community_name": "TestVobizPhoneNumbers",
+      "norm_label": ".test_vobiz_number_model_and_customer_view_privacy()"
     },
     {
       "label": "run()",
@@ -25979,7 +26099,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_check_rate_limit",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "_check_rate_limit()"
     },
     {
@@ -25991,7 +26111,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_client_ip",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "_client_ip()"
     },
     {
@@ -26003,7 +26123,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rate_limit_api",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "rate_limit_api()"
     },
     {
@@ -26015,7 +26135,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rate_limit_auth",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "rate_limit_auth()"
     },
     {
@@ -26027,7 +26147,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rate_limit_billing",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "rate_limit_billing()"
     },
     {
@@ -26039,8 +26159,20 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rate_limit_import",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "rate_limit_import()"
+    },
+    {
+      "label": "get_redis()",
+      "file_type": "code",
+      "source_file": "backend/core/redis.py",
+      "source_location": "L24",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_core_redis_get_redis",
+      "community": 30,
+      "community_name": "get_redis",
+      "norm_label": "get_redis()"
     },
     {
       "label": "_mongomock_available()",
@@ -26051,7 +26183,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m28_security_mongomock_available",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "_mongomock_available()"
     },
     {
@@ -26063,7 +26195,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m28_security_testratelimiting_test_client_ip_extracts_from_forwarded_for",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": ".test_client_ip_extracts_from_forwarded_for()"
     },
     {
@@ -26075,7 +26207,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m28_security_testratelimiting_test_client_ip_fallback_to_client_host",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": ".test_client_ip_fallback_to_client_host()"
     },
     {
@@ -26087,7 +26219,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m28_security_testratelimiting_test_default_limits_configured",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": ".test_default_limits_configured()"
     },
     {
@@ -26099,7 +26231,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m28_security_testratelimiting_test_rate_limit_auth_blocks_after_threshold",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": ".test_rate_limit_auth_blocks_after_threshold()"
     },
     {
@@ -26111,7 +26243,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m28_security_testratelimiting_test_rate_limit_fails_open_without_redis",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": ".test_rate_limit_fails_open_without_redis()"
     },
     {
@@ -34083,18 +34215,6 @@
       "norm_label": ".suspend()"
     },
     {
-      "label": "_seed_phone_number()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L143",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_seed_phone_number",
-      "community": 66,
-      "community_name": "PhoneNumberRepository",
-      "norm_label": "_seed_phone_number()"
-    },
-    {
       "label": ".test_atomic_reserve_concurrent_safety()",
       "file_type": "code",
       "source_file": "backend/tests/test_m7_phone_numbers.py",
@@ -37170,6 +37290,18 @@
       "label": ".setup_method()",
       "file_type": "code",
       "source_file": "backend/tests/test_m4_payment.py",
+      "source_location": "L332",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m4_payment_testpaymentservice_setup_method",
+      "community": 81,
+      "community_name": "test_m4_payment.py",
+      "norm_label": ".setup_method()"
+    },
+    {
+      "label": ".setup_method()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m4_payment.py",
       "source_location": "L249",
       "_callable": true,
       "_origin": "ast",
@@ -38123,7 +38255,7 @@
       "_origin": "ast",
       "id": "backend_repositories_phone_number_repo_phonenumberassignmentrepository_history_for_number",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": ".history_for_number()"
     },
     {
@@ -38135,7 +38267,7 @@
       "_origin": "ast",
       "id": "backend_repositories_phone_number_repo_phonenumberassignmentrepository_history_for_org",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": ".history_for_org()"
     },
     {
@@ -38147,140 +38279,8 @@
       "_origin": "ast",
       "id": "backend_repositories_phone_number_repo_phonenumberassignmentrepository_record",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": ".record()"
-    },
-    {
-      "label": ".list_all_admin()",
-      "file_type": "code",
-      "source_file": "backend/services/phone_number_service.py",
-      "source_location": "L312",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_services_phone_number_service_phonenumberservice_list_all_admin",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": ".list_all_admin()"
-    },
-    {
-      "label": "_to_admin_view()",
-      "file_type": "code",
-      "source_file": "backend/services/phone_number_service.py",
-      "source_location": "L74",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_services_phone_number_service_to_admin_view",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "_to_admin_view()"
-    },
-    {
-      "label": ".test_admin_view_includes_provider_fields()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L95",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_admin_view_includes_provider_fields",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": ".test_admin_view_includes_provider_fields()"
-    },
-    {
-      "label": ".test_assignment_model()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L109",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_assignment_model",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": ".test_assignment_model()"
-    },
-    {
-      "label": ".test_customer_view_includes_required_fields()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L83",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_customer_view_includes_required_fields",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": ".test_customer_view_includes_required_fields()"
-    },
-    {
-      "label": ".test_customer_view_strips_provider_fields()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L66",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_customer_view_strips_provider_fields",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": ".test_customer_view_strips_provider_fields()"
-    },
-    {
-      "label": ".test_default_status_available()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L58",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers_testphonenumbermodel_test_default_status_available",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": ".test_default_status_available()"
-    },
-    {
-      "label": "run()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
-      "source_location": "L16",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_vobiz_phone_numbers_run",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "run()"
-    },
-    {
-      "label": ".setup_method()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
-      "source_location": "L25",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_vobiz_phone_numbers_testvobizphonenumbers_setup_method",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": ".setup_method()"
-    },
-    {
-      "label": ".test_multi_organization_assignment_and_listing()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
-      "source_location": "L57",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_vobiz_phone_numbers_testvobizphonenumbers_test_multi_organization_assignment_and_listing",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": ".test_multi_organization_assignment_and_listing()"
-    },
-    {
-      "label": ".test_vobiz_number_model_and_customer_view_privacy()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
-      "source_location": "L31",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_vobiz_phone_numbers_testvobizphonenumbers_test_vobiz_number_model_and_customer_view_privacy",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": ".test_vobiz_number_model_and_customer_view_privacy()"
     },
     {
       "label": ".add_finding()",
@@ -41294,17 +41294,6 @@
       "norm_label": "average revenue per user."
     },
     {
-      "label": "test_m7_phone_numbers.py",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers",
-      "community": 105,
-      "community_name": "run",
-      "norm_label": "test_m7_phone_numbers.py"
-    },
-    {
       "label": "SKIP",
       "file_type": "code",
       "source_file": "",
@@ -41314,17 +41303,6 @@
       "community": 105,
       "community_name": "run",
       "norm_label": "skip"
-    },
-    {
-      "label": "M7 tests \u2014 Phone Number Inventory. Tests: 1. PhoneNumber model \u2014 status\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers_rationale_1",
-      "community": 105,
-      "community_name": "run",
-      "norm_label": "m7 tests \u2014 phone number inventory. tests: 1. phonenumber model \u2014 status..."
     },
     {
       "label": "Org A cannot see Org B numbers.",
@@ -41745,28 +41723,6 @@
       "norm_label": "seed default platform voice profiles if none exist. idempotent."
     },
     {
-      "label": "CallingPack",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_services_wallet_service_py_callingpack",
-      "community": 11,
-      "community_name": "FastAPI",
-      "norm_label": "callingpack"
-    },
-    {
-      "label": "test_m23_customer_billing.py",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m23_customer_billing.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_tests_test_m23_customer_billing",
-      "community": 11,
-      "community_name": "FastAPI",
-      "norm_label": "test_m23_customer_billing.py"
-    },
-    {
       "label": "test_m24_super_admin.py",
       "file_type": "code",
       "source_file": "backend/tests/test_m24_super_admin.py",
@@ -41787,28 +41743,6 @@
       "community": 11,
       "community_name": "FastAPI",
       "norm_label": "fastapi"
-    },
-    {
-      "label": "Seed default calling packs. Idempotent.",
-      "file_type": "rationale",
-      "source_file": "backend/services/wallet_service.py",
-      "source_location": "L80",
-      "_origin": "ast",
-      "id": "backend_services_wallet_service_rationale_80",
-      "community": 11,
-      "community_name": "FastAPI",
-      "norm_label": "seed default calling packs. idempotent."
-    },
-    {
-      "label": "M23 tests \u2014 Customer Billing Portal. Tests: 1. /billing-portal/overview \u2014\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/tests/test_m23_customer_billing.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_tests_test_m23_customer_billing_rationale_1",
-      "community": 11,
-      "community_name": "FastAPI",
-      "norm_label": "m23 tests \u2014 customer billing portal. tests: 1. /billing-portal/overview \u2014..."
     },
     {
       "label": "M24 tests \u2014 Super Admin. Tests: 1. All admin endpoints require platform role\u2026",
@@ -44289,6 +44223,28 @@
       "norm_label": "providerconfigpanel.tsx"
     },
     {
+      "label": "test_m7_phone_numbers.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "test_m7_phone_numbers.py"
+    },
+    {
+      "label": "A phone number in the platform inventory.",
+      "file_type": "rationale",
+      "source_file": "backend/models/phone_number.py",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "backend_models_phone_number_rationale_29",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "a phone number in the platform inventory."
+    },
+    {
       "label": "Get a specific number only if it belongs to this org.",
       "file_type": "rationale",
       "source_file": "backend/services/phone_number_service.py",
@@ -44296,7 +44252,7 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_rationale_105",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": "get a specific number only if it belongs to this org."
     },
     {
@@ -44307,7 +44263,7 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_rationale_154",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": "atomically assign an available number to an organization. returns customer-safe..."
     },
     {
@@ -44318,7 +44274,7 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_rationale_199",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": "assign an available or assigned number to multiple organizations."
     },
     {
@@ -44329,8 +44285,19 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_rationale_304",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": "available numbers \u2014 customer-safe view (no provider details)."
+    },
+    {
+      "label": "Full inventory view for platform admin \u2014 includes provider details.",
+      "file_type": "rationale",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L319",
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_rationale_319",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "full inventory view for platform admin \u2014 includes provider details."
     },
     {
       "label": "Strip all provider details for customer-facing responses.",
@@ -44340,8 +44307,19 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_rationale_55",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": "strip all provider details for customer-facing responses."
+    },
+    {
+      "label": "Full view including provider details \u2014 admin only.",
+      "file_type": "rationale",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L75",
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_rationale_75",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "full view including provider details \u2014 admin only."
     },
     {
       "label": "Numbers assigned to an org \u2014 no provider details.",
@@ -44351,8 +44329,41 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_rationale_98",
       "community": 138,
-      "community_name": "_to_customer_view",
+      "community_name": "PhoneNumber",
       "norm_label": "numbers assigned to an org \u2014 no provider details."
+    },
+    {
+      "label": "Create a phone number assigned to the org.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_m14_preflight.py",
+      "source_location": "L144",
+      "_origin": "ast",
+      "id": "backend_tests_test_m14_preflight_rationale_144",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "create a phone number assigned to the org."
+    },
+    {
+      "label": "M7 tests \u2014 Phone Number Inventory. Tests: 1. PhoneNumber model \u2014 status\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers_rationale_1",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "m7 tests \u2014 phone number inventory. tests: 1. phonenumber model \u2014 status..."
+    },
+    {
+      "label": "Provider details must NEVER appear in customer-facing responses.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_m7_phone_numbers.py",
+      "source_location": "L67",
+      "_origin": "ast",
+      "id": "backend_tests_test_m7_phone_numbers_rationale_67",
+      "community": 138,
+      "community_name": "PhoneNumber",
+      "norm_label": "provider details must never appear in customer-facing responses."
     },
     {
       "label": "Generate a valid webhook signature for testing.",
@@ -47026,6 +47037,28 @@
       "norm_label": "ensure_indexes.py"
     },
     {
+      "label": "CallingPack",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_services_wallet_service_py_callingpack",
+      "community": 161,
+      "community_name": "db.py",
+      "norm_label": "callingpack"
+    },
+    {
+      "label": "test_m23_customer_billing.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m23_customer_billing.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_tests_test_m23_customer_billing",
+      "community": 161,
+      "community_name": "db.py",
+      "norm_label": "test_m23_customer_billing.py"
+    },
+    {
       "label": "campaign_worker.py",
       "file_type": "code",
       "source_file": "backend/workers/campaign_worker.py",
@@ -47035,17 +47068,6 @@
       "community": 161,
       "community_name": "db.py",
       "norm_label": "campaign_worker.py"
-    },
-    {
-      "label": "Redis",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "redis",
-      "community": 161,
-      "community_name": "db.py",
-      "norm_label": "redis"
     },
     {
       "label": "Central configuration for the AI Telecalling SaaS platform. Loads backend/.env\u2026",
@@ -47136,17 +47158,6 @@
       "norm_label": "redis async client factory. single process-wide client. redis is used for: -..."
     },
     {
-      "label": "Return the Redis client, or None if Redis is unavailable (dev only).",
-      "file_type": "rationale",
-      "source_file": "backend/core/redis.py",
-      "source_location": "L25",
-      "_origin": "ast",
-      "id": "backend_core_redis_rationale_25",
-      "community": 161,
-      "community_name": "db.py",
-      "norm_label": "return the redis client, or none if redis is unavailable (dev only)."
-    },
-    {
       "label": "Health check \u2014 returns True if Redis is reachable.",
       "file_type": "rationale",
       "source_file": "backend/core/redis.py",
@@ -47189,6 +47200,28 @@
       "community": 161,
       "community_name": "db.py",
       "norm_label": "release command: ensure mongodb indexes exist. run by fly.io on every deploy..."
+    },
+    {
+      "label": "Seed default calling packs. Idempotent.",
+      "file_type": "rationale",
+      "source_file": "backend/services/wallet_service.py",
+      "source_location": "L80",
+      "_origin": "ast",
+      "id": "backend_services_wallet_service_rationale_80",
+      "community": 161,
+      "community_name": "db.py",
+      "norm_label": "seed default calling packs. idempotent."
+    },
+    {
+      "label": "M23 tests \u2014 Customer Billing Portal. Tests: 1. /billing-portal/overview \u2014\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_m23_customer_billing.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_tests_test_m23_customer_billing_rationale_1",
+      "community": 161,
+      "community_name": "db.py",
+      "norm_label": "m23 tests \u2014 customer billing portal. tests: 1. /billing-portal/overview \u2014..."
     },
     {
       "label": "Campaign worker \u2014 polls Redis for pending campaigns and initiates calls. This\u2026",
@@ -48498,6 +48531,17 @@
       "community": 187,
       "community_name": "normalize_phone",
       "norm_label": "normalize a phone number to e.164 (best-effort for indian numbers)."
+    },
+    {
+      "label": "Vobiz credentials must be stored in provider_metadata and NEVER exposed in\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "backend_tests_test_vobiz_phone_numbers_rationale_32",
+      "community": 188,
+      "community_name": "TestVobizPhoneNumbers",
+      "norm_label": "vobiz credentials must be stored in provider_metadata and never exposed in..."
     },
     {
       "label": "Can't release a call that was already settled.",
@@ -53031,7 +53075,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "rate_limit.py"
     },
     {
@@ -53042,7 +53086,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_py_request",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "request"
     },
     {
@@ -53053,8 +53097,19 @@
       "_origin": "ast",
       "id": "backend_tests_test_m28_security",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "test_m28_security.py"
+    },
+    {
+      "label": "Redis",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "redis",
+      "community": 30,
+      "community_name": "get_redis",
+      "norm_label": "redis"
     },
     {
       "label": "Rate limiting via Redis sliding-window counters. Per-IP and per-user limits to\u2026",
@@ -53064,7 +53119,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rationale_1",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "rate limiting via redis sliding-window counters. per-ip and per-user limits to..."
     },
     {
@@ -53075,7 +53130,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rationale_115",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "general api rate limit per user."
     },
     {
@@ -53086,7 +53141,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rationale_135",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "strict rate limit for bulk import operations."
     },
     {
@@ -53097,7 +53152,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rationale_49",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "returns (allowed, current_count, retry_after_seconds). uses redis incr + expire..."
     },
     {
@@ -53108,7 +53163,7 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rationale_76",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "rate limit auth endpoints by ip (brute-force protection)."
     },
     {
@@ -53119,8 +53174,19 @@
       "_origin": "ast",
       "id": "backend_core_rate_limit_rationale_95",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "rate limit billing endpoints per user."
+    },
+    {
+      "label": "Return the Redis client, or None if Redis is unavailable (dev only).",
+      "file_type": "rationale",
+      "source_file": "backend/core/redis.py",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "backend_core_redis_rationale_25",
+      "community": 30,
+      "community_name": "get_redis",
+      "norm_label": "return the redis client, or none if redis is unavailable (dev only)."
     },
     {
       "label": "M28 tests \u2014 Security Hardening. Tests: 1. Rate limiting module exists with\u2026",
@@ -53130,7 +53196,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m28_security_rationale_1",
       "community": 30,
-      "community_name": "rate_limit.py",
+      "community_name": "get_redis",
       "norm_label": "m28 tests \u2014 security hardening. tests: 1. rate limiting module exists with..."
     },
     {
@@ -58553,17 +58619,6 @@
       "norm_label": "return number to available pool."
     },
     {
-      "label": "Create a phone number assigned to the org.",
-      "file_type": "rationale",
-      "source_file": "backend/tests/test_m14_preflight.py",
-      "source_location": "L144",
-      "_origin": "ast",
-      "id": "backend_tests_test_m14_preflight_rationale_144",
-      "community": 66,
-      "community_name": "PhoneNumberRepository",
-      "norm_label": "create a phone number assigned to the org."
-    },
-    {
       "label": "Two concurrent atomic_reserve calls on same number: only ONE wins.",
       "file_type": "rationale",
       "source_file": "backend/tests/test_m7_phone_numbers.py",
@@ -60645,6 +60700,17 @@
       "norm_label": "provider routes in voice_profile_versions are internal only."
     },
     {
+      "label": "providers/registry.py",
+      "file_type": "code",
+      "source_file": "backend/providers/registry.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_providers_registry",
+      "community": 84,
+      "community_name": "build_demo_registry",
+      "norm_label": "providers/registry.py"
+    },
+    {
       "label": "router.py",
       "file_type": "code",
       "source_file": "backend/providers/router.py",
@@ -60676,6 +60742,17 @@
       "community": 84,
       "community_name": "build_demo_registry",
       "norm_label": "skipif"
+    },
+    {
+      "label": "Typed provider registry; business services resolve providers by capability.",
+      "file_type": "rationale",
+      "source_file": "backend/providers/registry.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_providers_registry_rationale_1",
+      "community": 84,
+      "community_name": "build_demo_registry",
+      "norm_label": "typed provider registry; business services resolve providers by capability."
     },
     {
       "label": "Internal provider selection with health, capability, language, and fallback\u2026",
@@ -61609,7 +61686,7 @@
       "_origin": "ast",
       "id": "backend_models_phone_number",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "phone_number.py"
     },
     {
@@ -61620,7 +61697,7 @@
       "_origin": "ast",
       "id": "backend_repositories_phone_number_repo",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "phone_number_repo.py"
     },
     {
@@ -61631,7 +61708,7 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "phone_number_service.py"
     },
     {
@@ -61642,7 +61719,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_vobiz_phone_numbers",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "test_vobiz_phone_numbers.py"
     },
     {
@@ -61653,19 +61730,8 @@
       "_origin": "ast",
       "id": "backend_models_phone_number_rationale_1",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "phone number inventory models. important abstraction: - customers see: number..."
-    },
-    {
-      "label": "A phone number in the platform inventory.",
-      "file_type": "rationale",
-      "source_file": "backend/models/phone_number.py",
-      "source_location": "L29",
-      "_origin": "ast",
-      "id": "backend_models_phone_number_rationale_29",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "a phone number in the platform inventory."
     },
     {
       "label": "Immutable record of a number assignment to an org. History tracking.",
@@ -61675,7 +61741,7 @@
       "_origin": "ast",
       "id": "backend_models_phone_number_rationale_64",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "immutable record of a number assignment to an org. history tracking."
     },
     {
@@ -61686,7 +61752,7 @@
       "_origin": "ast",
       "id": "backend_repositories_phone_number_repo_rationale_1",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "phone number inventory and assignment repositories. concurrent reservation..."
     },
     {
@@ -61697,19 +61763,8 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_rationale_1",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "phone number service \u2014 inventory management. all operations record an immutable..."
-    },
-    {
-      "label": "Full inventory view for platform admin \u2014 includes provider details.",
-      "file_type": "rationale",
-      "source_file": "backend/services/phone_number_service.py",
-      "source_location": "L319",
-      "_origin": "ast",
-      "id": "backend_services_phone_number_service_rationale_319",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "full inventory view for platform admin \u2014 includes provider details."
     },
     {
       "label": "# NOTE: provider, provider_resource_id, provider_metadata,\u2026",
@@ -61719,30 +61774,8 @@
       "_origin": "ast",
       "id": "backend_services_phone_number_service_rationale_70",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "# note: provider, provider_resource_id, provider_metadata,..."
-    },
-    {
-      "label": "Full view including provider details \u2014 admin only.",
-      "file_type": "rationale",
-      "source_file": "backend/services/phone_number_service.py",
-      "source_location": "L75",
-      "_origin": "ast",
-      "id": "backend_services_phone_number_service_rationale_75",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "full view including provider details \u2014 admin only."
-    },
-    {
-      "label": "Provider details must NEVER appear in customer-facing responses.",
-      "file_type": "rationale",
-      "source_file": "backend/tests/test_m7_phone_numbers.py",
-      "source_location": "L67",
-      "_origin": "ast",
-      "id": "backend_tests_test_m7_phone_numbers_rationale_67",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "provider details must never appear in customer-facing responses."
     },
     {
       "label": "Tests for Vobiz.ai Phone Number provider and multi-organization assignment.",
@@ -61752,19 +61785,8 @@
       "_origin": "ast",
       "id": "backend_tests_test_vobiz_phone_numbers_rationale_1",
       "community": 87,
-      "community_name": "PhoneNumber",
+      "community_name": "phone_number_repo.py",
       "norm_label": "tests for vobiz.ai phone number provider and multi-organization assignment."
-    },
-    {
-      "label": "Vobiz credentials must be stored in provider_metadata and NEVER exposed in\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/tests/test_vobiz_phone_numbers.py",
-      "source_location": "L32",
-      "_origin": "ast",
-      "id": "backend_tests_test_vobiz_phone_numbers_rationale_32",
-      "community": 87,
-      "community_name": "PhoneNumber",
-      "norm_label": "vobiz credentials must be stored in provider_metadata and never exposed in..."
     },
     {
       "label": "security_audit_service.py",
@@ -62996,17 +63018,6 @@
       "norm_label": "razorpay.py"
     },
     {
-      "label": "providers/registry.py",
-      "file_type": "code",
-      "source_file": "backend/providers/registry.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_providers_registry",
-      "community": 99,
-      "community_name": "providers/base.py",
-      "norm_label": "providers/registry.py"
-    },
-    {
       "label": "Abstract provider interfaces for the AI Telecalling SaaS platform. Core\u2026",
       "file_type": "rationale",
       "source_file": "backend/providers/base.py",
@@ -63126,17 +63137,6 @@
       "community": 99,
       "community_name": "providers/base.py",
       "norm_label": "razorpay payment provider adapter. security rules (enforced here, not in..."
-    },
-    {
-      "label": "Typed provider registry; business services resolve providers by capability.",
-      "file_type": "rationale",
-      "source_file": "backend/providers/registry.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_providers_registry_rationale_1",
-      "community": 99,
-      "community_name": "providers/base.py",
-      "norm_label": "typed provider registry; business services resolve providers by capability."
     }
   ],
   "links": [
@@ -94754,7 +94754,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L921",
+      "source_location": "L927",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_connectphonecallstream",
@@ -94765,7 +94765,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L1045",
+      "source_location": "L1051",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_handledialphone",
@@ -94777,7 +94777,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L848",
+      "source_location": "L854",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_handleendcall",
@@ -94849,7 +94849,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L820",
+      "source_location": "L826",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage_handlestartcall",
@@ -95761,7 +95761,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L838",
+      "source_location": "L844",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage",
@@ -95773,7 +95773,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L877",
+      "source_location": "L883",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage",
@@ -149759,7 +149759,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L1022",
+      "source_location": "L1028",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage",
@@ -149770,7 +149770,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L1055",
+      "source_location": "L1061",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage",
@@ -149781,7 +149781,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L1074",
+      "source_location": "L1080",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage",
@@ -149891,7 +149891,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/app/(dashboard)/agents/[id]/page.tsx",
-      "source_location": "L911",
+      "source_location": "L917",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_app_dashboard_agents_id_page_sarvamagentstudiopage",
@@ -197229,5 +197229,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "8e2d906ea77a5741ba7af158a8707b95d2b0bfd9"
+  "built_at_commit": "335de7f10ca37441868e74086ad4ef1a44294cd4"
 }

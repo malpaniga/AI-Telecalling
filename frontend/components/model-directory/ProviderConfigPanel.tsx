@@ -29,6 +29,35 @@ import {
   ConnectProviderRequest,
 } from "@/lib/api";
 
+const LANGUAGE_LABELS: Record<string, string> = {
+  "mr-IN": "Marathi (mr-IN)",
+  "hi-IN": "Hindi (hi-IN)",
+  "en-IN": "English (en-IN)",
+  "gu-IN": "Gujarati (gu-IN)",
+  "ta-IN": "Tamil (ta-IN)",
+  "te-IN": "Telugu (te-IN)",
+  "kn-IN": "Kannada (kn-IN)",
+  "ml-IN": "Malayalam (ml-IN)",
+  "pa-IN": "Punjabi (pa-IN)",
+  "bn-IN": "Bengali (bn-IN)",
+  "od-IN": "Odia (od-IN)",
+  "mr": "Marathi (mr)",
+  "hi": "Hindi (hi)",
+  "en": "English (en)",
+  "gu": "Gujarati (gu)",
+  "ta": "Tamil (ta)",
+  "te": "Telugu (te)",
+  "kn": "Kannada (kn)",
+  "ml": "Malayalam (ml)",
+  "pa": "Punjabi (pa)",
+  "bn": "Bengali (bn)",
+  "multilingual": "Multilingual (All Languages)",
+};
+
+function formatLanguageLabel(code: string): string {
+  return LANGUAGE_LABELS[code] || code;
+}
+
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
@@ -1050,7 +1079,7 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
                   <option value="">Default / any</option>
                   {selectedModel.supported_languages.map((lang) => (
                     <option key={lang} value={lang}>
-                      {lang}
+                      {formatLanguageLabel(lang)}
                     </option>
                   ))}
                 </select>

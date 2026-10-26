@@ -12,6 +12,7 @@ import time
 from groq import AsyncGroq
 
 from backend.config import settings
+from backend.languages import normalize_sarvam_language
 
 log = logging.getLogger("stt")
 
@@ -115,6 +116,7 @@ class SarvamSTT:
         if not audio_bytes or len(audio_bytes) < 450:
             return ""
         started = time.perf_counter()
+        norm_lang = normalize_sarvam_language(language, default="unknown")
         try:
             resp = await self._client.post(
                 self._URL,
@@ -122,7 +124,7 @@ class SarvamSTT:
                 data={
                     "model": self.model,
                     "mode": self.mode,
-                    "language_code": language or "unknown",
+                    "language_code": norm_lang,
                 },
             )
             resp.raise_for_status()

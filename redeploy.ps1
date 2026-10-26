@@ -44,7 +44,7 @@ try {
     }
     
     # Check if local branch is ahead of origin
-    $unpushed = git log @{u}..HEAD --oneline 2>$null
+    $unpushed = git log '@{u}..HEAD' --oneline 2>$null
     if ($unpushed -or $status) {
         git push origin HEAD
         Write-Host "  [OK] GitHub updated. Vercel is redeploying the frontend." -ForegroundColor Green

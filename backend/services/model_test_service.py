@@ -117,16 +117,17 @@ class ModelTestService:
         if clean_key.startswith("Bearer "):
             clean_key = clean_key[7:].strip()
 
+        from backend.languages import normalize_sarvam_language
+        norm_lang = normalize_sarvam_language(language, default="en-IN")
         async with httpx.AsyncClient(
             timeout=20.0,
             headers={"api-subscription-key": clean_key},
         ) as client:
             target_model = model_id or "bulbul:v4-flash"
-            lang_code = language or "en-IN"
             if "v4" in target_model.lower():
                 speaker = (
-                    "kavya_hi_conversational" if "hi" in lang_code
-                    else "ishita_mr_conversational" if "mr" in lang_code
+                    "ishita_mr_conversational" if "mr" in norm_lang
+                    else "kavya_hi_conversational" if "hi" in norm_lang
                     else "aditi_en_stories"
                 )
             else:
@@ -136,7 +137,7 @@ class ModelTestService:
                 "https://api.sarvam.ai/text-to-speech",
                 json={
                     "text": "Hello, this is a test.",
-                    "target_language_code": lang_code,
+                    "target_language_code": norm_lang,
                     "speaker": speaker,
                     "model": target_model,
                     "speech_sample_rate": 22050,
@@ -275,6 +276,9 @@ class ModelTestService:
         elif target_model.startswith("saaras-"):
             target_model = "saaras:" + target_model[len("saaras-"):]
 
+        from backend.languages import normalize_sarvam_language
+        norm_lang = normalize_sarvam_language(language, default="unknown")
+
         async with httpx.AsyncClient(
             timeout=20.0,
             headers={"api-subscription-key": clean_key},
@@ -285,7 +289,7 @@ class ModelTestService:
                 data={
                     "model": target_model,
                     "mode": "codemix",
-                    "language_code": language or "unknown",
+                    "language_code": norm_lang,
                 },
             )
             if resp.status_code != 200:

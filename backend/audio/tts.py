@@ -21,6 +21,7 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 
 from backend.config import settings
+from backend.languages import normalize_sarvam_language
 
 log = logging.getLogger("tts")
 
@@ -143,7 +144,7 @@ class SarvamEngine(TTSEngine):
             self._URL,
             json={
                 "text": text,
-                "target_language_code": language or self.language,
+                "target_language_code": normalize_sarvam_language(language or self.language, default="en-IN"),
                 "speaker": speaker,
                 "model": self.model,
                 "speech_sample_rate": self.sample_rate,
@@ -172,7 +173,7 @@ class SarvamEngine(TTSEngine):
         sr = self.sample_rate
         body = {
             "text": text,
-            "target_language_code": language or self.language,
+            "target_language_code": normalize_sarvam_language(language or self.language, default="en-IN"),
             "speaker": speaker,
             "model": self.model,
             "speech_sample_rate": sr,
@@ -319,3 +320,4 @@ async def _smoke_test() -> None:
 
 if __name__ == "__main__":
     asyncio.run(_smoke_test())
+

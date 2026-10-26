@@ -3,6 +3,7 @@ import logging
 from typing import Any
 import httpx
 from backend.config import settings
+from backend.languages import normalize_sarvam_language
 from backend.providers.base import STTProvider
 
 log = logging.getLogger("providers.stt.sarvam")
@@ -66,6 +67,7 @@ class SarvamSTTProvider(STTProvider):
     ) -> str:
         if not audio or len(audio) < 450:
             return ""
+        norm_lang = normalize_sarvam_language(language or self.language, default="unknown")
         try:
             resp = await self._client.post(
                 "https://api.sarvam.ai/speech-to-text",
@@ -73,7 +75,7 @@ class SarvamSTTProvider(STTProvider):
                 data={
                     "model": kwargs.get("model") or self.model,
                     "mode": kwargs.get("mode") or self.mode,
-                    "language_code": language or self.language or "unknown",
+                    "language_code": norm_lang,
                 },
             )
             resp.raise_for_status()

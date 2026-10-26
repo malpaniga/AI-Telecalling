@@ -4,6 +4,7 @@ import io
 import wave
 from typing import Any
 import httpx
+from backend.languages import normalize_sarvam_language
 from backend.providers.base import TTSProvider
 
 SUPPORTED_MODELS = {"bulbul:v2", "bulbul:v3", "bulbul:v4", "bulbul:v4-flash", "bulbul:v4-turbo"}
@@ -84,7 +85,7 @@ class SarvamTTSProvider(TTSProvider):
         if not text:
             return
 
-        lang = kwargs.get("language") or self.language or "en-IN"
+        lang = normalize_sarvam_language(kwargs.get("language") or self.language, default="en-IN")
         target_model = kwargs.get("model") or self.model
         voice_id = kwargs.get("voice_id") or self.voice_id
 
@@ -136,7 +137,7 @@ class SarvamTTSProvider(TTSProvider):
         if not text.strip():
             return {"audio": b"", "sample_rate": self.sample_rate}
 
-        lang = kwargs.get("language") or self.language or "en-IN"
+        lang = normalize_sarvam_language(kwargs.get("language") or self.language, default="en-IN")
         target_model = kwargs.get("model") or self.model
         voice_id = kwargs.get("voice_id") or self.voice_id
 

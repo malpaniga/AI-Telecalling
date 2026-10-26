@@ -274,6 +274,7 @@ def test_authorization_enforcement():
 def test_local_runtime_detection_ollama_unreachable():
     """[mock] Patched httpx raises ConnectError → test_llm returns status=unavailable."""
     import httpx
+    import backend.agent.llm
     from backend.services.model_test_service import ModelTestService
 
     async def scenario():
@@ -299,6 +300,7 @@ def test_local_runtime_detection_ollama_unreachable():
 
 def test_local_runtime_detection_ollama_reachable():
     """[mock] Patched Ollama returns 200 + response → test_llm returns status=ok."""
+    import backend.agent.llm
     from backend.services.model_test_service import ModelTestService
 
     async def scenario():
@@ -725,5 +727,50 @@ def test_list_provider_live_models_and_credential_reuse():
             user=admin,
         )
         assert cfg2["model_id"] == "openai/gpt-oss-120b"
+
+    run(scenario())
+
+
+def test_sarvam_language_normalization():
+    """Verify 2-letter codes like 'mr', 'hi', 'en' normalize to 'mr-IN', 'hi-IN', 'en-IN'."""
+    from backend.languages import normalize_sarvam_language, is_language_supported, resolve
+
+    assert normalize_sarvam_language("mr") == "mr-IN"
+    assert normalize_sarvam_language("hi") == "hi-IN"
+    assert normalize_sarvam_language("en") == "en-IN"
+    assert normalize_sarvam_language("mr-IN") == "mr-IN"
+    assert normalize_sarvam_language("unknown") == "unknown"
+    assert normalize_sarvam_language(None) == "unknown"
+    assert normalize_sarvam_language(None, default="en-IN") == "en-IN"
+
+    # Compatibility check
+    assert is_language_supported("mr", ["mr-IN", "hi-IN"]) is True
+    assert is_language_supported("mr-IN", ["mr", "hi"]) is True
+    assert is_language_supported("fr", ["mr-IN", "hi-IN"]) is False
+    assert is_language_supported("en", ["multilingual"]) is True
+
+    # Resolve check
+    code, info = resolve("mr")
+    assert code == "mr-IN"
+    assert info["name"] == "Marathi"
+
+
+def test_sarvam_stt_language_normalized_in_http_call():
+    """Verify _test_sarvam_stt maps language 'mr' to 'mr-IN' in httpx post payload."""
+    from backend.services.model_test_service import ModelTestService
+    import httpx
+
+    captured_payload = {}
+
+    async def mock_post(url, *args, **kwargs):
+        captured_payload.update(kwargs.get("data", {}))
+        return httpx.Response(200, json={"transcript": "test response"}, request=httpx.Request("POST", url))
+
+    async def scenario():
+        svc = ModelTestService()
+        with patch("httpx.AsyncClient.post", side_effect=mock_post):
+            res = await svc._test_sarvam_stt(credential="dummy-key", language="mr", model_id="saaras:v4")
+        assert res == "test response"
+        assert captured_payload.get("language_code") == "mr-IN"
 
     run(scenario())
