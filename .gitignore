@@ -55,3 +55,7 @@ frontend/out/
 # Misc
 *.tmp
 *.bak
+*.tar.gz
+app.tar.gz
+*.tsbuildinfo
+.superpowers/
