@@ -33,6 +33,7 @@ Redis keys:
 """
 
 import logging
+import math
 from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -286,7 +287,7 @@ class CreditService:
         if actual_credits > 0:
             await self.lot_repo.consume_from_lots(organization_id, actual_credits)
 
-        # Ledger entry for actual consumption
+        # Ledger entry for actual consumption or full refund
         if actual_credits > 0:
             await self.txn_repo.record(
                 organization_id=organization_id,
@@ -296,7 +297,20 @@ class CreditService:
                 available_delta=refund_credits,
                 reserved_delta=-reserved_credits,
                 balance_after=new_available,
-                description=f"Call billed: {actual_credits}s for call {call_id[:8]}",
+                description=f"Call billed: {actual_credits} min for call {call_id[:8]}",
+                call_id=call_id,
+                idempotency_key=idem_key,
+            )
+        elif reserved_credits > 0:
+            await self.txn_repo.record(
+                organization_id=organization_id,
+                wallet_id=wallet.id,
+                transaction_type="release",
+                credits_delta=0,
+                available_delta=refund_credits,
+                reserved_delta=-reserved_credits,
+                balance_after=new_available,
+                description=f"Call ended (0 credits billed): released hold of {reserved_credits} credits for call {call_id[:8]}",
                 call_id=call_id,
                 idempotency_key=idem_key,
             )
@@ -316,12 +330,108 @@ class CreditService:
         }
 
     # -----------------------------------------------------------------------
+    # Settle Duration (Minutes ceiling rounding)
+    # -----------------------------------------------------------------------
+    async def settle_duration(
+        self,
+        organization_id: str,
+        call_id: str,
+        duration_seconds: int,
+        idempotency_key: Optional[str] = None,
+    ) -> dict:
+        """
+        Settle call by duration in seconds, applying 1 credit = 1 minute ceil rounding:
+        - duration <= 0: 0 credits
+        - 1 to 60s: 1 credit
+        - 61 to 120s: 2 credits
+        """
+        secs = max(0, int(duration_seconds))
+        billed_minutes = math.ceil(secs / 60) if secs > 0 else 0
+        idem_key = idempotency_key or f"settle_dur:{call_id}"
+        result = await self.settle(
+            organization_id=organization_id,
+            call_id=call_id,
+            actual_credits=billed_minutes,
+            idempotency_key=idem_key,
+        )
+        result["duration_seconds"] = secs
+        return result
+
+    # -----------------------------------------------------------------------
+    # Extend Hold (for live calls passing 5-minute threshold)
+    # -----------------------------------------------------------------------
+    async def extend_hold(
+        self,
+        organization_id: str,
+        call_id: str,
+        additional_credits: int = 5,
+    ) -> dict:
+        """
+        Extend an active reservation by additional_credits (default 5 minutes).
+        Reserves min(additional_credits, wallet.available_credits).
+        Returns {extended_credits, total_reserved_credits, new_available_balance}.
+        """
+        if additional_credits <= 0:
+            raise ValueError("additional_credits must be positive")
+
+        wallet = await self.wallet_repo.get_or_create(organization_id)
+        to_reserve = min(additional_credits, wallet.available_credits)
+        if to_reserve <= 0:
+            return {
+                "extended_credits": 0,
+                "total_reserved_credits": wallet.reserved_credits,
+                "new_available_balance": wallet.available_credits,
+                "can_extend": False,
+            }
+
+        updated = await self.wallet_repo.atomic_reserve(wallet.id, to_reserve)
+        if updated is None:
+            return {
+                "extended_credits": 0,
+                "total_reserved_credits": wallet.reserved_credits,
+                "new_available_balance": wallet.available_credits,
+                "can_extend": False,
+            }
+
+        new_available = updated["available_credits"]
+        new_reserved = updated["reserved_credits"]
+
+        # Redis update
+        redis = self._get_redis()
+        current_redis_reserved = to_reserve
+        if redis:
+            val = await redis.get(_reserve_key(organization_id, call_id))
+            if val:
+                current_redis_reserved = int(val) + to_reserve
+            await redis.set(_reserve_key(organization_id, call_id), str(current_redis_reserved), ex=_RESERVE_TTL)
+
+        # Ledger entry
+        await self.txn_repo.record(
+            organization_id=organization_id,
+            wallet_id=wallet.id,
+            transaction_type="reserve",
+            credits_delta=0,
+            available_delta=-to_reserve,
+            reserved_delta=to_reserve,
+            balance_after=new_available,
+            description=f"Extended hold for call {call_id[:8]} (+{to_reserve} mins)",
+            call_id=call_id,
+        )
+
+        return {
+            "extended_credits": to_reserve,
+            "total_reserved_credits": current_redis_reserved if redis else new_reserved,
+            "new_available_balance": new_available,
+            "can_extend": True,
+        }
+
+    # -----------------------------------------------------------------------
     # Check: can this org start a call?
     # -----------------------------------------------------------------------
     async def can_start_call(
         self,
         organization_id: str,
-        required_credits: int,
+        required_credits: int = 5,
     ) -> dict:
         """Quick check before reserving — no state change."""
         wallet = await self.wallet_repo.get_or_create(organization_id)
