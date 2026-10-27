@@ -56,6 +56,15 @@ export function TestAgentModal() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("voice");
   const [pipelineInfo, setPipelineInfo] = useState<TestAgentInfoResponse | null>(null);
   const [loadingInfo, setLoadingInfo] = useState<boolean>(true);
+  const [trialStatus, setTrialStatus] = useState<{
+    free_tests_remaining: number;
+    free_test_session_max_minutes: number;
+    max_call_duration_minutes: number;
+  }>({
+    free_tests_remaining: 10,
+    free_test_session_max_minutes: 3,
+    max_call_duration_minutes: 7,
+  });
 
   // Setup / scenario config
   const [selectedLanguage, setSelectedLanguage] = useState<string>("mr-IN");
@@ -127,7 +136,15 @@ export function TestAgentModal() {
   const loadPipelineInfo = useCallback(async () => {
     try {
       setLoadingInfo(true);
-      const res = await api.modelDirectory.testAgentInfo();
+      const [res, trial] = await Promise.all([
+        api.modelDirectory.testAgentInfo(),
+        api.wallet.trialStatus().catch(() => ({
+          free_tests_remaining: 10,
+          free_test_session_max_minutes: 3,
+          max_call_duration_minutes: 7,
+        })),
+      ]);
+      setTrialStatus(trial);
       setPipelineInfo(res);
 
       if (res.default_scenarios?.length > 0 && !options) {
@@ -414,7 +431,10 @@ export function TestAgentModal() {
       };
 
       ws.onclose = (ev) => {
-        if (ev.code === 1011) {
+        if (ev.code === 4002) {
+          endVoiceCall("Minimum 5 credits required to run a test call. Free trial sessions exhausted.");
+          toast.error("Minimum 5 credits required to run a test call. Free trial sessions exhausted.");
+        } else if (ev.code === 1011) {
           endVoiceCall("Call pipeline not configured: Please activate STT, LLM & TTS in Wizard");
           toast.error("Call pipeline not configured: Please activate STT, LLM & TTS in Wizard");
         } else if (ev.code !== 1000 && ev.code !== 1005) {
@@ -475,6 +495,12 @@ export function TestAgentModal() {
               }
             }
           } else if (msg.type === "info") {
+            if (msg.text?.includes("3-minute testing session ending now")) {
+              toast("3-minute testing session ending now. Call disconnected.", {
+                icon: "⏱️",
+                duration: 6000,
+              });
+            }
             setTurns((prev) => [
               ...prev,
               {
@@ -742,6 +768,15 @@ export function TestAgentModal() {
                     <AlertCircle className="h-3 w-3" /> Needs Active Models
                   </Badge>
                 )}
+                {trialStatus.free_tests_remaining > 0 ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium py-0.5 px-2 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                    <Sparkles className="h-3 w-3" /> Free Trial: {trialStatus.free_tests_remaining}/10 left (3m max)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium py-0.5 px-2 rounded-full bg-surface-subtle text-text-secondary border border-border">
+                    Standard (1 cr/min)
+                  </span>
+                )}
               </div>
               <p className="text-xs text-text-muted mt-0.5">
                 Simulate phone conversations directly in your browser before calling customers
@@ -993,6 +1028,19 @@ export function TestAgentModal() {
                     <div className="flex items-center justify-center gap-2 mt-1 text-xs text-text-muted">
                       <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
                       <span className="font-mono font-medium">{formatTimer(callDuration)}</span>
+                      {trialStatus.free_tests_remaining > 0 ? (
+                        <>
+                          <span>•</span>
+                          <span className={`font-mono font-medium ${callDuration >= 150 ? "text-danger animate-pulse" : "text-accent"}`}>
+                            ⏱️ Limit: {formatTimer(Math.max(0, 180 - callDuration))} / 03:00
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span>•</span>
+                          <span className="text-text-secondary font-medium">Standard (1 credit/min)</span>
+                        </>
+                      )}
                       <span>•</span>
                       <span>{selectedLanguage}</span>
                     </div>
@@ -1185,9 +1233,14 @@ export function TestAgentModal() {
                     <span className="font-semibold text-text-primary">{tts?.provider_name} ({tts?.model_id})</span>
                   </div>
                   <div className="flex justify-between text-text-muted">
-                    <span>Test Rate</span>
-                    <span className="font-semibold text-success">Complimentary Demo Test</span>
+                    <span>Call Billing</span>
+                    <span className="font-semibold text-accent">1 Credit / Min (5 credits held)</span>
                   </div>
+                </div>
+
+                <div className="rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/20 p-3 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2">
+                  <Info className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>Real outbound phone calls ring an actual telephone number over telecom carriers and use standard wallet credits. Requires at least 5 available credits to initiate.</span>
                 </div>
 
                 <Button

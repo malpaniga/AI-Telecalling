@@ -27,9 +27,11 @@ class OrgCreateRequest(BaseModel):
 class OrgUpdateRequest(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
+    max_call_duration_minutes: Optional[int] = None
 
 
 def _to_public(org: Organization) -> dict:
+    settings = getattr(org, "settings", None)
     return {
         "id": org.id,
         "name": org.name,
@@ -41,6 +43,11 @@ def _to_public(org: Organization) -> dict:
         "max_concurrent_calls": org.max_concurrent_calls,
         "max_campaigns": org.max_campaigns,
         "max_agents": org.max_agents,
+        "settings": {
+            "max_call_duration_minutes": getattr(settings, "max_call_duration_minutes", 7) if settings else 7,
+            "free_test_sessions_remaining": getattr(settings, "free_test_sessions_remaining", 10) if settings else 10,
+            "free_test_session_max_minutes": getattr(settings, "free_test_session_max_minutes", 3) if settings else 3,
+        },
         "created_at": org.created_at.isoformat(),
     }
 
@@ -121,7 +128,14 @@ async def update_organization(
     repo = OrganizationRepository(db)
     audit = AuditLogRepository(db)
 
-    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    raw = body.model_dump(exclude_unset=True)
+    updates = {}
+    if "name" in raw and raw["name"] is not None:
+        updates["name"] = raw["name"]
+    if "phone" in raw and raw["phone"] is not None:
+        updates["phone"] = raw["phone"]
+    if "max_call_duration_minutes" in raw and raw["max_call_duration_minutes"] is not None:
+        updates["settings.max_call_duration_minutes"] = max(1, raw["max_call_duration_minutes"])
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Package, Plus, Gift, Sliders } from "lucide-react";
+import { Package, Plus, Gift, Sliders, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,14 @@ export default function AdminCallingPacksPage() {
     organization_id: "",
     credits_delta: "",
     reason: "",
+  });
+
+  // Grant free test sessions
+  const [showGrantTests, setShowGrantTests] = useState(false);
+  const [grantingTests, setGrantingTests] = useState(false);
+  const [grantTestsForm, setGrantTestsForm] = useState({
+    organization_id: "",
+    count: "10",
   });
 
   const load = useCallback(async () => {
@@ -147,6 +155,26 @@ export default function AdminCallingPacksPage() {
     }
   }
 
+  async function handleGrantTests(e: React.FormEvent) {
+    e.preventDefault();
+    setGrantingTests(true);
+    try {
+      const res = await api.admin.grantFreeTests({
+        organization_id: grantTestsForm.organization_id.trim(),
+        count: parseInt(grantTestsForm.count) || 10,
+      });
+      toast.success(
+        `Granted ${grantTestsForm.count} free tests. Organization now has ${res.free_test_sessions_remaining} total free test sessions.`
+      );
+      setShowGrantTests(false);
+      setGrantTestsForm({ organization_id: "", count: "10" });
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to grant free tests");
+    } finally {
+      setGrantingTests(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -169,6 +197,14 @@ export default function AdminCallingPacksPage() {
           >
             <Gift className="h-3.5 w-3.5 mr-1.5" />
             Grant Bonus
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => setShowGrantTests(true)}
+          >
+            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+            Grant Free Tests
           </Button>
           <Button size="sm" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4 mr-1" />
@@ -438,6 +474,51 @@ export default function AdminCallingPacksPage() {
             </Button>
             <Button type="submit" loading={adjusting}>
               Apply Adjustment
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Grant Free Tests modal */}
+      <Modal
+        isOpen={showGrantTests}
+        onClose={() => setShowGrantTests(false)}
+        title="Grant Free Browser Test Sessions"
+      >
+        <form onSubmit={handleGrantTests} className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Assign additional complimentary in-browser testing sessions (3 minutes each) to an organization.
+          </p>
+          <Input
+            label="Organisation ID"
+            value={grantTestsForm.organization_id}
+            onChange={(e) =>
+              setGrantTestsForm((f) => ({ ...f, organization_id: e.target.value }))
+            }
+            placeholder="org_..."
+            required
+          />
+          <Input
+            label="Number of Test Sessions"
+            type="number"
+            value={grantTestsForm.count}
+            onChange={(e) =>
+              setGrantTestsForm((f) => ({ ...f, count: e.target.value }))
+            }
+            placeholder="10"
+            hint="Number of 3-minute browser sessions to grant"
+            required
+          />
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowGrantTests(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={grantingTests}>
+              Grant Sessions
             </Button>
           </div>
         </form>

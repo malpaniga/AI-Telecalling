@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Wallet, CreditCard, Users, Info } from "lucide-react";
+import { ChevronLeft, Wallet, CreditCard, Users, Info, Clock, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,16 @@ export default function AdminOrgDetailPage() {
   const [adjustDelta, setAdjustDelta] = useState("");
   const [adjustReason, setAdjustReason] = useState("");
   const [adjusting, setAdjusting] = useState(false);
+
+  // Grant free tests
+  const [showGrantTests, setShowGrantTests] = useState(false);
+  const [grantTestsCount, setGrantTestsCount] = useState("10");
+  const [grantingTests, setGrantingTests] = useState(false);
+
+  // Edit call duration limit
+  const [showEditDuration, setShowEditDuration] = useState(false);
+  const [maxCallDuration, setMaxCallDuration] = useState("7");
+  const [savingDuration, setSavingDuration] = useState(false);
 
   // Load org
   useEffect(() => {
@@ -142,6 +152,46 @@ export default function AdminOrgDetailPage() {
     }
   }
 
+  async function handleGrantFreeTests(e: React.FormEvent) {
+    e.preventDefault();
+    if (!id) return;
+    setGrantingTests(true);
+    try {
+      const res = await api.admin.grantFreeTests({
+        organization_id: id,
+        count: parseInt(grantTestsCount) || 10,
+      });
+      toast.success(`Granted ${grantTestsCount} free tests. Org now has ${res.free_test_sessions_remaining} total.`);
+      setShowGrantTests(false);
+      setGrantTestsCount("10");
+      const updated = await api.admin.organizations.get(id);
+      setOrg(updated);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to grant tests");
+    } finally {
+      setGrantingTests(false);
+    }
+  }
+
+  async function handleSaveDuration(e: React.FormEvent) {
+    e.preventDefault();
+    if (!id) return;
+    setSavingDuration(true);
+    try {
+      const val = parseInt(maxCallDuration);
+      if (val < 1 || val > 60) throw new Error("Duration must be between 1 and 60 minutes");
+      await api.admin.organizations.update(id, { max_call_duration_minutes: val });
+      toast.success(`Max call duration updated to ${val} minutes`);
+      setShowEditDuration(false);
+      const updated = await api.admin.organizations.get(id);
+      setOrg(updated);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update duration");
+    } finally {
+      setSavingDuration(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -175,6 +225,25 @@ export default function AdminOrgDetailPage() {
           <StatusBadge status={org.status} />
         </div>
         <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => setShowGrantTests(true)}
+          >
+            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+            Grant Free Tests
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              setMaxCallDuration(String(org.settings?.max_call_duration_minutes ?? 7));
+              setShowEditDuration(true);
+            }}
+          >
+            <Clock className="h-3.5 w-3.5 mr-1.5" />
+            Duration Limit ({org.settings?.max_call_duration_minutes ?? 7}m)
+          </Button>
           {org.status === "active" ? (
             <Button
               size="sm"
@@ -264,6 +333,8 @@ export default function AdminOrgDetailPage() {
                     ["Max Agents", org.max_agents],
                     ["Max Campaigns", org.max_campaigns],
                     ["Max Concurrent Calls", org.max_concurrent_calls],
+                    ["Max Single Call Duration", `${org.settings?.max_call_duration_minutes ?? 7} mins`],
+                    ["Free Browser Tests Left", `${org.settings?.free_test_sessions_remaining ?? 10} / 10`],
                   ].map(([label, value]) => (
                     <div key={label as string} className="flex justify-between">
                       <span className="text-text-muted">{label as string}</span>
@@ -487,6 +558,74 @@ export default function AdminOrgDetailPage() {
             </Button>
             <Button type="submit" loading={adjusting}>
               Apply Adjustment
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Grant free tests dialog */}
+      <Modal
+        isOpen={showGrantTests}
+        onClose={() => setShowGrantTests(false)}
+        title="Grant Free Browser Test Sessions"
+      >
+        <form onSubmit={handleGrantFreeTests} className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Grant additional complimentary 3-minute in-browser voice test sessions to {org?.name}.
+          </p>
+          <Input
+            label="Number of Sessions"
+            type="number"
+            value={grantTestsCount}
+            onChange={(e) => setGrantTestsCount(e.target.value)}
+            placeholder="10"
+            hint="Number of 3-minute test sessions to add"
+            required
+          />
+          <div className="flex justify-end gap-2 pt-1">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowGrantTests(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={grantingTests}>
+              Grant Sessions
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit max call duration dialog */}
+      <Modal
+        isOpen={showEditDuration}
+        onClose={() => setShowEditDuration(false)}
+        title="Edit Maximum Single Call Duration"
+      >
+        <form onSubmit={handleSaveDuration} className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Set the maximum duration for any single call in {org?.name} before automatic hangup (default: 7 minutes).
+          </p>
+          <Input
+            label="Max Duration (Minutes)"
+            type="number"
+            value={maxCallDuration}
+            onChange={(e) => setMaxCallDuration(e.target.value)}
+            placeholder="7"
+            hint="Between 1 and 60 minutes"
+            required
+          />
+          <div className="flex justify-end gap-2 pt-1">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowEditDuration(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={savingDuration}>
+              Save Duration
             </Button>
           </div>
         </form>

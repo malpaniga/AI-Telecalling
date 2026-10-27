@@ -66,6 +66,12 @@ export interface User {
   created_at: string;
 }
 
+export interface OrganizationSettings {
+  max_call_duration_minutes: number;
+  free_test_sessions_remaining: number;
+  free_test_session_max_minutes: number;
+}
+
 export interface Organization {
   id: string;
   name: string;
@@ -76,6 +82,7 @@ export interface Organization {
   max_concurrent_calls: number;
   max_campaigns: number;
   max_agents: number;
+  settings?: OrganizationSettings;
   created_at: string;
 }
 
@@ -1289,6 +1296,8 @@ export const api = {
         apiRequest<{ status: string; org_id: string }>(
           "POST", `/api/v1/admin/organizations/${id}/reactivate`
         ),
+      update: (id: string, updates: { name?: string; phone?: string; max_call_duration_minutes?: number }) =>
+        apiRequest<Organization>("PATCH", `/api/v1/organizations/${id}`, updates),
     },
     subscriptions: {
       list: (params?: { sub_status?: string; limit?: number; skip?: number }) => {
