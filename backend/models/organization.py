@@ -24,7 +24,12 @@ class OrganizationSettings(TimestampedModel):
     dnc_enabled: bool = True
 
     # Notifications
-    low_credit_threshold: int = 100   # credits remaining to trigger alert
+    low_credit_threshold: int = 10   # minutes remaining to trigger alert
+
+    # Duration and Trial Limits
+    max_call_duration_minutes: int = 7
+    free_test_sessions_remaining: int = 10
+    free_test_session_max_minutes: int = 3
 
 
 class Organization(TimestampedModel):

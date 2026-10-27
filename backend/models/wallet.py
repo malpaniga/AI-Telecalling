@@ -1,7 +1,7 @@
 """Wallet, credit ledger, credit lots, and calling pack models.
 
 KEY RULES:
-- 1 credit = 1 billable second (integer, never float)
+- 1 credit = 1 billable minute (integer, never float)
 - All monetary values in integer paise
 - Every credit movement requires an immutable WalletTransaction ledger entry
 - Wallet available_credits + reserved_credits must always be ≥ 0

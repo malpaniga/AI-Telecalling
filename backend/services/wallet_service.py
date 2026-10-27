@@ -35,9 +35,9 @@ DEFAULT_CALLING_PACKS = [
     {
         "name": "Trial Pack",
         "slug": "trial",
-        "credits": 300,           # 5 minutes
+        "credits": 10,            # 10 minutes free trial
         "price_paise": 0,         # free trial
-        "description": "Try AI calling with 5 free minutes.",
+        "description": "Try AI calling with 10 free minutes.",
         "validity_days": 30,
         "bonus_credits": 0,
         "sort_order": 0,
@@ -46,9 +46,9 @@ DEFAULT_CALLING_PACKS = [
     {
         "name": "Starter Pack",
         "slug": "starter-pack",
-        "credits": 1000,          # ~17 minutes
+        "credits": 100,           # 100 minutes
         "price_paise": 99900,     # ₹999
-        "description": "1,000 calling credits (~17 minutes of AI calls).",
+        "description": "100 calling credits (100 minutes of AI calls).",
         "validity_days": 90,
         "bonus_credits": 0,
         "sort_order": 1,
@@ -56,21 +56,21 @@ DEFAULT_CALLING_PACKS = [
     {
         "name": "Growth Pack",
         "slug": "growth-pack",
-        "credits": 5000,          # ~83 minutes
+        "credits": 500,           # 500 minutes
         "price_paise": 399900,    # ₹3,999
-        "description": "5,000 calling credits (~83 minutes). Best value.",
+        "description": "500 calling credits (500 minutes) + 50 bonus minutes. Best value.",
         "validity_days": 180,
-        "bonus_credits": 500,     # 10% bonus
+        "bonus_credits": 50,      # 10% bonus
         "sort_order": 2,
     },
     {
         "name": "Pro Pack",
         "slug": "pro-pack",
-        "credits": 10000,         # ~167 minutes
+        "credits": 1000,          # 1,000 minutes
         "price_paise": 699900,    # ₹6,999
-        "description": "10,000 credits + 1,500 bonus (~192 minutes total).",
+        "description": "1,000 credits + 150 bonus (1,150 calling minutes total).",
         "validity_days": 365,
-        "bonus_credits": 1500,    # 15% bonus
+        "bonus_credits": 150,     # 15% bonus
         "sort_order": 3,
     },
 ]
