@@ -29,7 +29,7 @@ from backend.repositories.campaign_repo import CampaignRepository
 log = logging.getLogger("service.call")
 
 # Default credit reservation per call: 5 minutes = 300 seconds
-DEFAULT_RESERVE_CREDITS = 300
+DEFAULT_RESERVE_CREDITS = 5
 
 
 class CallService:
@@ -260,7 +260,7 @@ class CallService:
             duration_s = max(0, int((now - ref).total_seconds()))
 
         # Settle credits
-        actual_credits = actual_credits or duration_s or 0
+        actual_credits = actual_credits or (max(0, (duration_s + 59) // 60) if duration_s else 0)
         try:
             from backend.services.credit_service import CreditService
             credit_svc = CreditService(self.db, redis=self._get_redis())

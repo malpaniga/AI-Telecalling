@@ -251,7 +251,7 @@ async def vobiz_voice(request: Request) -> Response:
 
     # Credit check
     credit_svc = CreditService(db)
-    credit_check = await credit_svc.can_start_call(inbound_org, required_credits=60)
+    credit_check = await credit_svc.can_start_call(inbound_org, required_credits=5)
     if not credit_check.get("can_start"):
         log.warning("Inbound call rejected for org %s: insufficient credits", inbound_org)
         return Response(content=_vobiz_unavailable_xml(), media_type="application/xml")
@@ -301,7 +301,7 @@ async def vobiz_voice(request: Request) -> Response:
         await credit_svc.reserve(
             organization_id=inbound_org,
             call_id=call.id,
-            max_credits=300,
+            max_credits=5,
         )
     except Exception as exc:
         log.warning("Failed to reserve credits for inbound call %s: %s", call.id, exc)
@@ -524,7 +524,7 @@ async def ws_vobiz(ws: WebSocket):
                 if c_doc:
                     started_at = c_doc.started_at or c_doc.created_at
                     duration = int((utcnow() - started_at).total_seconds()) if started_at else 60
-                    consumed = max(1, (duration + 59) // 60) * 10
+                    consumed = max(0, (duration + 59) // 60) if duration > 0 else 0
                     qualification = session.state.get("output_variables") if session else None
                     await call_repo.finalize(
                         call_id=call_id,
@@ -535,10 +535,10 @@ async def ws_vobiz(ws: WebSocket):
                         qualification=qualification,
                     )
                     credit_svc = CreditService(db)
-                    await credit_svc.settle(
+                    await credit_svc.settle_duration(
                         organization_id=c_doc.organization_id,
                         call_id=call_id,
-                        actual_credits=consumed,
+                        duration_seconds=duration,
                     )
             except Exception as e:
                 log.warning("Failed finalizing/settling Vobiz call %s: %s", call_id, e)
