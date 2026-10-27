@@ -64,6 +64,18 @@ class AdjustRequest(BaseModel):
         return v
 
 
+class GrantFreeTestsRequest(BaseModel):
+    organization_id: str
+    count: int = 10
+
+    @field_validator("count")
+    @classmethod
+    def positive(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("count must be positive")
+        return v
+
+
 class PackCreateRequest(BaseModel):
     name: str
     slug: str
@@ -159,6 +171,24 @@ async def get_wallet(user: CurrentUser = Depends(get_current_user)):
     db = get_db()
     svc = WalletService(db)
     return await svc.get_wallet_summary(user.org_id)
+
+
+@router.get("/trial-status")
+async def get_trial_status(user: CurrentUser = Depends(get_current_user)):
+    """Get free in-browser test quota and status for the current org."""
+    if not user.org_id:
+        raise HTTPException(status_code=400, detail="No organization")
+    from backend.repositories.organization_repo import OrganizationRepository
+    db = get_db()
+    org = await OrganizationRepository(db).find_by_id(user.org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    settings = getattr(org, "settings", None)
+    return {
+        "free_tests_remaining": getattr(settings, "free_test_sessions_remaining", 10),
+        "free_test_session_max_minutes": getattr(settings, "free_test_session_max_minutes", 3),
+        "max_call_duration_minutes": getattr(settings, "max_call_duration_minutes", 7),
+    }
 
 
 @router.get("/transactions")
@@ -312,3 +342,27 @@ async def admin_run_expiry(organization_id: str):
     svc = WalletService(db)
     result = await svc.process_expiry(organization_id)
     return result
+
+
+@router.post("/admin/grant-free-tests",
+             dependencies=[Depends(require_platform("platform_owner", "platform_admin"))])
+async def admin_grant_free_tests(body: GrantFreeTestsRequest):
+    db = get_db()
+    from backend.repositories.organization_repo import OrganizationRepository
+    org_repo = OrganizationRepository(db)
+    org = await org_repo.find_by_id(body.organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    current_free = getattr(org.settings, "free_test_sessions_remaining", 0) if org.settings else 0
+    new_count = current_free + body.count
+    await db.organizations.update_one(
+        {"_id": body.organization_id},
+        {"$inc": {"settings.free_test_sessions_remaining": body.count}}
+    )
+    return {
+        "success": True,
+        "organization_id": body.organization_id,
+        "free_test_sessions_remaining": new_count,
+    }
+

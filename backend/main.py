@@ -260,6 +260,7 @@ async def ws_call(ws: WebSocket):
     voice_profile_id = ws.query_params.get("voice_profile_id")
     voice_id = ws.query_params.get("voice_id") or ws.query_params.get("speaker")
     agent_id = ws.query_params.get("agent_id")
+    org_id = ws.query_params.get("org_id")
     try:
         barge_in_sensitivity = int(raw_sensitivity) if raw_sensitivity else 70
     except Exception:
@@ -294,6 +295,7 @@ async def ws_call(ws: WebSocket):
                         voice_profile_id = data.get("voice_profile_id", voice_profile_id)
                         voice_id = data.get("voice_id", voice_id) or data.get("speaker", voice_id)
                         agent_id = data.get("agent_id", agent_id)
+                        org_id = data.get("org_id", org_id)
                         if "variables" in data and isinstance(data["variables"], dict):
                             variables = data["variables"]
                         if "sensitivity" in data:
@@ -355,7 +357,8 @@ async def ws_call(ws: WebSocket):
         try:
             agent_doc = await db.agents.find_one({"_id": agent_id})
             if agent_doc:
-                org_id = agent_doc.get("organization_id")
+                if not org_id:
+                    org_id = agent_doc.get("organization_id")
                 strictness = "flexible"
 
                 # Check requested version_id from query params, then active_version_id, then latest version
@@ -397,6 +400,46 @@ async def ws_call(ws: WebSocket):
 
     log.info("ws call starting: lang=%s agent=%s voice_id=%s", language, agent_name, resolved_voice_id)
 
+    # Credit / Trial Session Enforcement
+    from backend.services.credit_service import CreditService
+    import uuid
+    import time
+
+    credit_svc = CreditService(db)
+    is_free_trial = True
+    test_call_id = None
+    max_duration_seconds = 180
+
+    if org_id:
+        org_doc = await db.organizations.find_one({"_id": org_id})
+        free_tests_remaining = org_doc.get("settings", {}).get("free_test_sessions_remaining", 0) if org_doc else 0
+        if free_tests_remaining > 0:
+            await db.organizations.update_one(
+                {"_id": org_id, "settings.free_test_sessions_remaining": {"$gt": 0}},
+                {"$inc": {"settings.free_test_sessions_remaining": -1}}
+            )
+            is_free_trial = True
+            max_duration_seconds = 180
+            log.info("started free trial test session for org=%s, remaining was %s", org_id, free_tests_remaining)
+        else:
+            check = await credit_svc.can_start_call(org_id, required_credits=5)
+            if not check.get("can_start", False):
+                await ws.send_json({
+                    "type": "error",
+                    "message": "Minimum 5 credits required to run a test call. Free trial sessions exhausted.",
+                })
+                await ws.close(code=4002, reason="insufficient_credits")
+                return
+            test_call_id = f"test_{uuid.uuid4().hex[:12]}"
+            await credit_svc.reserve(org_id, test_call_id, max_credits=5)
+            is_free_trial = False
+            org_max_mins = org_doc.get("settings", {}).get("max_call_duration_minutes", 7) if org_doc else 7
+            max_duration_seconds = org_max_mins * 60
+            log.info("started paid test session for org=%s with 5-credit hold (call_id=%s, cap=%sm)", org_id, test_call_id, org_max_mins)
+    else:
+        is_free_trial = True
+        max_duration_seconds = 180
+
     from backend.call_session import CallSession
 
     session = CallSession(
@@ -415,6 +458,42 @@ async def ws_call(ws: WebSocket):
         voice_id=resolved_voice_id,
     )
     try:
+        session_start_time = time.time()
+        enforce_task = None
+
+        async def _enforcement_monitor():
+            try:
+                if is_free_trial:
+                    await asyncio.sleep(180.0)
+                    try:
+                        await ws.send_json({"type": "info", "text": "3-minute testing session ending now."})
+                        await asyncio.sleep(0.5)
+                        await ws.close(code=1000, reason="3-minute testing session ending now")
+                    except Exception:
+                        pass
+                else:
+                    if max_duration_seconds > 285:
+                        await asyncio.sleep(285.0)
+                        try:
+                            await credit_svc.extend_hold(org_id, test_call_id, additional_credits=5)
+                        except Exception as e:
+                            log.warning("failed to extend hold on paid browser test: %s", e)
+                        remaining = max_duration_seconds - 285.0
+                        await asyncio.sleep(remaining)
+                    else:
+                        await asyncio.sleep(max_duration_seconds)
+                    try:
+                        await ws.send_json({"type": "info", "text": "Maximum call duration reached."})
+                        await asyncio.sleep(0.5)
+                        await ws.close(code=1000, reason="max_duration_reached")
+                    except Exception:
+                        pass
+            except asyncio.CancelledError:
+                pass
+            except Exception as e:
+                log.warning("session enforcement error: %s", e)
+
+        enforce_task = asyncio.create_task(_enforcement_monitor())
         await session.start()
         for frame in buffered_frames:
             await session.feed_pcm16(frame)
@@ -439,7 +518,15 @@ async def ws_call(ws: WebSocket):
     except Exception as exc:  # noqa: BLE001
         log.exception("browser call error: %s", exc)
     finally:
+        if enforce_task and not enforce_task.done():
+            enforce_task.cancel()
         await session.finalize()
+        if not is_free_trial and test_call_id and org_id:
+            try:
+                duration_s = int(time.time() - session_start_time)
+                await credit_svc.settle_duration(org_id, test_call_id, duration_seconds=duration_s)
+            except Exception as e:
+                log.warning("failed to settle test session credits: %s", e)
 
 
 # ---------------------------------------------------------------------------
