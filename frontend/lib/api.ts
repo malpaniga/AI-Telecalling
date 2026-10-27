@@ -1037,6 +1037,12 @@ export const api = {
 
   // ── Wallet / Credits ──────────────────────────────────────────────────────
   wallet: {
+    trialStatus: () =>
+      apiRequest<{
+        free_tests_remaining: number;
+        free_test_session_max_minutes: number;
+        max_call_duration_minutes: number;
+      }>("GET", "/api/v1/wallet/trial-status"),
     summary: () => apiRequest<WalletSummary>("GET", "/api/v1/wallet"),
     transactions: (params?: { limit?: number; skip?: number; txn_type?: string }) => {
       const q = new URLSearchParams();
@@ -1455,6 +1461,11 @@ export const api = {
 
     grantBonus: (body: { organization_id: string; credits: number; description: string; validity_days?: number }) =>
       apiRequest<{ status: string }>("POST", "/api/v1/wallet/admin/bonus", body),
+
+    grantFreeTests: (body: { organization_id: string; count?: number }) =>
+      apiRequest<{ success: boolean; organization_id: string; free_test_sessions_remaining: number }>(
+        "POST", "/api/v1/wallet/admin/grant-free-tests", body
+      ),
   },
 
   // ── Analytics (admin) ─────────────────────────────────────────────────────
