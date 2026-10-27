@@ -1,0 +1,144 @@
+<h2>Simplified Credit System & 3-Minute Free Trial Redesign</h2>
+<p class="subtitle">Review the proposed customer and admin experience: 1 Credit = 1 Minute • 10 Free Browser Tests (3-Min Limit)</p>
+
+<!-- Screen 1: Test Agent with 3-Minute Free Trial -->
+<div class="mockup" style="margin-bottom: 2rem;">
+  <div class="mockup-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <span>Preview 1: In-Browser Test Agent (3-Minute Free Trial)</span>
+    <span style="background:#22c55e22; color:#16a34a; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600;">
+      Free Trial: 7 of 10 Tests Remaining
+    </span>
+  </div>
+  <div class="mockup-body" style="padding: 1.5rem; background:#0f172a; color:#f8fafc; border-radius:0 0 8px 8px;">
+    
+    <!-- Top status bar inside test modal -->
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:12px 16px; border-radius:8px; border:1px solid #334155; margin-bottom:1rem;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="display:inline-block; width:10px; height:10px; background:#22c55e; border-radius:50%; box-shadow:0 0 8px #22c55e;"></span>
+        <span style="font-weight:600; font-size:14px;">Connected: Priya (Solar Advisor)</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:#f59e0b22; color:#fbbf24; border:1px solid #f59e0b44; padding:4px 12px; border-radius:6px; font-size:13px; font-weight:600;">
+        ⏱️ Session Time: 02:45 / 03:00 (15s remaining)
+      </div>
+    </div>
+
+    <!-- Live conversation preview -->
+    <div style="background:#090d16; padding:16px; border-radius:8px; min-height:110px; font-size:13px; line-height:1.6; border:1px solid #1e293b; margin-bottom:1rem;">
+      <div style="color:#94a3b8; margin-bottom:6px;"><strong style="color:#38bdf8;">Agent:</strong> नमस्कार! मी सोलरशिप टीममधून प्रिया बोलतेय. आपण सोलर पॅनेलबद्दल विचार करत आहात का?</div>
+      <div style="color:#94a3b8;"><strong style="color:#a855f7;">You:</strong> हो, मला माहिती हवी होती.</div>
+    </div>
+
+    <!-- Cutoff Warning Notice when 3 mins hit -->
+    <div style="background:#dc262622; border:1px solid #ef4444; border-radius:8px; padding:12px 16px; display:flex; align-items:center; gap:12px; color:#fca5a5; font-size:13px;">
+      <span style="font-size:20px;">🔔</span>
+      <div>
+        <strong>3-minute testing session ending now.</strong> The test call has finished. (0 credits deducted • 6 free tests remaining).
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Screen 2: Credits Dashboard & Plain English Ledger -->
+<div class="mockup" style="margin-bottom: 2rem;">
+  <div class="mockup-header">Preview 2: Simplified Organization Wallet & Transaction Ledger</div>
+  <div class="mockup-body" style="padding: 1.5rem; background:#ffffff; color:#0f172a; border-radius:0 0 8px 8px;">
+    
+    <!-- 3 Big Metric Cards -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+      
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:1.25rem;">
+        <div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700; letter-spacing:0.05em;">Available Balance</div>
+        <div style="font-size:26px; font-weight:800; color:#0f172a; margin-top:4px;">150 Mins <span style="font-size:14px; font-weight:500; color:#64748b;">(150 Credits)</span></div>
+        <div style="font-size:12px; color:#16a34a; margin-top:4px;">Ready for live phone calls</div>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:1.25rem;">
+        <div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700; letter-spacing:0.05em;">Active Call Holds</div>
+        <div style="font-size:26px; font-weight:800; color:#d97706; margin-top:4px;">3 Mins <span style="font-size:14px; font-weight:500; color:#64748b;">(3 Credits)</span></div>
+        <div style="font-size:12px; color:#64748b; margin-top:4px;">Temporary hold for 1 ongoing call</div>
+      </div>
+
+      <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:1.25rem;">
+        <div style="font-size:11px; text-transform:uppercase; color:#15803d; font-weight:700; letter-spacing:0.05em;">Free Browser Tests</div>
+        <div style="font-size:26px; font-weight:800; color:#166534; margin-top:4px;">7 Left <span style="font-size:14px; font-weight:500; color:#15803d;">of 10</span></div>
+        <div style="font-size:12px; color:#15803d; margin-top:4px;">Max 3 minutes per session</div>
+      </div>
+
+    </div>
+
+    <!-- Itemized Ledger (No more cryptic 0 credits) -->
+    <h3 style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:0.75rem;">Recent Call & Credit Activity</h3>
+    <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+      <thead>
+        <tr style="border-bottom:2px solid #e2e8f0; color:#64748b; font-size:11px; text-transform:uppercase;">
+          <th style="padding:8px 12px;">Activity / Call</th>
+          <th style="padding:8px 12px;">Duration</th>
+          <th style="padding:8px 12px;">Cost</th>
+          <th style="padding:8px 12px;">Security Hold Lifecycle</th>
+          <th style="padding:8px 12px;">Balance After</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px; font-weight:600; color:#0f172a;">Outbound Call to +91 98200 12345</td>
+          <td style="padding:10px 12px; color:#475569;">45 seconds</td>
+          <td style="padding:10px 12px; font-weight:700; color:#dc2626;">-1 Credit</td>
+          <td style="padding:10px 12px; color:#16a34a;">Held 3 credits &rarr; 2 credits refunded</td>
+          <td style="padding:10px 12px; font-weight:600; font-family:monospace;">150 Credits</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px; font-weight:600; color:#0f172a;">In-Browser Agent Test (Mic)</td>
+          <td style="padding:10px 12px; color:#475569;">2m 30s</td>
+          <td style="padding:10px 12px; font-weight:700; color:#16a34a;">0 Credits</td>
+          <td style="padding:10px 12px; color:#64748b;">Free trial session used (7 remaining)</td>
+          <td style="padding:10px 12px; font-weight:600; font-family:monospace;">151 Credits</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px; font-weight:600; color:#0f172a;">Admin Credit Top-up (Growth Pack)</td>
+          <td style="padding:10px 12px; color:#475569;">&mdash;</td>
+          <td style="padding:10px 12px; font-weight:700; color:#16a34a;">+100 Credits</td>
+          <td style="padding:10px 12px; color:#64748b;">Added 100 calling minutes</td>
+          <td style="padding:10px 12px; font-weight:600; font-family:monospace;">151 Credits</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+<!-- Screen 3: Admin Controls -->
+<div class="mockup" style="margin-bottom: 2rem;">
+  <div class="mockup-header">Preview 3: Platform Admin Management for Organization</div>
+  <div class="mockup-body" style="padding: 1.25rem; background:#f8fafc; border-radius:0 0 8px 8px;">
+    <p style="font-size:13px; color:#475569; margin-bottom:1rem;">Admins can grant regular calling minutes or top up free in-browser trials anytime:</p>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <button class="mock-button" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer;">
+        + Assign Calling Credits (Minutes)
+      </button>
+      <button class="mock-button" style="background:#16a34a; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer;">
+        + Grant Free Browser Test Sessions (e.g. +10 Tests)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Interactive User Choice -->
+<h3>Which primary balance display style do you prefer?</h3>
+<p class="subtitle">Click an option below to select:</p>
+
+<div class="options">
+  <div class="option" data-choice="minutes-primary" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Minutes Primary with Credits subtitle</h3>
+      <p>Show <strong>"150 Minutes"</strong> prominently in large text with "(150 Credits)" in subtle text. Best for absolute clarity on call time.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="credits-primary" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Credits Primary with Minutes subtitle</h3>
+      <p>Show <strong>"150 Credits"</strong> prominently with "(= 150 Calling Minutes)" badge. Best for standard SaaS credit brand feel.</p>
+    </div>
+  </div>
+</div>

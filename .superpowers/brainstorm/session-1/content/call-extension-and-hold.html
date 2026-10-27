@@ -1,0 +1,89 @@
+<h2>5-Credit Call Hold & Extended Calls Flow</h2>
+<p class="subtitle">Initial hold: 5 Credits (5 Minutes) • How calls extending past 5 minutes behave</p>
+
+<!-- Visual Flow Diagram -->
+<div class="mockup" style="margin-bottom: 2rem;">
+  <div class="mockup-header">Call Lifecycle &amp; 5-Minute Extension Logic</div>
+  <div class="mockup-body" style="padding: 1.5rem; background:#ffffff; color:#0f172a; border-radius:0 0 8px 8px;">
+
+    <!-- Flowchart Grid -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1.25rem;">
+      
+      <!-- Stage 1 -->
+      <div style="border:2px solid #3b82f6; border-radius:10px; padding:1.25rem; background:#eff6ff;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="background:#3b82f6; color:white; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">1</span>
+          <h4 style="margin:0; font-size:14px; font-weight:700; color:#1e40af;">Call Starts</h4>
+        </div>
+        <p style="font-size:13px; color:#1e3a8a; line-height:1.5;">
+          System places temporary hold of <strong>5 Credits (5 Minutes)</strong> from available balance.
+        </p>
+        <div style="background:#dbeafe; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; color:#1d4ed8; margin-top:8px;">
+          Held: 5 Credits &bull; Call connects
+        </div>
+      </div>
+
+      <!-- Stage 2 -->
+      <div style="border:2px solid #10b981; border-radius:10px; padding:1.25rem; background:#ecfdf5;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="background:#10b981; color:white; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">2</span>
+          <h4 style="margin:0; font-size:14px; font-weight:700; color:#065f46;">Call Under 5 Minutes</h4>
+        </div>
+        <p style="font-size:13px; color:#064e3b; line-height:1.5;">
+          Call ends normally (e.g. at <strong>3 min 15 sec</strong>).
+        </p>
+        <div style="background:#d1fae5; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; color:#047857; margin-top:8px;">
+          Billed: 4 Credits &bull; 1 Credit returned to wallet
+        </div>
+      </div>
+
+      <!-- Stage 3 -->
+      <div style="border:2px solid #f59e0b; border-radius:10px; padding:1.25rem; background:#fffbeb;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="background:#f59e0b; color:white; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">3</span>
+          <h4 style="margin:0; font-size:14px; font-weight:700; color:#92400e;">Call Passes 5 Minutes</h4>
+        </div>
+        <p style="font-size:13px; color:#78350f; line-height:1.5;">
+          At 4:45, system checks if wallet has more credits:
+        </p>
+        <div style="margin-top:8px; font-size:12px; line-height:1.4;">
+          <div style="color:#15803d; font-weight:600; margin-bottom:4px;">&check; Has Credits: Auto-extends hold (+5 credits) seamlessly.</div>
+          <div style="color:#b91c1c; font-weight:600;">&cross; Zero Balance: Agent gracefully wraps up and disconnects at 5:00.</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Ledger View showing an extended call -->
+<div class="mockup" style="margin-bottom: 2rem;">
+  <div class="mockup-header">How an Extended Call Appears in the Customer Ledger</div>
+  <div class="mockup-body" style="padding: 1.5rem; background:#ffffff; color:#0f172a; border-radius:0 0 8px 8px;">
+    
+    <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+      <thead>
+        <tr style="border-bottom:2px solid #e2e8f0; color:#64748b; font-size:11px; text-transform:uppercase;">
+          <th style="padding:8px 12px;">Call / Activity</th>
+          <th style="padding:8px 12px;">Duration</th>
+          <th style="padding:8px 12px;">Final Cost</th>
+          <th style="padding:8px 12px;">Lifecycle Details</th>
+          <th style="padding:8px 12px;">Balance After</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #f1f5f9; background:#fff7ed;">
+          <td style="padding:10px 12px; font-weight:600; color:#0f172a;">Outbound Call to +91 98200 99999</td>
+          <td style="padding:10px 12px; color:#c2410c; font-weight:600;">7 min 20 sec</td>
+          <td style="padding:10px 12px; font-weight:700; color:#dc2626;">-8 Credits</td>
+          <td style="padding:10px 12px; color:#475569;">
+            Held 5m &rarr; auto-extended to 10m &rarr; 8 mins billed &bull; <strong>2 credits released</strong>
+          </td>
+          <td style="padding:10px 12px; font-weight:600; font-family:monospace;">142 Credits</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
