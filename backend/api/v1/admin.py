@@ -27,8 +27,8 @@ Navigation sections per spec:
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel, field_validator
 
 from backend.core.auth import CurrentUser, get_current_user
 from backend.core.rbac import require_platform
@@ -128,6 +128,82 @@ async def reactivate_org(org_id: str, user: CurrentUser = Depends(get_current_us
         resource_type="organization", resource_id=org_id,
     )
     return {"status": "active", "org_id": org_id}
+
+
+class AdminUpdateOrgPasswordRequest(BaseModel):
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        return v
+
+
+@router.post("/organizations/{org_id}/password")
+async def update_org_password(
+    org_id: str,
+    body: AdminUpdateOrgPasswordRequest,
+    request: Request,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Update / reset password for the owner/primary user of an organization."""
+    db = get_db()
+    from backend.repositories.organization_repo import OrganizationRepository
+    from backend.repositories.user_repo import UserRepository
+    from backend.repositories.audit_log_repo import AuditLogRepository
+
+    org = await OrganizationRepository(db).find_by_id(org_id)
+    if org is None:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    user_repo = UserRepository(db)
+
+    # 1. Try finding user matching organization email
+    target_user = await user_repo.find_by_email(org.email)
+
+    # 2. If not found or belongs to another org, search users within this org
+    if not target_user or target_user.organization_id != org_id:
+        users = await user_repo.find_by_org(org_id)
+        owner_users = [u for u in users if u.role == "organization_owner"]
+        target_user = owner_users[0] if owner_users else (users[0] if users else None)
+
+    if not target_user:
+        raise HTTPException(
+            status_code=404,
+            detail="No user account found associated with this organization",
+        )
+
+    await user_repo.update_password(target_user.id, body.new_password)
+
+    ip = request.client.host if request.client else None
+    await AuditLogRepository(db).log(
+        action="admin.org.update_password",
+        organization_id=org_id,
+        user_id=user.user_id,
+        user_email=user.email,
+        user_role=user.role,
+        resource_type="user",
+        resource_id=target_user.id,
+        status="success",
+        changes={"target_email": target_user.email},
+        ip_address=ip,
+    )
+
+    log.info(
+        "admin %s updated password for org %s (user %s)",
+        user.user_id,
+        org_id,
+        target_user.email,
+    )
+    return {
+        "status": "success",
+        "org_id": org_id,
+        "user_email": target_user.email,
+        "message": f"Password updated successfully for {target_user.email}",
+    }
+
 
 
 # ---------------------------------------------------------------------------

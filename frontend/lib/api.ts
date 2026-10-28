@@ -730,6 +730,10 @@ export const api = {
         "POST", "/api/v1/auth/refresh", { refresh_token }
       ),
     me: () => apiRequest<User>("GET", "/api/v1/auth/me"),
+    changePassword: (body: { current_password: string; new_password: string }) =>
+      apiRequest<{ status: string; message: string }>(
+        "POST", "/api/v1/auth/change-password", body
+      ),
   },
 
   // ── Agents ────────────────────────────────────────────────────────────────
@@ -1298,6 +1302,10 @@ export const api = {
         ),
       update: (id: string, updates: { name?: string; phone?: string; max_call_duration_minutes?: number }) =>
         apiRequest<Organization>("PATCH", `/api/v1/organizations/${id}`, updates),
+      updatePassword: (id: string, new_password: string) =>
+        apiRequest<{ status: string; org_id: string; user_email: string; message: string }>(
+          "POST", `/api/v1/admin/organizations/${id}/password`, { new_password }
+        ),
     },
     subscriptions: {
       list: (params?: { sub_status?: string; limit?: number; skip?: number }) => {

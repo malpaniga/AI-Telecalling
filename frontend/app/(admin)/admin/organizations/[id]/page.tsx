@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Wallet, CreditCard, Users, Info, Clock, Sparkles } from "lucide-react";
+import { ChevronLeft, Wallet, CreditCard, Users, Info, Clock, Sparkles, KeyRound, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,13 @@ export default function AdminOrgDetailPage() {
   const [showEditDuration, setShowEditDuration] = useState(false);
   const [maxCallDuration, setMaxCallDuration] = useState("7");
   const [savingDuration, setSavingDuration] = useState(false);
+
+  // Update password modal
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   // Load org
   useEffect(() => {
@@ -192,6 +199,33 @@ export default function AdminOrgDetailPage() {
     }
   }
 
+  async function handleUpdatePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!id || !org) return;
+
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const res = await api.admin.organizations.updatePassword(id, newPassword);
+      toast.success(res.message || `Password updated for ${org.name}`);
+      setShowPasswordModal(false);
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update password");
+    } finally {
+      setUpdatingPassword(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -225,6 +259,19 @@ export default function AdminOrgDetailPage() {
           <StatusBadge status={org.status} />
         </div>
         <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              setNewPassword("");
+              setConfirmPassword("");
+              setShowPassword(false);
+              setShowPasswordModal(true);
+            }}
+          >
+            <KeyRound className="h-3.5 w-3.5 mr-1.5" />
+            Update Password
+          </Button>
           <Button
             size="sm"
             variant="secondary"
@@ -626,6 +673,82 @@ export default function AdminOrgDetailPage() {
             </Button>
             <Button type="submit" loading={savingDuration}>
               Save Duration
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Update Password Modal */}
+      <Modal
+        isOpen={showPasswordModal}
+        onClose={() => {
+          if (!updatingPassword) {
+            setShowPasswordModal(false);
+            setNewPassword("");
+            setConfirmPassword("");
+          }
+        }}
+        title={`Update Password — ${org?.name ?? ""}`}
+      >
+        <form onSubmit={handleUpdatePassword} className="space-y-4">
+          <div className="rounded-lg bg-surface-subtle p-3.5 border border-border text-xs text-text-secondary space-y-1">
+            <p className="font-semibold text-text-primary">Target Account</p>
+            <p>Organization: <span className="font-medium text-text-primary">{org?.name}</span></p>
+            <p>Account Email: <span className="font-medium text-text-primary">{org?.email}</span></p>
+            <p className="text-text-muted pt-1">
+              This will update the login password for this organization account.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="relative">
+              <Input
+                label="New Password"
+                type={showPassword ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 8 characters"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-8 text-text-muted hover:text-text-primary transition-colors"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+
+            <Input
+              label="Confirm New Password"
+              type={showPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Re-enter new password"
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={updatingPassword}
+              onClick={() => {
+                setShowPasswordModal(false);
+                setNewPassword("");
+                setConfirmPassword("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={updatingPassword}
+              disabled={!newPassword || newPassword.length < 8 || newPassword !== confirmPassword}
+            >
+              Update Password
             </Button>
           </div>
         </form>

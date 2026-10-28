@@ -24,6 +24,7 @@ import {
   AudioWaveform,
   Bot,
   Wand2,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -48,6 +49,7 @@ const ADMIN_LINKS = [
   { href: "/admin/usage", label: "Usage", icon: Activity },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart2 },
   { href: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ] as const;
 
 // ---------------------------------------------------------------------------

@@ -31,6 +31,9 @@ export function Topbar({
     ? user.email.slice(0, 2).toUpperCase()
     : "??";
 
+  const isPlatformUser = user?.role && ["platform_owner", "platform_admin", "billing_admin", "support"].includes(user.role);
+  const settingsHref = isPlatformUser ? "/admin/settings" : "/settings";
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -166,7 +169,7 @@ export function Topbar({
               {/* Menu items */}
               <div className="py-1">
                 <Link
-                  href="/settings"
+                  href={settingsHref}
                   role="menuitem"
                   onClick={() => setDropdownOpen(false)}
                   className="flex items-center gap-2.5 px-3.5 py-2 text-xs text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors"

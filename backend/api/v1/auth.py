@@ -74,6 +74,18 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("New password must be at least 8 characters")
+        return v
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
@@ -283,3 +295,47 @@ async def me(user: CurrentUser = Depends(get_current_user)):
         is_active=db_user.is_active,
         is_email_verified=db_user.is_email_verified,
     )
+
+
+@router.post("/change-password")
+async def change_password(
+    body: ChangePasswordRequest,
+    request: Request,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Change current authenticated user's password."""
+    db = get_db()
+    user_repo = UserRepository(db)
+    audit = AuditLogRepository(db)
+    from backend.repositories.user_repo import verify_password
+
+    db_user = await user_repo.find_by_id(user.user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not verify_password(body.current_password, db_user.password_hash):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+
+    if body.current_password == body.new_password:
+        raise HTTPException(
+            status_code=400,
+            detail="New password must be different from current password",
+        )
+
+    await user_repo.update_password(user.user_id, body.new_password)
+
+    ip = request.client.host if request.client else None
+    await audit.log(
+        action="auth.password_change",
+        organization_id=db_user.organization_id,
+        user_id=db_user.id,
+        user_email=db_user.email,
+        user_role=db_user.role,
+        resource_type="user",
+        resource_id=db_user.id,
+        status="success",
+        ip_address=ip,
+    )
+    log.info("password changed for user=%s", db_user.id)
+    return {"status": "success", "message": "Password updated successfully"}
+

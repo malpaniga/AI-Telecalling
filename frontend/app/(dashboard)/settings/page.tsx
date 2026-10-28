@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings, User, Bell } from "lucide-react";
+import { Settings, User, Bell, KeyRound, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -18,6 +18,13 @@ export default function SettingsPage() {
     last_name: "",
   });
 
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!user?.user_id) return;
@@ -32,6 +39,42 @@ export default function SettingsPage() {
       toast.error(e instanceof Error ? e.message : "Failed to update profile");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault();
+    if (!currentPassword) {
+      toast.error("Please enter your current password");
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters long");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    if (currentPassword === newPassword) {
+      toast.error("New password must be different from current password");
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      const res = await api.auth.changePassword({
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      toast.success(res.message || "Password updated successfully");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update password");
+    } finally {
+      setSavingPassword(false);
     }
   }
 
@@ -76,6 +119,77 @@ export default function SettingsPage() {
               </div>
               <div className="flex justify-end">
                 <Button type="submit" loading={saving} size="sm">Save Profile</Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
+
+        {/* Change Password */}
+        <Card>
+          <CardHeader>
+            <h3 className="text-sm font-medium text-text-primary flex items-center gap-2">
+              <KeyRound className="h-4 w-4 text-text-muted" /> Change Password
+            </h3>
+          </CardHeader>
+          <CardBody>
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+              <div className="relative">
+                <Input
+                  label="Current Password"
+                  type={showCurrent ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrent((prev) => !prev)}
+                  className="absolute right-3 top-8 text-text-muted hover:text-text-primary transition-colors"
+                  title={showCurrent ? "Hide password" : "Show password"}
+                >
+                  {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+
+              <div className="relative">
+                <Input
+                  label="New Password"
+                  type={showNew ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter at least 8 characters"
+                  hint="Must be at least 8 characters long"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew((prev) => !prev)}
+                  className="absolute right-3 top-8 text-text-muted hover:text-text-primary transition-colors"
+                  title={showNew ? "Hide password" : "Show password"}
+                >
+                  {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+
+              <Input
+                label="Confirm New Password"
+                type={showNew ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter new password"
+                required
+              />
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="submit"
+                  size="sm"
+                  loading={savingPassword}
+                  disabled={!currentPassword || !newPassword || newPassword.length < 8 || newPassword !== confirmPassword}
+                >
+                  Update Password
+                </Button>
               </div>
             </form>
           </CardBody>
