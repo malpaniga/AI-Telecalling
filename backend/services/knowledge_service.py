@@ -301,3 +301,75 @@ class KnowledgeService:
         if header or instruction:
             return f"{header}{body}{instruction}"
         return body
+
+    async def export_knowledge_base(
+        self, kb_id: str, organization_id: str
+    ) -> dict[str, Any]:
+        """Export a knowledge base and all active documents in sarvam_kb_export_v1 format.
+        Scrubbed of all tenant and database IDs.
+        """
+        from datetime import datetime, timezone
+
+        kb = await self.kb_repo.get_for_org(kb_id, organization_id)
+        if kb is None:
+            raise ValueError("Knowledge base not found or does not belong to your organization")
+
+        docs = await self.doc_repo.list_for_kb(kb_id, organization_id)
+        clean_docs = []
+        for d in docs:
+            if getattr(d, "is_active", True):
+                clean_docs.append({
+                    "title": d.title,
+                    "content": d.content,
+                    "document_type": d.document_type,
+                    "keywords": getattr(d, "keywords", []) or [],
+                    "tags": getattr(d, "tags", []) or [],
+                })
+
+        return {
+            "format": "sarvam_kb_export_v1",
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "knowledge_base": {
+                "name": kb.name,
+                "description": kb.description or "",
+                "tags": kb.tags or [],
+                "documents": clean_docs,
+            },
+        }
+
+    async def import_knowledge_base(
+        self,
+        organization_id: str,
+        name: str,
+        description: str = "",
+        tags: Optional[list[str]] = None,
+        documents: Optional[list[dict[str, Any]]] = None,
+    ) -> KnowledgeBase:
+        """Import a knowledge base and its documents into target organization."""
+        kb = await self.kb_repo.create(
+            organization_id=organization_id,
+            name=name.strip(),
+            description=description.strip(),
+            tags=tags or [],
+        )
+
+        doc_count = 0
+        for doc in (documents or []):
+            title = doc.get("title", "").strip()
+            content = doc.get("content", "").strip()
+            if title and content:
+                await self.doc_repo.create(
+                    organization_id=organization_id,
+                    knowledge_base_id=kb.id,
+                    title=title,
+                    content=content,
+                    document_type=doc.get("document_type", "general"),
+                    keywords=doc.get("keywords") or [],
+                    tags=doc.get("tags") or [],
+                )
+                doc_count += 1
+
+        if doc_count > 0:
+            await self.kb_repo.increment_document_count(kb.id, doc_count)
+
+        return await self.kb_repo.get_for_org(kb.id, organization_id)

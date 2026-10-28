@@ -20,7 +20,7 @@ GET    /api/v1/knowledge/context/{agent_id}       — get context text for AI
 """
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -40,6 +40,13 @@ class CreateKBRequest(BaseModel):
     name: str
     description: str = ""
     tags: Optional[list[str]] = None
+
+
+class ImportKBRequest(BaseModel):
+    name: str
+    description: str = ""
+    tags: Optional[list[str]] = None
+    documents: Optional[list[dict[str, Any]]] = None
 
 
 class CreateDocumentRequest(BaseModel):
@@ -160,6 +167,31 @@ async def create_knowledge_base(
     return _kb_response(kb)
 
 
+@router.post("/import", status_code=status.HTTP_201_CREATED)
+async def import_knowledge_base(
+    body: ImportKBRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Import a knowledge base and all contained documents into the current organization."""
+    org_id = _require_org(user)
+    if not body.name.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Knowledge base name is required")
+
+    db = get_db()
+    svc = KnowledgeService(db)
+    try:
+        kb = await svc.import_knowledge_base(
+            organization_id=org_id,
+            name=body.name.strip(),
+            description=body.description,
+            tags=body.tags,
+            documents=body.documents,
+        )
+        return _kb_response(kb)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
 @router.get("/{kb_id}")
 async def get_knowledge_base(
     kb_id: str,
@@ -184,6 +216,21 @@ async def delete_knowledge_base(
         await svc.delete_kb(kb_id, org_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/{kb_id}/export")
+async def export_knowledge_base(
+    kb_id: str,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Export a knowledge base and all active documents as sarvam_kb_export_v1."""
+    org_id = _require_org(user)
+    db = get_db()
+    svc = KnowledgeService(db)
+    try:
+        return await svc.export_knowledge_base(kb_id, org_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 # ---------------------------------------------------------------------------
