@@ -28,9 +28,11 @@ class CallRepository(BaseRepository):
         agent_version: Optional[int] = None,
         provider: str = "mock",
         direction: str = "outbound",
+        call_id: Optional[str] = None,
+        credits_reserved: int = 0,
     ) -> Call:
         call = Call(
-            _id=new_id(),
+            _id=call_id or new_id(),
             organization_id=organization_id,
             campaign_id=campaign_id,
             lead_id=lead_id,
@@ -42,6 +44,7 @@ class CallRepository(BaseRepository):
             direction=direction,
             status="initiating",
             started_at=utcnow(),
+            credits_reserved=credits_reserved,
         )
         await self.insert(call)
         log.info("call created id=%s org=%s to=%s", call.id, organization_id, to_number)

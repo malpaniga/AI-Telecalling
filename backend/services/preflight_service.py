@@ -31,10 +31,10 @@ from backend.models.campaign import Campaign
 
 log = logging.getLogger("service.preflight")
 
-# Minimum credits to start a campaign (1 minute of calls)
-MIN_CREDITS_TO_START = 60
-# Low credit warning threshold
-LOW_CREDIT_WARNING = 300
+# Minimum credits to start a campaign (5 credits = 5-minute initial hold)
+MIN_CREDITS_TO_START = 5
+# Low credit warning threshold (15 minutes of calls)
+LOW_CREDIT_WARNING = 15
 
 
 class PreflightCheck:

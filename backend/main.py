@@ -408,6 +408,7 @@ async def ws_call(ws: WebSocket):
     credit_svc = CreditService(db)
     is_free_trial = True
     test_call_id = None
+    session_start_time = 0
     max_duration_seconds = 180
 
     if org_id:
@@ -523,7 +524,7 @@ async def ws_call(ws: WebSocket):
         await session.finalize()
         if not is_free_trial and test_call_id and org_id:
             try:
-                duration_s = int(time.time() - session_start_time)
+                duration_s = int(time.time() - session_start_time) if session_start_time > 0 else 0
                 await credit_svc.settle_duration(org_id, test_call_id, duration_seconds=duration_s)
             except Exception as e:
                 log.warning("failed to settle test session credits: %s", e)

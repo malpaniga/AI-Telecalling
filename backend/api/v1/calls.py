@@ -35,7 +35,7 @@ class InitiateCallRequest(BaseModel):
     agent_id: Optional[str] = None
     agent_version: Optional[int] = None
     provider: str = "mock"
-    reserve_credits: int = 300
+    reserve_credits: int = 5
 
 
 class FinalizeCallRequest(BaseModel):
@@ -229,14 +229,38 @@ async def hangup_call(
         except Exception:
             pass
 
-    # Mark call status completed in DB
+    # Calculate duration if call was connected
     from backend.models.base import utcnow
+    from datetime import timezone as _tz
+    now = utcnow()
+    duration_s = 0
+    connected_at = call.get("connected_at")
+    if connected_at:
+        if connected_at.tzinfo is None:
+            connected_at = connected_at.replace(tzinfo=_tz.utc)
+        duration_s = max(0, int((now - connected_at).total_seconds()))
+
+    # Settle credits (releases remaining or all held credits)
+    try:
+        from backend.services.credit_service import CreditService
+        credit_svc = CreditService(db)
+        await credit_svc.settle_duration(
+            organization_id=org_id,
+            call_id=call_id,
+            duration_seconds=duration_s,
+        )
+    except Exception as e:
+        log.warning("credit settlement on hangup failed for call=%s: %s", call_id, e)
+
+    # Mark call status completed in DB
     await db.calls.update_one(
         {"_id": call_id, "organization_id": org_id},
         {"$set": {
             "status": "completed",
             "outcome": "cancelled",
-            "ended_at": utcnow(),
+            "duration_s": duration_s,
+            "credits_consumed": (duration_s + 59) // 60 if duration_s > 0 else 0,
+            "ended_at": now,
         }},
     )
 

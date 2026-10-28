@@ -20,7 +20,7 @@ from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from backend.models.base import utcnow
+from backend.models.base import new_id, utcnow
 from backend.models.call import CALL_OUTCOMES
 from backend.repositories.call_repo import CallRepository
 from backend.repositories.lead_repo import LeadRepository
@@ -82,13 +82,13 @@ class CallService:
                     provider = phone_doc.provider
 
         # Reserve credits
+        call_id = new_id()
         try:
             from backend.services.credit_service import CreditService
             credit_svc = CreditService(self.db, redis=self._get_redis())
-            call_id_placeholder = f"init_{organization_id[:8]}_{to_number[-4:]}"
             credit_result = await credit_svc.reserve(
                 organization_id=organization_id,
-                call_id=call_id_placeholder,
+                call_id=call_id,
                 max_credits=reserve_credits,
             )
         except ValueError as exc:
@@ -96,6 +96,7 @@ class CallService:
 
         # Create call record
         call = await self.call_repo.create(
+            call_id=call_id,
             organization_id=organization_id,
             to_number=to_number,
             from_number=from_number,
@@ -104,30 +105,8 @@ class CallService:
             agent_id=agent_id,
             agent_version=agent_version,
             provider=provider,
+            credits_reserved=reserve_credits,
         )
-
-        # Update call with actual call_id for credit reservation
-        await self.call_repo.update_by_id(call.id, {
-            "credits_reserved": reserve_credits,
-            "credit_reservation_id": call_id_placeholder,
-        })
-
-        # Update ledger and Redis reservation to actual call.id
-        try:
-            await self.db.wallet_transactions.update_many(
-                {"call_id": call_id_placeholder, "organization_id": organization_id},
-                {"$set": {"call_id": call.id}},
-            )
-            r2 = self._get_redis()
-            if r2:
-                old_key = f"credit_reserve:{organization_id}:{call_id_placeholder}"
-                new_key = f"credit_reserve:{organization_id}:{call.id}"
-                val = await r2.get(old_key)
-                if val:
-                    await r2.set(new_key, val, ex=4 * 3600)
-                    await r2.delete(old_key)
-        except Exception:  # noqa: BLE001
-            pass
 
         # Dispatch call via Vobiz telephony provider if configured
         if provider == "vobiz" and phone_doc:
@@ -188,10 +167,6 @@ class CallService:
                     await credit_svc.release(
                         organization_id=organization_id,
                         call_id=call.id,
-                    )
-                    await credit_svc.release(
-                        organization_id=organization_id,
-                        call_id=call_id_placeholder,
                     )
                 except Exception as rel_exc:
                     log.warning("Failed releasing credits after dispatch failure: %s", rel_exc)

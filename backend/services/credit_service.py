@@ -163,24 +163,29 @@ class CreditService:
 
         # Check MongoDB for reservation via ledger
         if reserved_str is None:
-            reserve_txn = await self.txn_repo.find_one({
+            reserve_txns = await self.txn_repo.find_many({
                 "call_id": call_id,
                 "transaction_type": "reserve",
                 "organization_id": organization_id,
             })
-            if reserve_txn is None:
-                log.info("release: no reservation found for call=%s (already released?)", call_id)
-                return {"released_credits": 0, "idempotent": True}
-            # Check not already released/settled
-            settled = await self.txn_repo.find_one({
-                "call_id": call_id,
-                "transaction_type": {"$in": ["release", "consume"]},
-                "organization_id": organization_id,
-            })
-            if settled:
-                log.info("release: call=%s already settled", call_id)
-                return {"released_credits": 0, "idempotent": True}
-            reserved_credits = abs(reserve_txn.available_delta)
+            if not reserve_txns:
+                call_doc = await self.db.calls.find_one({"_id": call_id, "organization_id": organization_id})
+                if call_doc and call_doc.get("credits_reserved"):
+                    reserved_credits = call_doc["credits_reserved"]
+                else:
+                    log.info("release: no reservation found for call=%s (already released?)", call_id)
+                    return {"released_credits": 0, "idempotent": True}
+            else:
+                # Check not already released/settled
+                settled = await self.txn_repo.find_one({
+                    "call_id": call_id,
+                    "transaction_type": {"$in": ["release", "consume"]},
+                    "organization_id": organization_id,
+                })
+                if settled:
+                    log.info("release: call=%s already settled", call_id)
+                    return {"released_credits": 0, "idempotent": True}
+                reserved_credits = sum(abs(t.available_delta) for t in reserve_txns)
         else:
             reserved_credits = int(reserved_str)
 
@@ -245,26 +250,34 @@ class CreditService:
             log.info("settle: idempotent replay call=%s", call_id)
             return {"billed_credits": actual_credits, "idempotent": True}
 
-        # Find reserved amount from reserve ledger entry
-        reserve_txn = await self.txn_repo.find_one({
+        # Find reserved amount from reserve ledger entries
+        reserve_txns = await self.txn_repo.find_many({
             "call_id": call_id,
             "transaction_type": "reserve",
             "organization_id": organization_id,
         })
 
         redis = self._get_redis()
-        if reserve_txn is None and redis:
+        if not reserve_txns and redis:
             reserved_str = await redis.get(_reserve_key(organization_id, call_id))
             if reserved_str:
                 reserved_credits = int(reserved_str)
             else:
-                log.warning("settle: no reservation found for call=%s", call_id)
-                reserved_credits = actual_credits
-        elif reserve_txn:
-            reserved_credits = abs(reserve_txn.available_delta)
+                call_doc = await self.db.calls.find_one({"_id": call_id, "organization_id": organization_id})
+                if call_doc and call_doc.get("credits_reserved"):
+                    reserved_credits = call_doc["credits_reserved"]
+                else:
+                    log.warning("settle: no reservation found for call=%s", call_id)
+                    reserved_credits = actual_credits
+        elif reserve_txns:
+            reserved_credits = sum(abs(t.available_delta) for t in reserve_txns)
         else:
-            log.warning("settle: no reservation found for call=%s — using actual", call_id)
-            reserved_credits = actual_credits
+            call_doc = await self.db.calls.find_one({"_id": call_id, "organization_id": organization_id})
+            if call_doc and call_doc.get("credits_reserved"):
+                reserved_credits = call_doc["credits_reserved"]
+            else:
+                log.warning("settle: no reservation found for call=%s — using actual", call_id)
+                reserved_credits = actual_credits
 
         # Cap actual to reserved (safety)
         actual_credits = min(actual_credits, reserved_credits)

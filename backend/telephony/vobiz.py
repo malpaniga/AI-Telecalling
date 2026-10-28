@@ -522,8 +522,12 @@ async def ws_vobiz(ws: WebSocket):
                 call_repo = CallRepository(db)
                 c_doc = await call_repo.find_by_id(call_id)
                 if c_doc:
-                    started_at = c_doc.started_at or c_doc.created_at
-                    duration = int((utcnow() - started_at).total_seconds()) if started_at else 60
+                    from datetime import timezone as _tz
+                    now = utcnow()
+                    ref_dt = c_doc.connected_at or c_doc.started_at or c_doc.created_at
+                    if ref_dt and ref_dt.tzinfo is None:
+                        ref_dt = ref_dt.replace(tzinfo=_tz.utc)
+                    duration = max(0, int((now - ref_dt).total_seconds())) if ref_dt else 0
                     consumed = max(0, (duration + 59) // 60) if duration > 0 else 0
                     qualification = session.state.get("output_variables") if session else None
                     await call_repo.finalize(

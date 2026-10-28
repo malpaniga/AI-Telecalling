@@ -280,8 +280,8 @@ class PostCallService:
     async def _stage_wallet_settle(
         self, call, actual_credits: int, organization_id: str, result: dict
     ):
-        if actual_credits <= 0:
-            result["stages"]["wallet_settle"] = "skipped_zero_credits"
+        if actual_credits < 0:
+            result["stages"]["wallet_settle"] = "skipped_negative_credits"
             return
         try:
             from backend.services.credit_service import CreditService
