@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { BookOpen, Plus, Trash2, FileText } from "lucide-react";
+import { BookOpen, Plus, Trash2, FileText, Download, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Spinner } from "@/components/ui/spinner";
 import { Modal } from "@/components/ui/modal";
 import { Input, Textarea } from "@/components/ui/input";
+import { ImportKbModal } from "@/components/knowledge/import-kb-modal";
 import { api, KnowledgeBase, KnowledgeDocument } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ export default function KnowledgePage() {
   const [loading, setLoading] = useState(true);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [showCreateKb, setShowCreateKb] = useState(false);
+  const [showImportKb, setShowImportKb] = useState(false);
   const [showCreateDoc, setShowCreateDoc] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -97,6 +99,29 @@ export default function KnowledgePage() {
     }
   }
 
+  async function handleExportKb(e: React.MouseEvent, kbId: string, kbName: string) {
+    e.stopPropagation();
+    e.preventDefault();
+    try {
+      toast.loading("Preparing knowledge base export...", { id: "export-kb" });
+      const pkg = await api.knowledge.export(kbId);
+      const safeName = (kbName || "kb").toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+      const filename = `${safeName}.kb.json`;
+      const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${filename}`, { id: "export-kb" });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to export knowledge base", { id: "export-kb" });
+    }
+  }
+
   return (
     <AppShell title="Knowledge Base">
       <div className="flex items-center justify-between mb-6">
@@ -104,9 +129,14 @@ export default function KnowledgePage() {
           <h2 className="text-lg font-semibold text-text-primary">Knowledge Bases</h2>
           <p className="text-sm text-text-secondary">Documents your AI agents use during calls</p>
         </div>
-        <Button size="sm" onClick={() => setShowCreateKb(true)}>
-          <Plus className="h-4 w-4 mr-1" /> New KB
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="secondary" onClick={() => setShowImportKb(true)}>
+            <Upload className="h-4 w-4 mr-1" /> Import KB
+          </Button>
+          <Button size="sm" onClick={() => setShowCreateKb(true)}>
+            <Plus className="h-4 w-4 mr-1" /> New KB
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -134,12 +164,22 @@ export default function KnowledgePage() {
               >
                 <div className="flex justify-between items-start">
                   <p className="text-sm font-medium text-text-primary truncate">{kb.name}</p>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDeleteKb(kb.id); }}
-                    className="ml-2 p-0.5 text-text-muted hover:text-danger"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="flex items-center ml-2">
+                    <button
+                      onClick={(e) => handleExportKb(e, kb.id, kb.name)}
+                      className="p-0.5 text-text-muted hover:text-primary mr-1"
+                      title="Export knowledge base (.kb.json)"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteKb(kb.id); }}
+                      className="p-0.5 text-text-muted hover:text-danger"
+                      title="Delete knowledge base"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
                 <p className="text-xs text-text-muted">{kb.document_count} docs</p>
               </button>
@@ -152,9 +192,19 @@ export default function KnowledgePage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-text-primary">{selectedKb?.name}</h3>
                 {selectedKb && (
-                  <Button size="sm" onClick={() => setShowCreateDoc(true)}>
-                    <Plus className="h-4 w-4 mr-1" /> Add Document
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={(e) => handleExportKb(e, selectedKb.id, selectedKb.name)}
+                      title="Export knowledge base (.kb.json)"
+                    >
+                      <Download className="h-4 w-4 mr-1" /> Export
+                    </Button>
+                    <Button size="sm" onClick={() => setShowCreateDoc(true)}>
+                      <Plus className="h-4 w-4 mr-1" /> Add Document
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardHeader>
@@ -230,6 +280,15 @@ export default function KnowledgePage() {
           </div>
         </form>
       </Modal>
+
+      <ImportKbModal
+        isOpen={showImportKb}
+        onClose={() => setShowImportKb(false)}
+        onImportSuccess={(newKb) => {
+          loadKbs();
+          setSelectedKb(newKb);
+        }}
+      />
     </AppShell>
   );
 }

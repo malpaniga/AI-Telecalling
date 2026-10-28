@@ -416,6 +416,30 @@ export default function SarvamAgentStudioPage() {
     }
   }
 
+  // Export knowledge base as .kb.json
+  async function handleExportKnowledgeBase(e: React.MouseEvent, kbId: string, kbName: string) {
+    e.stopPropagation();
+    e.preventDefault();
+    try {
+      toast.loading("Preparing knowledge base export...", { id: "export-kb-studio" });
+      const pkg = await api.knowledge.export(kbId);
+      const safeName = (kbName || "kb").toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+      const filename = `${safeName}.kb.json`;
+      const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${filename}`, { id: "export-kb-studio" });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to export knowledge base", { id: "export-kb-studio" });
+    }
+  }
+
   // Primary Save Action: Persist all edits to greeting, instructions, variables, tools & activate immediately
   const handleSaveChanges = useCallback(async () => {
     if (!id) return;
@@ -1590,6 +1614,14 @@ export default function SarvamAgentStudioPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => handleExportKnowledgeBase(e, kb.id, kb.name)}
+                              className="p-1.5 rounded-lg border border-border bg-surface text-text-secondary hover:text-text-primary hover:border-primary/50 transition-colors"
+                              title="Export knowledge base (.kb.json)"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
                             {isToggling ? (
                               <Spinner size="sm" />
                             ) : isLinked ? (
