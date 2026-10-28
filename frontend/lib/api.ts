@@ -209,6 +209,39 @@ export interface AgentVersion {
   created_at: string;
 }
 
+export interface AgentExportPackage {
+  format: "sarvam_agent_export_v1";
+  exported_at: string;
+  agent: {
+    name: string;
+    description: string;
+    template_slug: string;
+    voice_profile?: {
+      display_name: string;
+      language: string;
+      provider?: string;
+      speaker_name?: string;
+    };
+    configuration: {
+      instructions?: string;
+      greeting?: string;
+      primary_language?: string;
+      supported_languages?: string[];
+      variables?: Record<string, unknown>;
+      tools?: Array<Record<string, unknown>>;
+      [key: string]: unknown;
+    };
+  };
+}
+
+export interface ImportAgentRequest {
+  name: string;
+  template_slug?: string;
+  description?: string;
+  voice_profile_id?: string;
+  configuration: Record<string, unknown>;
+}
+
 export interface BusinessTemplate {
   slug: string;
   name: string;
@@ -375,6 +408,32 @@ export interface KnowledgeDocument {
   tags: string[];
   is_active: boolean;
   created_at: string;
+}
+
+export interface KnowledgeDocumentExport {
+  title: string;
+  content: string;
+  document_type: string;
+  keywords: string[];
+  tags: string[];
+}
+
+export interface KBExportPackage {
+  format: "sarvam_kb_export_v1";
+  exported_at: string;
+  knowledge_base: {
+    name: string;
+    description: string;
+    tags: string[];
+    documents: KnowledgeDocumentExport[];
+  };
+}
+
+export interface ImportKBRequest {
+  name: string;
+  description?: string;
+  tags?: string[];
+  documents?: KnowledgeDocumentExport[];
 }
 
 export interface WalletSummary {
@@ -786,6 +845,10 @@ export const api = {
       apiRequest<{ status: string; agent_id: string }>(
         "DELETE", `/api/v1/agents/${id}`
       ),
+    export: (id: string) =>
+      apiRequest<AgentExportPackage>("GET", `/api/v1/agents/${id}/export`),
+    import: (body: ImportAgentRequest) =>
+      apiRequest<Agent>("POST", "/api/v1/agents/import", body),
     versions: {
       list: (agentId: string) =>
         apiRequest<AgentVersion[]>("GET", `/api/v1/agents/${agentId}/versions`),
@@ -1200,6 +1263,10 @@ export const api = {
       apiRequest<KnowledgeBase>("POST", "/api/v1/knowledge", { name, description: description ?? "", tags }),
     deleteKb: (id: string) =>
       apiRequest<void>("DELETE", `/api/v1/knowledge/${id}`),
+    export: (id: string) =>
+      apiRequest<KBExportPackage>("GET", `/api/v1/knowledge/${id}/export`),
+    import: (body: ImportKBRequest) =>
+      apiRequest<KnowledgeBase>("POST", "/api/v1/knowledge/import", body),
     listDocuments: (kbId: string, params?: { limit?: number; skip?: number }) => {
       const q = new URLSearchParams();
       if (params?.limit != null) q.set("limit", String(params.limit));

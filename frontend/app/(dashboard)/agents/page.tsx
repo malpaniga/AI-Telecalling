@@ -14,6 +14,8 @@ import {
   Trash2,
   Filter,
   Wand2,
+  Download,
+  Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AppShell } from "@/components/layout/app-shell";
@@ -21,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Modal } from "@/components/ui/modal";
 import { Input, Select } from "@/components/ui/input";
+import { ImportAgentModal } from "@/components/agents/import-agent-modal";
 import { api, Agent, VoiceProfile } from "@/lib/api";
 import {
   SARVAM_CATALOG,
@@ -36,6 +39,7 @@ export default function AgentsPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [showGenieModal, setShowGenieModal] = useState(false);
   const [geniePrompt, setGeniePrompt] = useState("");
   const [genieLoading, setGenieLoading] = useState(false);
@@ -246,6 +250,29 @@ export default function AgentsPage() {
     }
   }
 
+  async function handleExportAgent(e: React.MouseEvent, agentId: string, agentName: string) {
+    e.stopPropagation();
+    e.preventDefault();
+    try {
+      toast.loading("Preparing export...", { id: "export-agent" });
+      const pkg = await api.agents.export(agentId);
+      const safeName = (agentName || "agent").toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+      const filename = `${safeName}.agent.json`;
+      const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${filename}`, { id: "export-agent" });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to export agent", { id: "export-agent" });
+    }
+  }
+
   return (
     <AppShell title="Voice Agents">
       <div className="max-w-7xl mx-auto space-y-8 pb-16">
@@ -260,6 +287,14 @@ export default function AgentsPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-secondary/80 hover:bg-secondary text-text-primary border border-border transition-colors shadow-sm"
+              title="Import agent from .agent.json file"
+            >
+              <Upload className="w-4 h-4 text-primary" />
+              Import Agent
+            </button>
             <button
               onClick={() => setShowGenieModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-secondary/80 hover:bg-secondary text-text-primary border border-border transition-colors shadow-sm"
@@ -339,6 +374,13 @@ export default function AgentsPage() {
                       {new Date(agent.created_at).toLocaleDateString()}
                     </span>
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => handleExportAgent(e, agent.id, agent.name)}
+                        className="p-1 hover:text-primary rounded transition-colors"
+                        title="Export agent (.agent.json)"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         onClick={(e) => handleDeleteAgent(e, agent.id, agent.name)}
                         className="p-1 hover:text-red-400 rounded transition-colors"
@@ -542,6 +584,17 @@ export default function AgentsPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Import Agent Modal */}
+      <ImportAgentModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        voiceProfiles={voiceProfiles}
+        onImportSuccess={(newAgent) => {
+          loadData();
+          router.push(`/agents/${newAgent.id}`);
+        }}
+      />
     </AppShell>
   );
 }

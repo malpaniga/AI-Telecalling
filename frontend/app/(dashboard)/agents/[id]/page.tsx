@@ -32,6 +32,7 @@ import {
   RefreshCw,
   Info,
   BookOpen,
+  Download,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AppShell } from "@/components/layout/app-shell";
@@ -389,6 +390,29 @@ export default function SarvamAgentStudioPage() {
       toast.error(e instanceof Error ? e.message : "Failed to save draft");
     } finally {
       setSaving(false);
+    }
+  }
+
+  // Export current agent configuration as .agent.json
+  async function handleExportCurrentAgent() {
+    if (!id) return;
+    try {
+      toast.loading("Exporting agent package...", { id: "export-studio-agent" });
+      const pkg = await api.agents.export(id);
+      const safeName = (agentName || "agent").toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+      const filename = `${safeName}.agent.json`;
+      const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${filename}`, { id: "export-studio-agent" });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to export agent", { id: "export-studio-agent" });
     }
   }
 
@@ -1186,6 +1210,17 @@ export default function SarvamAgentStudioPage() {
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               {genieLoading ? "Improving..." : "Improve with Genie"}
             </button>
+
+            <Button
+              onClick={handleExportCurrentAgent}
+              variant="secondary"
+              size="sm"
+              className="text-xs gap-1.5"
+              title="Export agent configuration (.agent.json) to share with another organization"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export
+            </Button>
 
             <Button
               onClick={handleSaveDraft}
