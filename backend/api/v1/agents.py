@@ -49,6 +49,14 @@ class UpdateVersionRequest(BaseModel):
     configuration: dict[str, Any]
 
 
+class ImportAgentRequest(BaseModel):
+    name: str
+    template_slug: str = "generic"
+    configuration: dict[str, Any]
+    description: str = ""
+    voice_profile_id: Optional[str] = None
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -370,6 +378,52 @@ async def delete_agent(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return {"status": "deactivated", "agent_id": agent_id}
+
+
+@router.get("/{agent_id}/export")
+async def export_agent(
+    agent_id: str,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Export agent configuration as a portable JSON package conforming to sarvam_agent_export_v1."""
+    org_id = _require_org(user)
+    db = get_db()
+    svc = AgentService(db)
+    try:
+        return await svc.export_agent(agent_id, org_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.post("/import", status_code=status.HTTP_201_CREATED)
+async def import_agent(
+    body: ImportAgentRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Import an agent configuration into the current organization."""
+    org_id = _require_org(user)
+    if not body.name.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Agent name is required")
+    if not body.configuration:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Configuration is required")
+
+    db = get_db()
+    svc = AgentService(db)
+    try:
+        agent = await svc.import_agent(
+            organization_id=org_id,
+            name=body.name.strip(),
+            template_slug=body.template_slug,
+            configuration=body.configuration,
+            description=body.description,
+            voice_profile_id=body.voice_profile_id,
+        )
+        return _agent_response(agent)
+    except ValueError as e:
+        err_msg = str(e)
+        if "limit reached" in err_msg.lower():
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=err_msg)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err_msg)
 
 
 # ---------------------------------------------------------------------------

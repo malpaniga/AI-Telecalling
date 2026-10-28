@@ -386,3 +386,112 @@ class AgentService:
         if agent is None:
             raise ValueError("Agent not found")
         return await self.agents.deactivate(agent_id)
+
+    async def export_agent(
+        self, agent_id: str, organization_id: str
+    ) -> dict[str, Any]:
+        """Export agent configuration scrubbed of all tenant-specific IDs.
+        Conforms to format: sarvam_agent_export_v1.
+        """
+        from datetime import datetime, timezone
+
+        agent = await self.agents.get_for_org(agent_id, organization_id)
+        if agent is None:
+            raise ValueError("Agent not found")
+
+        version = None
+        if agent.active_version_id:
+            version = await self.versions.find_by_id(agent.active_version_id)
+        if version is None:
+            versions = await self.versions.list_for_agent(agent_id)
+            if versions:
+                version = versions[0]
+
+        raw_config = version.configuration if version else {}
+
+        # Sanitize configuration: remove tenant and DB identifiers
+        clean_config = dict(raw_config)
+        clean_config.pop("id", None)
+        clean_config.pop("_id", None)
+        clean_config.pop("organization_id", None)
+        # Decouple knowledge bases: not bundled in agent file
+        clean_config.pop("knowledge_base_ids", None)
+
+        primary_lang = clean_config.get("primary_language", "en-IN")
+
+        return {
+            "format": "sarvam_agent_export_v1",
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "agent": {
+                "name": agent.name,
+                "description": agent.description or "",
+                "template_slug": agent.template_slug,
+                "primary_language": primary_lang,
+                "configuration": clean_config,
+            },
+        }
+
+    async def import_agent(
+        self,
+        organization_id: str,
+        name: str,
+        template_slug: str,
+        configuration: dict[str, Any],
+        description: str = "",
+        voice_profile_id: Optional[str] = None,
+    ) -> Agent:
+        """Import an agent configuration into target organization, checking subscription limits."""
+        from backend.services.subscription_service import SubscriptionService
+        from backend.repositories.voice_profile_repo import VoiceProfileRepository
+
+        # 1. Enforce max_agents subscription limit
+        sub_svc = SubscriptionService(self.db)
+        current_agents = await self.agents.list_for_org(organization_id)
+        check = await sub_svc.check_can_add_agent(organization_id, len(current_agents))
+        if not check.allowed:
+            raise ValueError(check.reason or "Agent limit reached")
+
+        # 2. Resolve voice profile if not explicitly provided
+        vp_repo = VoiceProfileRepository(self.db)
+        if not voice_profile_id:
+            primary_lang = configuration.get("primary_language", "en-IN")
+            available_vps = await vp_repo.list_for_customer(organization_id)
+            matching = [v for v in available_vps if v.language == primary_lang]
+            if matching:
+                voice_profile_id = matching[0].id
+            elif available_vps:
+                voice_profile_id = available_vps[0].id
+            else:
+                voice_profile_id = "default"
+
+        vp = await vp_repo.find_by_id(voice_profile_id)
+        vp_version = vp.active_version if (vp and vp.active_version) else 1
+
+        # 3. Validate template exists (fallback to 'generic' if template_slug unknown)
+        tmpl = await self.templates.find_by_slug(template_slug)
+        if tmpl is None or not tmpl.is_active:
+            template_slug = "generic"
+
+        # 4. Create agent record
+        agent = await self.agents.create(
+            organization_id=organization_id,
+            name=name,
+            template_slug=template_slug,
+            voice_profile_id=voice_profile_id,
+            voice_profile_version=vp_version,
+            description=description,
+        )
+
+        # 5. Create initial published & active configuration version
+        clean_config = dict(configuration)
+        clean_config.pop("knowledge_base_ids", None)
+
+        await self.create_version(
+            agent_id=agent.id,
+            organization_id=organization_id,
+            configuration=clean_config,
+            description="Imported agent configuration",
+            auto_activate=True,
+        )
+
+        return await self.agents.find_by_id(agent.id)
