@@ -87,7 +87,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
             <Mic2 className="h-4 w-4 text-white" />
           </div>
           <span className="text-sm font-semibold text-text-primary tracking-tight">
-            VoiceAI
+            NivLabs-Connect
           </span>
           {isMobileOpen && onMobileClose && (
             <button

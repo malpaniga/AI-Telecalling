@@ -67,7 +67,7 @@ export default function SignupPage() {
         </div>
         <div className="text-center">
           <h1 className="text-xl font-semibold text-text-primary">Create your account</h1>
-          <p className="text-sm text-text-secondary mt-0.5">Get started with VoiceAI</p>
+          <p className="text-sm text-text-secondary mt-0.5">Get started with NivLabs-Connect</p>
         </div>
       </div>
 

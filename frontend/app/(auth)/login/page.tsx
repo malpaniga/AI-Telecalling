@@ -40,7 +40,7 @@ export default function LoginPage() {
         </div>
         <div className="text-center">
           <h1 className="text-xl font-semibold text-text-primary">Welcome back</h1>
-          <p className="text-sm text-text-secondary mt-0.5">Sign in to VoiceAI</p>
+          <p className="text-sm text-text-secondary mt-0.5">Sign in to NivLabs-Connect</p>
         </div>
       </div>
 

@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "VoiceAI — AI Voice Telecalling Platform",
+  title: "NivLabs-Connect — AI Voice Telecalling Platform",
   description:
     "AI-powered voice telecalling for Indian businesses. Automate outbound calls, manage leads, run campaigns and track analytics.",
 };
