@@ -1144,9 +1144,15 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
                   <option value="0">
                     ⚡ 0 tokens — Disabled (Fastest, ~1s latency) ⭐ Recommended for Voice
                   </option>
+                  <option value="512">🐣 512 tokens — Minimal reasoning effort</option>
                   <option value="1024">🐢 1,024 tokens — Low reasoning effort</option>
                   <option value="2048">🧠 2,048 tokens — Medium reasoning effort</option>
                   <option value="-1">⏳ Dynamic / Full reasoning (High latency)</option>
+                  {!["0", "512", "1024", "2048", "-1"].includes(connectForm.reasoning_effort ?? "0") && (
+                    <option value={connectForm.reasoning_effort}>
+                      ⚙️ Custom ({connectForm.reasoning_effort} tokens)
+                    </option>
+                  )}
                 </select>
                 <p className="text-[11px] text-text-muted mt-1 leading-normal">
                   {connectForm.reasoning_effort === "0" || !connectForm.reasoning_effort
