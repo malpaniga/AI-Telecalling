@@ -5,19 +5,24 @@ import { useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/contexts/auth-context";
 import { Toaster } from "react-hot-toast";
 import { LoadingScreen } from "@/components/ui/spinner";
+import { isAdmin } from "@/lib/auth";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/login");
+    if (!loading) {
+      if (!user) {
+        router.replace("/login");
+      } else if (isAdmin(user)) {
+        router.replace("/admin/dashboard");
+      }
     }
   }, [loading, user, router]);
 
   if (loading) return <LoadingScreen />;
-  if (!user) return null;
+  if (!user || isAdmin(user)) return null;
 
   return <>{children}</>;
 }

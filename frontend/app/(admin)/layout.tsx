@@ -10,8 +10,7 @@ import { Topbar } from "@/components/layout/topbar";
 
 import { TestAgentProvider } from "@/contexts/test-agent-context";
 import { TestAgentModal } from "@/components/test-agent/TestAgentModal";
-
-const PLATFORM_ROLES = ["platform_owner", "platform_admin", "billing_admin"];
+import { isAdmin } from "@/lib/auth";
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -21,12 +20,12 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loading) {
       if (!user) router.replace("/login");
-      else if (!PLATFORM_ROLES.includes(user.role)) router.replace("/dashboard");
+      else if (!isAdmin(user)) router.replace("/dashboard");
     }
   }, [loading, user, router]);
 
   if (loading) return <LoadingScreen />;
-  if (!user || !PLATFORM_ROLES.includes(user.role)) return null;
+  if (!user || !isAdmin(user)) return null;
 
   return (
     <TestAgentProvider>

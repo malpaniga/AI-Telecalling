@@ -33,7 +33,7 @@ type AuthAction =
 export interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login(email: string, password: string): Promise<void>;
+  login(email: string, password: string): Promise<AuthUser>;
   logout(): Promise<void>;
   refresh(): Promise<void>;
 }
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "SET_LOADING", payload: false });
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string): Promise<AuthUser> => {
     dispatch({ type: "SET_LOADING", payload: true });
     const res = await fetch(`${BASE_URL}/api/v1/auth/login`, {
       method: "POST",
@@ -105,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setTokens(data.access_token, data.refresh_token);
     const user = decodeToken(data.access_token);
     dispatch({ type: "SET_USER", payload: user });
+    return user;
   }, []);
 
   const logout = useCallback(async () => {

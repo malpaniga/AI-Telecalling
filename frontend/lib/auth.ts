@@ -54,3 +54,30 @@ export function decodeToken(token: string): AuthUser {
     exp: payload.exp ?? 0,
   };
 }
+
+export const ADMIN_ROLES = [
+  "platform_owner",
+  "platform_admin",
+  "billing_admin",
+  "support",
+  "superadmin",
+  "admin",
+] as const;
+
+export function isAdmin(user: AuthUser | null | undefined): boolean {
+  if (!user || !user.role) return false;
+  const role = user.role.toLowerCase();
+  if (
+    role.startsWith("organization_") ||
+    role === "manager" ||
+    role === "agent" ||
+    role === "viewer"
+  ) {
+    return false;
+  }
+  return (
+    ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number]) ||
+    role.startsWith("platform_")
+  );
+}
+

@@ -7,6 +7,7 @@ import { clsx } from "clsx";
 import { Menu, Bell, ChevronRight, Phone, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useTestAgent } from "@/contexts/test-agent-context";
+import { isAdmin } from "@/lib/auth";
 
 export interface TopbarProps {
   title: string;
@@ -31,7 +32,7 @@ export function Topbar({
     ? user.email.slice(0, 2).toUpperCase()
     : "??";
 
-  const isPlatformUser = user?.role && ["platform_owner", "platform_admin", "billing_admin", "support"].includes(user.role);
+  const isPlatformUser = isAdmin(user);
   const settingsHref = isPlatformUser ? "/admin/settings" : "/settings";
 
   useEffect(() => {

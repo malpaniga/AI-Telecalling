@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mic2 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { isAdmin } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user: currentUser, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -17,13 +18,27 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!authLoading && currentUser) {
+      if (isAdmin(currentUser)) {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/dashboard");
+      }
+    }
+  }, [currentUser, authLoading, router]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await login(email, password);
-      router.replace("/dashboard");
+      const user = await login(email, password);
+      if (isAdmin(user)) {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/dashboard");
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
