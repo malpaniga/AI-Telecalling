@@ -107,6 +107,8 @@ class VADEndpointer:
         sample_rate: int | None = None,
         speech_prob: float | None = None,
         energy_floor_dbfs: float | None = None,
+        silence_ms: int | None = None,
+        confirm_ms: int | None = None,
     ):
         self.sample_rate = sample_rate or settings.audio_sample_rate
         backend = settings.vad_backend.lower()
@@ -138,8 +140,8 @@ class VADEndpointer:
         def _n(ms: int) -> int:
             return max(1, round(ms / self.window_ms))
 
-        self.confirm_windows = _n(settings.vad_speech_confirm_ms)
-        self.silence_windows = _n(settings.vad_silence_ms)
+        self.confirm_windows = _n(confirm_ms if confirm_ms is not None else settings.vad_speech_confirm_ms)
+        self.silence_windows = _n(silence_ms if silence_ms is not None else settings.vad_silence_ms)
         self.min_speech_windows = _n(settings.vad_min_speech_ms)
         self.max_windows = _n(settings.vad_max_utterance_ms)
 

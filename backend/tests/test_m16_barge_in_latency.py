@@ -314,6 +314,73 @@ class TestBargeIn:
                 assert any("interrupted" in t["text"] for t in agent_turns)
         run(_t())
 
+    def test_handle_interrupt_during_greeting_cancels_and_clears(self):
+        """Explicit handle_interrupt() must work even during greeting playback."""
+        async def _t():
+            session, transport, stt, tts, engine = self._make_session()
+            session._in_greeting = True
+            session._greeting_end_time = time.monotonic() + 10.0
+
+            slow_done = asyncio.Event()
+
+            async def slow_task():
+                try:
+                    await asyncio.sleep(10)
+                except asyncio.CancelledError:
+                    slow_done.set()
+                    raise
+
+            session.responder = asyncio.create_task(slow_task())
+            await asyncio.sleep(0)
+
+            await session.handle_interrupt()
+
+            assert session.responder is None or session.responder.done()
+            transport.clear.assert_called_once()
+            assert not session._in_greeting
+        run(_t())
+
+    def test_speech_start_during_greeting_cancels_and_clears(self):
+        """Voice SPEECH_START must cancel greeting and clear transport."""
+        async def _t():
+            session, transport, stt, tts, engine = self._make_session()
+            session._in_greeting = True
+            session._greeting_end_time = time.monotonic() + 10.0
+
+            slow_done = asyncio.Event()
+
+            async def slow_task():
+                try:
+                    await asyncio.sleep(10)
+                except asyncio.CancelledError:
+                    slow_done.set()
+                    raise
+
+            session.responder = asyncio.create_task(slow_task())
+            await asyncio.sleep(0)
+
+            from backend.audio.vad import SPEECH_START
+            session.endpointer = MagicMock()
+            session.endpointer.process = MagicMock(return_value=[(SPEECH_START, None)])
+
+            await session.feed_pcm16(b"\x00" * 64)
+
+            assert session.responder is None or session.responder.done()
+            transport.clear.assert_called_once()
+            assert not session._in_greeting
+        run(_t())
+
+    def test_noise_filter_allows_affirmations(self):
+        """Affirmations like 'yeah', 'yes', 'sure' must NOT be treated as noise."""
+        from backend.call_session import _looks_like_noise
+        assert not _looks_like_noise("yeah")
+        assert not _looks_like_noise("Yeah")
+        assert not _looks_like_noise("yes")
+        assert not _looks_like_noise("sure")
+        assert _looks_like_noise("thanks for watching")
+        assert _looks_like_noise("please subscribe")
+
+
 
 # ---------------------------------------------------------------------------
 # Test: LatencyMetrics computation

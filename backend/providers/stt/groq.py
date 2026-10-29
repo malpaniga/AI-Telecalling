@@ -8,10 +8,16 @@ from backend.providers.base import STTProvider
 
 log = logging.getLogger("providers.stt.groq")
 
-# Prompt priming hints to bias Whisper's tokenizer toward correct Devanagari vocabulary
+# Prompt priming hints to bias Whisper's tokenizer toward conversational domain vocabulary
 INDIC_WHISPER_PROMPTS: dict[str, str] = {
     "mr": "हा एक मराठी संवाद आहे: बोला, नमस्कार, हो, नाही, वीज बिल, हजार, रुपये, सबसिडी, सोलर, कंपनी.",
     "hi": "यह एक हिंदी संवाद है: हाँ, नहीं, नमस्कार, बिजली बिल, हजार, रुपये, सबसिडी, सोलर, कंपनी.",
+    "en": "Customer service voice call conversation: hello, yes, yeah, no, solar, electricity bill, subsidy, rent, buy, appointment.",
+    "gu": "આ એક ગુજરાતી વાતચીત છે: હા, ના, નમસ્તે, વીજળી બિલ, સોલર, સબસિડી, કંપની.",
+    "ta": "இது ஒரு தமிழ் உரையாடல்: வணக்கம், ஆம், இல்லை, மின் கட்டணம், சோலார், மானியம்.",
+    "te": "ఇది ஒரு తెలుగు సంభాషణ: నమస్కారం, అవును, కాదు, విద్యుత్ బిల్లు, సోలార్, సబ్సిడీ.",
+    "kn": "ಇದು ಕನ್ನಡ ಸಂಭಾಷಣೆ: ನಮಸ್ಕಾರ, ಹೌದು, ಇಲ್ಲ, ವಿದ್ಯುತ್ ಬಿಲ್, ಸೋಲಾರ್, సബ്సిಡಿ.",
+    "bn": "এটি একটি বাংলা কথোপকথন: নমস্কার, হ্যাঁ, না, বিদ্যুৎ বিল, সোলার, ভর্তুকি.",
 }
 
 

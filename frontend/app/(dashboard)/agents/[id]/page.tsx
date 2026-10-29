@@ -670,9 +670,20 @@ export default function SarvamAgentStudioPage() {
     const ratio = inRate / TARGET_SR;
     const outLen = Math.floor(input.length / ratio);
     const out = new Int16Array(outLen);
-    for (let i = 0; i < outLen; i++) {
-      const s = Math.max(-1, Math.min(1, input[Math.floor(i * ratio)]));
-      out[i] = s * 0x7fff;
+    let outOffset = 0;
+    let inOffset = 0;
+    while (outOffset < outLen) {
+      const nextInOffset = Math.round((outOffset + 1) * ratio);
+      let sum = 0;
+      let count = 0;
+      for (let j = inOffset; j < nextInOffset && j < input.length; j++) {
+        sum += input[j];
+        count++;
+      }
+      const val = count > 0 ? sum / count : (input[inOffset] || 0);
+      out[outOffset] = Math.max(-1, Math.min(1, val)) * 0x7fff;
+      outOffset++;
+      inOffset = nextInOffset;
     }
     return out;
   }
@@ -864,7 +875,7 @@ export default function SarvamAgentStudioPage() {
         // if user intentionally speaks up firmly to barge in (rms >= bargeInThreshold)
         const isAgentPlaying = audioCtx.currentTime < nextPlayTimeRef.current;
         if (isAgentPlaying) {
-          const bargeInThreshold = Math.max(0.035, 0.075 - (sensitivity / 100) * 0.035);
+          const bargeInThreshold = Math.max(0.012, 0.025 - (sensitivity / 100) * 0.013);
           if (rms < bargeInThreshold) return;
         }
 

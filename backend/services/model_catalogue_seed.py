@@ -401,6 +401,14 @@ _LLM_MODEL_ADDITIONS = [
     ),
     (
         "gemini",
+        "gemini-3.5-flash",
+        "Google Gemini 3.5 Flash model — high-intelligence, fast general-purpose.",
+        "https://ai.google.dev/gemini-api/docs",
+        ["GEMINI_API_KEY"],
+        "Proprietary",
+    ),
+    (
+        "gemini",
         "gemini-3.8-flash",
         "Google Gemini 3.8 Flash model.",
         "https://ai.google.dev/gemini-api/docs",

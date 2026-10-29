@@ -284,15 +284,10 @@ export function TestAgentModal() {
       source.onended = () => {
         audioSourcesRef.current = audioSourcesRef.current.filter((s) => s !== source);
         if (audioSourcesRef.current.length === 0) {
-          // Acoustic decay guard (250ms) before opening microphone to avoid echo barge-in
-          setTimeout(() => {
-            if (audioSourcesRef.current.length === 0) {
-              isAgentSpeakingRef.current = false;
-              setIsSpeaking(false);
-              setIsListening(true);
-              setCallStatus("Listening — speak freely, or tap Interrupt to speak");
-            }
-          }, 250);
+          isAgentSpeakingRef.current = false;
+          setIsSpeaking(false);
+          setIsListening(true);
+          setCallStatus("Listening — speak freely, or tap Interrupt to speak");
         }
       };
     } catch (err) {
@@ -333,9 +328,20 @@ export function TestAgentModal() {
     const ratio = inRate / TARGET_SAMPLE_RATE;
     const outLen = Math.floor(input.length / ratio);
     const out = new Int16Array(outLen);
-    for (let i = 0; i < outLen; i++) {
-      const s = Math.max(-1, Math.min(1, input[Math.floor(i * ratio)]));
-      out[i] = s * 0x7fff;
+    let outOffset = 0;
+    let inOffset = 0;
+    while (outOffset < outLen) {
+      const nextInOffset = Math.round((outOffset + 1) * ratio);
+      let sum = 0;
+      let count = 0;
+      for (let j = inOffset; j < nextInOffset && j < input.length; j++) {
+        sum += input[j];
+        count++;
+      }
+      const val = count > 0 ? sum / count : (input[inOffset] || 0);
+      out[outOffset] = Math.max(-1, Math.min(1, val)) * 0x7fff;
+      outOffset++;
+      inOffset = nextInOffset;
     }
     return out;
   };
@@ -344,10 +350,10 @@ export function TestAgentModal() {
     try {
       setCallStatus("Connecting microphone & speech pipeline…");
 
-      // 1. Initialize & resume AudioContext synchronously inside user click gesture
+      // 1. Initialize & resume AudioContext synchronously inside user click gesture (native 16kHz)
       const AudioContextClass =
         window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const audioCtx = new AudioContextClass();
+      const audioCtx = new AudioContextClass({ sampleRate: TARGET_SAMPLE_RATE });
       if (audioCtx.state === "suspended") {
         try {
           await audioCtx.resume();
@@ -361,12 +367,14 @@ export function TestAgentModal() {
       masterGain.connect(audioCtx.destination);
       masterGainRef.current = masterGain;
 
-      // 2. Request microphone stream
+      // 2. Request microphone stream with echo cancellation and high-quality speech parameters
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
+          echoCancellation: { ideal: true },
+          noiseSuppression: { ideal: true },
+          autoGainControl: { ideal: true },
+          channelCount: 1,
+          sampleRate: TARGET_SAMPLE_RATE,
         },
       });
       micStreamRef.current = stream;
@@ -385,10 +393,9 @@ export function TestAgentModal() {
       processor.connect(silentGain);
       silentGain.connect(audioCtx.destination);
 
-      // Protect initial greeting from ambient mic noise
       isAgentSpeakingRef.current = true;
       setIsSpeaking(true);
-      setIsListening(false);
+      setIsListening(true);
 
       // Construct WS endpoint
       const wsBase = getBackendWsBase();
@@ -473,9 +480,8 @@ export function TestAgentModal() {
               },
             ]);
           } else if (msg.type === "user") {
-            isAgentSpeakingRef.current = true; // Wait for agent to reply before mic opens
             setIsSpeaking(false);
-            setIsListening(false);
+            setIsListening(true);
             setCallStatus("Processing speech turn…");
             setTurns((prev) => [
               ...prev,
@@ -554,11 +560,24 @@ export function TestAgentModal() {
 
       processor.onaudioprocess = (e) => {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
-        // Half-duplex acoustic echo protection: mute mic while agent is speaking or audio is queued
-        if (isAgentSpeakingRef.current) return;
-        if (audioCtx.currentTime < nextPlayTimeRef.current + 0.25) return;
+        const inputData = e.inputBuffer.getChannelData(0);
 
-        const pcm16 = downsampleTo16k(e.inputBuffer.getChannelData(0), audioCtx.sampleRate);
+        // Calculate audio frame RMS energy
+        let sumSq = 0;
+        for (let i = 0; i < inputData.length; i++) {
+          sumSq += inputData[i] * inputData[i];
+        }
+        const rms = Math.sqrt(sumSq / inputData.length);
+
+        // While agent audio is actively playing through speakers,
+        // filter out low-level acoustic speaker bleed (rms < 0.015 / -36 dBFS).
+        // Direct human speech into the mic (barge-in) readily exceeds this and streams to backend VAD.
+        const isAgentPlaying = audioCtx.currentTime < nextPlayTimeRef.current;
+        if (isAgentPlaying && rms < 0.015) {
+          return;
+        }
+
+        const pcm16 = downsampleTo16k(inputData, audioCtx.sampleRate);
         ws.send(pcm16.buffer);
       };
     } catch (err: unknown) {

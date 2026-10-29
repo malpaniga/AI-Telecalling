@@ -1,16 +1,16 @@
 # Graph Report - saas  (2026-10-29)
 
 ## Corpus Check
-- 362 files · ~280,499 words
+- 362 files · ~281,151 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5635 nodes · 12339 edges · 281 communities (233 shown, 48 thin omitted)
+- 5635 nodes · 12339 edges · 279 communities (231 shown, 48 thin omitted)
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 839 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5df4bf24`
+- Built from commit: `81623ad9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -45,7 +45,7 @@
 - auth-context.tsx
 - call_session.py
 - PricingSyncService
-- models/page.tsx
+- ModelSetupWizard.tsx
 - billing_portal.py
 - analytics.py
 - TestAnalyticsService
@@ -72,7 +72,6 @@
 - ReconciliationService
 - GoogleCloudSTTProvider
 - get_redis
-- agents/[id]/page.tsx
 - TelephonyProvider
 - PhoneNumberService
 - ToolRegistry
@@ -158,7 +157,6 @@
 - CloudProviderRuntime
 - AIModelCatalogueRepo
 - _make_mock_redis
-- ProviderConfigPanel.tsx
 - MockPaymentProvider
 - payment_service.py
 - AI Telecalling SaaS
@@ -302,7 +300,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (281 total, 48 thin omitted)
+## Communities (279 total, 48 thin omitted)
 
 ### Community 0 - "AppointmentRepository"
 Cohesion: 0.18
@@ -346,7 +344,7 @@ Nodes (42): activate_configuration(), configure_provider(), ConfigureProviderBod
 
 ### Community 10 - "get_db"
 Cohesion: 0.04
-Nodes (90): admin_adjust_wallet(), admin_costs(), admin_create_calling_pack(), admin_dashboard(), admin_delete_calling_pack(), admin_margins(), admin_revenue(), admin_update_calling_pack() (+82 more)
+Nodes (94): admin_adjust_wallet(), admin_costs(), admin_create_calling_pack(), admin_dashboard(), admin_delete_calling_pack(), admin_margins(), admin_revenue(), admin_update_calling_pack() (+86 more)
 
 ### Community 11 - "test_m28_agent_export_import.py"
 Cohesion: 0.20
@@ -424,9 +422,9 @@ Nodes (27): ConversationEngine, _decide_stage(), TypedDict, The conversation eng
 Cohesion: 0.16
 Nodes (15): PricingSyncService, Any, ProviderRateCard, Orchestrates daily rate card updates, live FX rates, and loss protection., Fetch current USD to INR exchange rate from live open FX APIs., Run daily sync of all provider rate cards and update effective rates., Return all active provider rate cards, settings, and conversion factors., Compute exact composite pipeline costs per second, minute, and volume tiers. (+7 more)
 
-### Community 30 - "models/page.tsx"
-Cohesion: 0.17
-Nodes (18): Capability, capabilityVariant(), formatFreeTierInfo(), freeTierDetails(), hostingIcon(), hostingLabel(), isStale(), ModelCard() (+10 more)
+### Community 30 - "ModelSetupWizard.tsx"
+Cohesion: 0.06
+Nodes (42): Capability, capabilityVariant(), formatFreeTierInfo(), freeTierDetails(), hostingIcon(), hostingLabel(), isStale(), ModelCard() (+34 more)
 
 ### Community 31 - "billing_portal.py"
 Cohesion: 0.09
@@ -527,10 +525,6 @@ Nodes (18): _detect_encoding(), GoogleCloudSTTProvider, Any, Exception, Google C
 ### Community 56 - "get_redis"
 Cohesion: 0.12
 Nodes (18): _check_rate_limit(), _client_ip(), Request, rate_limit_api(), rate_limit_auth(), rate_limit_billing(), rate_limit_import(), Rate limiting via Redis sliding-window counters. Per-IP and per-user limits to… (+10 more)
-
-### Community 57 - "agents/[id]/page.tsx"
-Cohesion: 0.21
-Nodes (11): ChatMessage, StudioTab, TestTab, ImportAgentModalProps, Agent, AgentExportPackage, AgentVersion, VoiceProfile (+3 more)
 
 ### Community 58 - "TelephonyProvider"
 Cohesion: 0.10
@@ -826,7 +820,7 @@ Nodes (14): 0. Prerequisites (already on this machine), 1. Why this stack (read 
 
 ### Community 137 - "api.ts"
 Cohesion: 0.05
-Nodes (49): ImportKbModalProps, CapabilityType, formatLanguageLabel(), LANGUAGE_LABELS, ModelSetupWizard(), StepConfig, STEPS, VOICE_PRESETS (+41 more)
+Nodes (44): ChatMessage, StudioTab, TestTab, ImportAgentModalProps, ImportKbModalProps, AdminDashboard, Agent, AgentExportPackage (+36 more)
 
 ### Community 138 - "VoiceProfileRepository"
 Cohesion: 0.31
@@ -843,10 +837,6 @@ Nodes (4): AIModelCatalogueRepo, AIModelCatalogue, Case-insensitive regex search
 ### Community 142 - "_make_mock_redis"
 Cohesion: 0.36
 Nodes (3): _get_mock_db(), _make_mock_redis(), In-memory dict-based Redis mock for credit reservation keys.
-
-### Community 143 - "ProviderConfigPanel.tsx"
-Cohesion: 0.20
-Nodes (8): configStatus(), formatDate(), formatLanguageLabel(), LANGUAGE_LABELS, ProviderConfigPanel(), ProviderConfigPanelProps, truncate(), ProviderCredentialMeta
 
 ### Community 144 - "MockPaymentProvider"
 Cohesion: 0.13
@@ -906,7 +896,7 @@ Nodes (6): Deliver a metadata event (transcript, stage, etc.). May be a no-op., 
 
 ### Community 160 - "FastAPI"
 Cohesion: 0.03
-Nodes (111): Credit reservation/settlement API — internal call billing endpoints. These are…, Demo Mode API. GET /api/v1/demo/status — check if demo mode is active and…, API v1 router — aggregates all v1 sub-routers., create_organization(), get_organization(), list_organizations(), OrgCreateRequest, OrgUpdateRequest (+103 more)
+Nodes (107): Credit reservation/settlement API — internal call billing endpoints. These are…, Demo Mode API. GET /api/v1/demo/status — check if demo mode is active and…, API v1 router — aggregates all v1 sub-routers., create_organization(), get_organization(), list_organizations(), OrgCreateRequest, OrgUpdateRequest (+99 more)
 
 ### Community 161 - "db.py"
 Cohesion: 0.13
@@ -989,8 +979,8 @@ Cohesion: 0.17
 Nodes (6): Same call_id reserve twice: no double-deduction., Can't release a call that was already settled., reserve() moves available → reserved; total unchanged., run(), TestCreditRelease, TestCreditReserve
 
 ### Community 190 - "test_password_update.py"
-Cohesion: 0.11
-Nodes (24): AdminUpdateOrgPasswordRequest, BaseModel, field_validator, change_password(), ChangePasswordRequest, Change current authenticated user's password., MongoDB user document., User (+16 more)
+Cohesion: 0.12
+Nodes (21): AdminUpdateOrgPasswordRequest, BaseModel, field_validator, change_password(), ChangePasswordRequest, Change current authenticated user's password., MongoDB user document., User (+13 more)
 
 ### Community 191 - "test_m32_documentation.py"
 Cohesion: 0.39
@@ -1081,8 +1071,8 @@ Cohesion: 0.29
 Nodes (6): Global Constraints, Model Directory Catalogue & Auto-Loading Models Implementation Plan, Task 1: Update Groq LLM Provider Adapter, Task 2: Catalogue Seeding, Credential Reuse & Live Models Endpoint, Task 3: Frontend API & Dropdown Auto-Loading, Task 4: Verification & Graphify Update
 
 ### Community 254 - "test_m1_mongodb.py"
-Cohesion: 0.16
-Nodes (8): Simple slugifier: lowercase, alphanumeric + hyphens., _slugify(), get_mock_db(), M1 tests — MongoDB foundation. Tests run against mongomock (in-memory MongoDB…, Return a mongomock-backed async Motor database substitute., health.check_all should return the correct structure (mocked)., TestHealthCheck, TestSlugGeneration
+Cohesion: 0.13
+Nodes (11): Simple slugifier: lowercase, alphanumeric + hyphens., _slugify(), hash_password(), verify_password(), get_mock_db(), M1 tests — MongoDB foundation. Tests run against mongomock (in-memory MongoDB…, Return a mongomock-backed async Motor database substitute., health.check_all should return the correct structure (mocked). (+3 more)
 
 ### Community 255 - "formatDateTime"
 Cohesion: 0.04

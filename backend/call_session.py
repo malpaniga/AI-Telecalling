@@ -66,7 +66,7 @@ _SERVER_ERROR_FALLBACK = {
 _HALLUCINATION_PHRASES = {
     "thank you", "thanks", "thank you very much", "thank you so much",
     "thanks for watching", "thank you for watching", "please subscribe",
-    "you", "the", "bye", ".", "..", "...", "uh", "um", "hmm", "yeah",
+    "you", "the", "bye", ".", "..", "...", "uh", "um", "hmm",
 }
 
 # Conversational fillers played concurrently with LLM to mask response latency
@@ -279,8 +279,6 @@ class CallSession:
 
     async def handle_interrupt(self) -> None:
         """Handle explicit caller interrupt event (barge-in)."""
-        if self._in_greeting and time.monotonic() < getattr(self, "_greeting_end_time", 0.0):
-            return
         self._in_greeting = False
         await self._cancel_responder()
         await self.t.clear()
@@ -289,19 +287,15 @@ class CallSession:
         """Feed a chunk of caller audio; drives VAD, barge-in, and responses."""
         if self._call_ending:
             return
-        if self._in_greeting:
-            if time.monotonic() < getattr(self, "_greeting_end_time", 0.0):
-                return
-            self._in_greeting = False
-            self.endpointer.reset()
         for event, payload in self.endpointer.process(pcm):
             if event == SPEECH_START:
-                if not self._in_greeting:
-                    await self._cancel_responder()
-                    await self.t.clear()
+                self._in_greeting = False
+                await self._cancel_responder()
+                await self.t.clear()
             elif event == UTTERANCE:
                 log.info("VAD detected UTTERANCE: %d bytes (%.2f s)", len(payload) if payload else 0, (len(payload) / 32000.0) if payload else 0)
-                if not self._in_greeting and not self._call_ending and payload:
+                if not self._call_ending and payload:
+                    self._in_greeting = False
                     await self._cancel_responder()
                     self.responder = asyncio.create_task(self._handle_utterance(payload))
 

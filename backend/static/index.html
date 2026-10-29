@@ -111,18 +111,29 @@
       const ratio = inRate / TARGET_SR;
       const outLen = Math.floor(input.length / ratio);
       const out = new Int16Array(outLen);
-      for (let i = 0; i < outLen; i++) {
-        const s = Math.max(-1, Math.min(1, input[Math.floor(i * ratio)]));
-        out[i] = s * 0x7fff;
+      let outOffset = 0;
+      let inOffset = 0;
+      while (outOffset < outLen) {
+        const nextInOffset = Math.round((outOffset + 1) * ratio);
+        let sum = 0;
+        let count = 0;
+        for (let j = inOffset; j < nextInOffset && j < input.length; j++) {
+          sum += input[j];
+          count++;
+        }
+        const val = count > 0 ? sum / count : (input[inOffset] || 0);
+        out[outOffset] = Math.max(-1, Math.min(1, val)) * 0x7fff;
+        outOffset++;
+        inOffset = nextInOffset;
       }
       return out;
     }
 
     async function startCall() {
       micStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, sampleRate: TARGET_SR },
       });
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: TARGET_SR });
       source = audioCtx.createMediaStreamSource(micStream);
       processor = audioCtx.createScriptProcessor(4096, 1, 1);
 
@@ -153,9 +164,12 @@
 
       processor.onaudioprocess = (e) => {
         if (!active || !ws || ws.readyState !== WebSocket.OPEN) return;
-        // Half-duplex: don't capture while Kavya is speaking (prevents echo).
-        if (audioCtx.currentTime < nextTime + 0.15) return;
-        const pcm = downsampleTo16k(e.inputBuffer.getChannelData(0), audioCtx.sampleRate);
+        const inputData = e.inputBuffer.getChannelData(0);
+        let sumSq = 0;
+        for (let i = 0; i < inputData.length; i++) sumSq += inputData[i] * inputData[i];
+        const rms = Math.sqrt(sumSq / inputData.length);
+        if (audioCtx.currentTime < nextTime && rms < 0.015) return;
+        const pcm = downsampleTo16k(inputData, audioCtx.sampleRate);
         ws.send(pcm.buffer);
       };
       source.connect(processor);
