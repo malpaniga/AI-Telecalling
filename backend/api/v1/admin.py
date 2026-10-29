@@ -259,6 +259,24 @@ async def list_calling_packs(include_inactive: bool = False):
     return [_pack_full(p) for p in packs]
 
 
+@router.post("/calling-packs")
+async def admin_create_calling_pack(body: dict):
+    from backend.api.v1.wallet import admin_create_pack, PackCreateRequest
+    return await admin_create_pack(PackCreateRequest(**body))
+
+
+@router.patch("/calling-packs/{pack_id}")
+async def admin_update_calling_pack(pack_id: str, body: dict):
+    from backend.api.v1.wallet import admin_update_pack, PackUpdateRequest
+    return await admin_update_pack(pack_id, PackUpdateRequest(**body))
+
+
+@router.delete("/calling-packs/{pack_id}")
+async def admin_delete_calling_pack(pack_id: str):
+    from backend.api.v1.wallet import admin_delete_pack
+    return await admin_delete_pack(pack_id)
+
+
 # ---------------------------------------------------------------------------
 # Payments & Invoices
 # ---------------------------------------------------------------------------
@@ -570,12 +588,16 @@ def _pack_full(p) -> dict:
         "id": p.id,
         "name": p.name,
         "slug": p.slug,
+        "description": getattr(p, "description", "") or "",
         "credits": p.credits,
         "bonus_credits": p.bonus_credits,
+        "total_credits": getattr(p, "total_credits", p.credits + p.bonus_credits),
         "price_paise": p.price_paise,
         "price_inr": p.price_paise / 100,
         "validity_days": p.validity_days,
         "is_active": p.is_active,
+        "is_public": getattr(p, "is_public", True),
+        "sort_order": getattr(p, "sort_order", 0),
     }
 
 

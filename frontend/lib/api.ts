@@ -1413,6 +1413,11 @@ export const api = {
       }) => apiRequest<CallingPack>("POST", "/api/v1/wallet/admin/packs", body),
       update: (packId: string, updates: Partial<CallingPack>) =>
         apiRequest<CallingPack>("PATCH", `/api/v1/wallet/admin/packs/${packId}`, updates),
+      delete: (packId: string) =>
+        apiRequest<{ success: boolean; deleted_id: string }>(
+          "DELETE",
+          `/api/v1/wallet/admin/packs/${packId}`
+        ),
     },
     payments: {
       list: (params?: { org_id?: string; limit?: number; skip?: number }) => {

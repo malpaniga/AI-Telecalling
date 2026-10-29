@@ -53,7 +53,7 @@ export default function CreditsPage() {
     setBuyingPack(packId);
     try {
       const order = await api.wallet.orderPack(packId);
-      toast.success(`Order created: ${order.order_id}. Complete payment to receive minutes.`);
+      toast.success(`Order created: ${order.order_id}. Complete payment to receive credits.`);
       setShowBuy(false);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed to create order");
@@ -71,17 +71,17 @@ export default function CreditsPage() {
   }
 
   return (
-    <AppShell title="Credits & Calling Minutes">
+    <AppShell title="Credits & Calling Balance">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-text-primary">Calling Minutes & Wallet</h2>
+          <h2 className="text-xl font-semibold text-text-primary">Calling Credits & Wallet</h2>
           <p className="text-sm text-text-secondary">
             Simple 1 credit = 1 billable minute. Never pay for seconds you don&apos;t understand.
           </p>
         </div>
         <Button onClick={() => setShowBuy(true)}>
-          <Package className="h-4 w-4 mr-1.5" /> Buy Calling Packs
+          <Package className="h-4 w-4 mr-1.5" /> Buy Calling Credits
         </Button>
       </div>
 
@@ -98,14 +98,14 @@ export default function CreditsPage() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <MetricCard
-              label="Available Calling Time"
-              value={`${wallet.available_credits.toLocaleString("en-IN")} mins`}
+              label="Available Calling Credits"
+              value={`${wallet.available_credits.toLocaleString("en-IN")} credits`}
               icon={CreditCard}
               accent={wallet.is_low}
             />
             <MetricCard
               label="Active Live Holds"
-              value={`${wallet.reserved_credits.toLocaleString("en-IN")} mins`}
+              value={`${wallet.reserved_credits.toLocaleString("en-IN")} credits`}
               icon={Clock}
             />
             <MetricCard
@@ -114,16 +114,16 @@ export default function CreditsPage() {
               icon={ShieldCheck}
             />
             <MetricCard
-              label="Total Minutes Consumed"
-              value={`${wallet.total_consumed.toLocaleString("en-IN")} mins`}
+              label="Total Credits Consumed"
+              value={`${wallet.total_consumed.toLocaleString("en-IN")} credits`}
               icon={Package}
             />
           </div>
 
           {wallet.is_low && (
             <div className="mb-6 rounded-md bg-[#FEF6E7] border border-[#F5D99A] px-4 py-3 text-sm text-warning flex items-center justify-between">
-              <span>⚠ Low calling balance — your wallet has dropped below {wallet.low_threshold} minutes.</span>
-              <Button size="sm" variant="secondary" onClick={() => setShowBuy(true)}>Top Up</Button>
+              <span>⚠ Low calling balance — your wallet has dropped below {wallet.low_threshold} credits.</span>
+              <Button size="sm" variant="secondary" onClick={() => setShowBuy(true)}>Top Up Credits</Button>
             </div>
           )}
         </>
@@ -153,7 +153,7 @@ export default function CreditsPage() {
 
               if (t.transaction_type === "call_reserve") {
                 typeLabel = "Call Hold";
-                holdStatus = "5 min held";
+                holdStatus = "5 credits held";
               } else if (t.transaction_type === "call_settle") {
                 typeLabel = "Call Finished";
                 holdStatus = "Settled & released";
@@ -197,7 +197,7 @@ export default function CreditsPage() {
                     {t.description || "—"}
                   </TableCell>
                   <TableCell className={`font-mono text-xs font-semibold ${isPositive ? "text-success" : isZero ? "text-text-muted" : "text-danger"}`}>
-                    {isPositive ? `+${t.credits_delta} mins` : isZero ? "0 mins" : `${t.credits_delta} mins`}
+                    {isPositive ? `+${t.credits_delta} credits` : isZero ? "0 credits" : `${t.credits_delta} credits`}
                   </TableCell>
                   <TableCell>
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-hover border border-border text-text-secondary">
@@ -208,7 +208,7 @@ export default function CreditsPage() {
                     {formatDateTime(t.created_at)}
                   </TableCell>
                   <TableCell className="font-mono text-xs font-medium text-text-primary">
-                    {t.balance_after.toLocaleString("en-IN")} mins
+                    {t.balance_after.toLocaleString("en-IN")} credits
                   </TableCell>
                 </TableRow>
               );
@@ -218,9 +218,9 @@ export default function CreditsPage() {
       </Card>
 
       {/* Buy credits modal */}
-      <Modal isOpen={showBuy} onClose={() => setShowBuy(false)} title="Buy Calling Minutes" size="lg">
+      <Modal isOpen={showBuy} onClose={() => setShowBuy(false)} title="Buy Calling Credits" size="lg">
         {packs.length === 0 ? (
-          <p className="text-sm text-text-muted">No calling packs available at this moment.</p>
+          <p className="text-sm text-text-muted">No calling credit packs available at this moment.</p>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2">
             {packs.map((pack) => (
@@ -231,11 +231,11 @@ export default function CreditsPage() {
                     <p className="font-bold text-accent text-lg">{formatINR(pack.price_paise)}</p>
                   </div>
                   <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-2xl font-bold text-text-primary">{pack.credits}</span>
-                    <span className="text-sm text-text-secondary font-medium">Calling Minutes</span>
+                    <span className="text-2xl font-bold text-text-primary">{pack.credits.toLocaleString("en-IN")}</span>
+                    <span className="text-sm text-text-secondary font-medium">Calling Credits</span>
                     {pack.bonus_credits > 0 && (
                       <span className="text-xs font-semibold text-success bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        +{pack.bonus_credits} bonus
+                        +{pack.bonus_credits.toLocaleString("en-IN")} bonus
                       </span>
                     )}
                   </div>
@@ -252,7 +252,7 @@ export default function CreditsPage() {
                   loading={buyingPack === pack.id}
                   onClick={() => handleBuyPack(pack.id)}
                 >
-                  Buy {pack.credits} Minutes
+                  Buy {pack.credits.toLocaleString("en-IN")} Credits
                 </Button>
               </div>
             ))}

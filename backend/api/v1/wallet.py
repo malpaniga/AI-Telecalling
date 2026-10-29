@@ -104,6 +104,7 @@ class PackCreateRequest(BaseModel):
 
 class PackUpdateRequest(BaseModel):
     name: Optional[str] = None
+    slug: Optional[str] = None
     description: Optional[str] = None
     price_paise: Optional[int] = None
     credits: Optional[int] = None
@@ -333,6 +334,20 @@ async def admin_update_pack(pack_id: str, body: PackUpdateRequest):
         raise HTTPException(status_code=404, detail="Pack not found")
     pack = await svc.pack_repo.find_by_id(pack_id)
     return _pack_response(pack)
+
+
+@router.delete("/admin/packs/{pack_id}",
+               dependencies=[Depends(require_platform("platform_owner", "platform_admin"))])
+async def admin_delete_pack(pack_id: str):
+    db = get_db()
+    svc = WalletService(db)
+    pack = await svc.pack_repo.find_by_id(pack_id)
+    if not pack:
+        raise HTTPException(status_code=404, detail="Pack not found")
+    ok = await svc.pack_repo.delete_by_id(pack_id)
+    if not ok:
+        raise HTTPException(status_code=500, detail="Failed to delete pack")
+    return {"success": True, "deleted_id": pack_id}
 
 
 @router.post("/admin/expire",

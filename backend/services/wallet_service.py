@@ -35,9 +35,9 @@ DEFAULT_CALLING_PACKS = [
     {
         "name": "Trial Pack",
         "slug": "trial",
-        "credits": 10,            # 10 minutes free trial
+        "credits": 10,            # 10 trial credits
         "price_paise": 0,         # free trial
-        "description": "Try AI calling with 10 free minutes.",
+        "description": "Try AI calling with 10 free trial credits.",
         "validity_days": 30,
         "bonus_credits": 0,
         "sort_order": 0,
@@ -46,9 +46,9 @@ DEFAULT_CALLING_PACKS = [
     {
         "name": "Starter Pack",
         "slug": "starter-pack",
-        "credits": 100,           # 100 minutes
+        "credits": 100,           # 100 credits
         "price_paise": 99900,     # ₹999
-        "description": "100 calling credits (100 minutes of AI calls).",
+        "description": "100 calling credits. 1 credit = 1 minute of call time.",
         "validity_days": 90,
         "bonus_credits": 0,
         "sort_order": 1,
@@ -56,9 +56,9 @@ DEFAULT_CALLING_PACKS = [
     {
         "name": "Growth Pack",
         "slug": "growth-pack",
-        "credits": 500,           # 500 minutes
+        "credits": 500,           # 500 credits
         "price_paise": 399900,    # ₹3,999
-        "description": "500 calling credits (500 minutes) + 50 bonus minutes. Best value.",
+        "description": "500 calling credits + 50 bonus credits. Best value.",
         "validity_days": 180,
         "bonus_credits": 50,      # 10% bonus
         "sort_order": 2,
@@ -66,9 +66,9 @@ DEFAULT_CALLING_PACKS = [
     {
         "name": "Pro Pack",
         "slug": "pro-pack",
-        "credits": 1000,          # 1,000 minutes
+        "credits": 1000,          # 1,000 credits
         "price_paise": 699900,    # ₹6,999
-        "description": "1,000 credits + 150 bonus (1,150 calling minutes total).",
+        "description": "1,000 calling credits + 150 bonus credits (1,150 total credits).",
         "validity_days": 365,
         "bonus_credits": 150,     # 15% bonus
         "sort_order": 3,
@@ -77,14 +77,21 @@ DEFAULT_CALLING_PACKS = [
 
 
 async def seed_default_packs(db: AsyncIOMotorDatabase) -> list[CallingPack]:
-    """Seed default calling packs. Idempotent."""
+    """Seed default calling packs. Idempotent, auto-updates legacy descriptions."""
     repo = CallingPackRepository(db)
     created = []
     for pack_data in DEFAULT_CALLING_PACKS:
-        if await repo.find_by_slug(pack_data["slug"]) is None:
+        existing = await repo.find_by_slug(pack_data["slug"])
+        if existing is None:
             pack = await repo.create(**pack_data)
             created.append(pack)
             log.info("seeded calling pack: %s (%d credits)", pack.slug, pack.credits)
+        else:
+            # Auto-clean legacy second-based descriptions if still present
+            desc = existing.description or ""
+            if "~17 minutes" in desc or "~83 minutes" in desc or "~192 minutes" in desc:
+                await repo.update_by_id(existing.id, {"description": pack_data["description"]})
+                log.info("updated legacy description for calling pack: %s", existing.slug)
     return created
 
 
