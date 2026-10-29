@@ -96,6 +96,7 @@ class GeminiLLMProvider(LLMProvider):
         timeout: float = 30.0,
         max_output_tokens: int = 512,
         temperature: float = 0.6,
+        thinking_budget: int = 0,
         _client: Any | None = None,
     ) -> None:
         if not api_key:
@@ -104,6 +105,7 @@ class GeminiLLMProvider(LLMProvider):
         self.timeout = timeout
         self.max_output_tokens = max_output_tokens
         self.temperature = temperature
+        self.thinking_budget = thinking_budget
         self._clean_key = api_key.strip().strip("'\"")
         if _client is not None:
             self._client = _client
@@ -157,6 +159,13 @@ class GeminiLLMProvider(LLMProvider):
         }
         if system_prompt:
             config_kwargs["system_instruction"] = system_prompt
+
+        budget = kwargs.get("thinking_budget", self.thinking_budget)
+        if budget is not None and hasattr(gtypes, "ThinkingConfig"):
+            try:
+                config_kwargs["thinking_config"] = gtypes.ThinkingConfig(thinking_budget=int(budget))
+            except (ValueError, TypeError):
+                pass
 
         config = gtypes.GenerateContentConfig(**config_kwargs)
         candidate_models = _get_candidate_models(model)
@@ -249,6 +258,13 @@ class GeminiLLMProvider(LLMProvider):
         }
         if system_prompt:
             config_kwargs["system_instruction"] = system_prompt
+
+        budget = kwargs.get("thinking_budget", self.thinking_budget)
+        if budget is not None and hasattr(gtypes, "ThinkingConfig"):
+            try:
+                config_kwargs["thinking_config"] = gtypes.ThinkingConfig(thinking_budget=int(budget))
+            except (ValueError, TypeError):
+                pass
 
         config = gtypes.GenerateContentConfig(**config_kwargs)
         candidate_models = _get_candidate_models(model)

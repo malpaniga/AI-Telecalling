@@ -350,6 +350,7 @@ class ModelTestService:
         provider_name: str,
         model_id: str,
         credential: str | None,
+        extra_params: dict | None = None,
     ) -> dict:
         """[LIVE] Test LLM provider by requesting a one-sentence hello.
 
@@ -366,7 +367,7 @@ class ModelTestService:
             if provider_name == "groq":
                 response = await self._test_groq_llm(credential, model_id)
             elif provider_name == "gemini":
-                response = await self._test_gemini_llm(credential, model_id)
+                response = await self._test_gemini_llm(credential, model_id, extra_params=extra_params)
             elif provider_name == "ollama":
                 # Ollama is local-only — test connectivity but return unavailable
                 # if the runtime is not reachable (cloud-only mode check happens at activation)
@@ -392,17 +393,26 @@ class ModelTestService:
             [{"role": "user", "content": "Say hello in one sentence."}]
         )
 
-    async def _test_gemini_llm(self, credential: str | None, model_id: str) -> str:
+    async def _test_gemini_llm(
+        self,
+        credential: str | None,
+        model_id: str,
+        extra_params: dict | None = None,
+    ) -> str:
         """[LIVE] Test Gemini LLM with the injected API key."""
         if not credential:
             raise ValueError("GEMINI_API_KEY is required for Gemini LLM")
         from backend.providers.llm.gemini import GeminiLLMProvider
+        params = extra_params or {}
+        thinking_budget = params.get("thinking_budget", 0)
         provider = GeminiLLMProvider(
             api_key=credential,
             model=model_id or "gemini-2.0-flash-lite",
+            thinking_budget=thinking_budget,
         )
         return await provider.generate(
-            [{"role": "user", "content": "Say hello in one sentence."}]
+            [{"role": "user", "content": "Say hello in one sentence."}],
+            thinking_budget=thinking_budget,
         )
 
     async def _test_ollama_llm(self, model_id: str) -> str:

@@ -159,7 +159,7 @@ def _timeout(params: dict[str, Any]) -> float:
 
 def _llm_options(params: dict[str, Any]) -> dict[str, Any]:
     result: dict[str, Any] = {"timeout": _timeout(params)}
-    for key in ("temperature", "max_tokens", "max_output_tokens"):
+    for key in ("temperature", "max_tokens", "max_output_tokens", "thinking_budget"):
         if key in params and isinstance(params[key], (int, float)):
             result[key] = params[key]
     return result

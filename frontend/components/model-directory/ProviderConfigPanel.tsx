@@ -128,6 +128,7 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
     voice: "",
     language: "",
     extra_params_json: "",
+    reasoning_effort: "0",
     is_fallback: false,
   });
   const [connectError, setConnectError] = useState<string | null>(null);
@@ -289,7 +290,8 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
       credential_plaintext: "",
       voice: "",
       language: "",
-      extra_params_json: "",
+      extra_params_json: JSON.stringify({ thinking_budget: 0 }, null, 2),
+      reasoning_effort: "0",
       is_fallback: false,
     });
     setConnectError(null);
@@ -358,6 +360,12 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
           "Extra parameters must be valid JSON."
         );
         return;
+      }
+    }
+    if (capability === "llm") {
+      if (!extra_params) extra_params = {};
+      if (!("thinking_budget" in extra_params) && connectForm.reasoning_effort !== undefined && connectForm.reasoning_effort !== "") {
+        extra_params.thinking_budget = parseInt(connectForm.reasoning_effort, 10);
       }
     }
 
@@ -1106,25 +1114,76 @@ export function ProviderConfigPanel({ capability }: ProviderConfigPanelProps) {
 
           {/* Extra params — LLM only */}
           {capability === "llm" && (
-            <div>
-              <label className="block text-xs font-medium text-text-primary mb-1">
-                Model Parameters{" "}
-                <span className="text-text-muted font-normal">
-                  (JSON, optional — e.g. temperature, max_tokens)
-                </span>
-              </label>
-              <textarea
-                rows={3}
-                placeholder={'{"temperature": 0.7, "max_tokens": 512}'}
-                value={connectForm.extra_params_json}
-                onChange={(e) =>
-                  setConnectForm((f) => ({
-                    ...f,
-                    extra_params_json: e.target.value,
-                  }))
-                }
-                className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent/30 resize-none"
-              />
+            <div className="space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-text-primary">
+                    Reasoning Effort / Thinking Budget
+                  </label>
+                  <span className="text-[10px] text-text-muted">Latency control</span>
+                </div>
+                <select
+                  value={connectForm.reasoning_effort ?? "0"}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    let parsed: Record<string, any> = {};
+                    try {
+                      if (connectForm.extra_params_json.trim()) {
+                        parsed = JSON.parse(connectForm.extra_params_json);
+                      }
+                    } catch {}
+                    parsed.thinking_budget = parseInt(val, 10);
+                    setConnectForm((f) => ({
+                      ...f,
+                      reasoning_effort: val,
+                      extra_params_json: JSON.stringify(parsed, null, 2),
+                    }));
+                  }}
+                  className="w-full h-9 rounded-md border border-border bg-surface px-3 text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
+                >
+                  <option value="0">
+                    ⚡ 0 tokens — Disabled (Fastest, ~1s latency) ⭐ Recommended for Voice
+                  </option>
+                  <option value="1024">🐢 1,024 tokens — Low reasoning effort</option>
+                  <option value="2048">🧠 2,048 tokens — Medium reasoning effort</option>
+                  <option value="-1">⏳ Dynamic / Full reasoning (High latency)</option>
+                </select>
+                <p className="text-[11px] text-text-muted mt-1 leading-normal">
+                  {connectForm.reasoning_effort === "0" || !connectForm.reasoning_effort
+                    ? "Thinking tokens are disabled. Responses generate immediately with minimal latency."
+                    : "Enabling thinking tokens causes the model to generate silent thoughts before responding, increasing latency."}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-text-primary mb-1">
+                  Model Parameters{" "}
+                  <span className="text-text-muted font-normal">
+                    (JSON, optional — e.g. temperature, max_tokens, thinking_budget)
+                  </span>
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder={'{"temperature": 0.7, "max_tokens": 512, "thinking_budget": 0}'}
+                  value={connectForm.extra_params_json}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    let effort = connectForm.reasoning_effort;
+                    try {
+                      const parsed = JSON.parse(val);
+                      if (parsed.thinking_budget !== undefined) {
+                        effort = String(parsed.thinking_budget);
+                      }
+                    } catch {}
+                    setConnectForm((f) => ({
+                      ...f,
+                      extra_params_json: val,
+                      reasoning_effort: effort,
+                    }));
+                  }}
+                  className="w-full rounded-md border border-border bg-surface px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent/30 resize-none"
+                />
+              </div>
             </div>
           )}
 

@@ -145,9 +145,21 @@ export function ModelSetupWizard() {
   const [selectedModel, setSelectedModel] = useState<AIModelCatalogue | null>(null);
   const [apiKeyInput, setApiKeyInput] = useState<string>("");
   const [voiceInput, setVoiceInput] = useState<string>("");
-  const [languageInput, setLanguageInput] = useState<string>("");
+  const [languageInput, setLanguageInput] = useState<string>("en-IN");
   const [extraParamsInput, setExtraParamsInput] = useState<string>("");
+  const [reasoningEffort, setReasoningEffort] = useState<string>("0");
   const [isFallback, setIsFallback] = useState<boolean>(false);
+
+  const handleReasoningEffortChange = (val: string) => {
+    setReasoningEffort(val);
+    try {
+      const parsed = extraParamsInput.trim() ? JSON.parse(extraParamsInput) : {};
+      parsed.thinking_budget = parseInt(val, 10);
+      setExtraParamsInput(JSON.stringify(parsed, null, 2));
+    } catch {
+      setExtraParamsInput(JSON.stringify({ thinking_budget: parseInt(val, 10) }, null, 2));
+    }
+  };
 
   // Connection & Test In-Progress State
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
@@ -269,11 +281,29 @@ export function ModelSetupWizard() {
       if (existing.voice) setVoiceInput(existing.voice);
       if (existing.language) setLanguageInput(existing.language);
       if (existing.is_fallback) setIsFallback(existing.is_fallback);
+      if (existing.extra_params && Object.keys(existing.extra_params).length > 0) {
+        setExtraParamsInput(JSON.stringify(existing.extra_params, null, 2));
+        if (existing.extra_params.thinking_budget !== undefined) {
+          setReasoningEffort(String(existing.extra_params.thinking_budget));
+        } else {
+          setReasoningEffort("0");
+        }
+      } else {
+        setReasoningEffort("0");
+        if (model.capability === "llm") {
+          setExtraParamsInput(JSON.stringify({ thinking_budget: 0 }, null, 2));
+        }
+      }
       if (existing.last_test_result) {
         setTestResult({
           status: existing.last_test_result,
           latency_ms: existing.last_test_latency_ms,
         });
+      }
+    } else {
+      setReasoningEffort("0");
+      if (model.capability === "llm") {
+        setExtraParamsInput(JSON.stringify({ thinking_budget: 0 }, null, 2));
       }
     }
 
@@ -313,14 +343,21 @@ export function ModelSetupWizard() {
         is_fallback: isFallback,
       };
 
+      let parsedParams: Record<string, any> = {};
       if (extraParamsInput.trim()) {
         try {
-          req.extra_params = JSON.parse(extraParamsInput);
+          parsedParams = JSON.parse(extraParamsInput);
         } catch {
           toast.error("Model parameters must be valid JSON");
           setIsConnecting(false);
           return;
         }
+      }
+      if (selectedModel.capability === "llm" && !("thinking_budget" in parsedParams) && reasoningEffort !== "") {
+        parsedParams.thinking_budget = parseInt(reasoningEffort, 10);
+      }
+      if (Object.keys(parsedParams).length > 0) {
+        req.extra_params = parsedParams;
       }
 
       const saved = await api.modelDirectory.connect(req);
@@ -932,19 +969,59 @@ export function ModelSetupWizard() {
               </div>
             )}
 
-            {/* LLM Model Parameters */}
+            {/* LLM Model Parameters & Reasoning Effort */}
             {selectedModel.capability === "llm" && (
-              <div>
-                <label className="block text-xs font-semibold text-text-primary mb-1">
-                  Model Parameters (JSON, optional)
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder='{"temperature": 0.7, "max_tokens": 512}'
-                  value={extraParamsInput}
-                  onChange={(e) => setExtraParamsInput(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent/30 resize-none"
-                />
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-text-primary">
+                      Reasoning Effort / Thinking Budget
+                    </label>
+                    <span className="text-[10px] text-text-muted">
+                      Controls thinking latency
+                    </span>
+                  </div>
+                  <select
+                    value={reasoningEffort}
+                    onChange={(e) => handleReasoningEffortChange(e.target.value)}
+                    className="w-full h-9 rounded-lg border border-border bg-surface px-3 text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30 font-medium"
+                  >
+                    <option value="0">
+                      ⚡ 0 tokens — Disabled (Fastest, ~1s latency) ⭐ Recommended for Voice
+                    </option>
+                    <option value="1024">🐢 1,024 tokens — Low reasoning effort</option>
+                    <option value="2048">🧠 2,048 tokens — Medium reasoning effort</option>
+                    <option value="-1">⏳ Dynamic / Full reasoning (High latency)</option>
+                  </select>
+                  <p className="text-[11px] text-text-muted mt-1 leading-normal">
+                    {reasoningEffort === "0"
+                      ? "Thinking tokens are disabled. The agent replies immediately without silent thinking delays."
+                      : "Enabling thinking tokens causes the model to generate silent thoughts before responding, increasing latency."}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-text-primary mb-1">
+                    Model Parameters (JSON, optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder='{"temperature": 0.7, "max_tokens": 512, "thinking_budget": 0}'
+                    value={extraParamsInput}
+                    onChange={(e) => {
+                      setExtraParamsInput(e.target.value);
+                      try {
+                        const parsed = JSON.parse(e.target.value);
+                        if (parsed.thinking_budget !== undefined) {
+                          setReasoningEffort(String(parsed.thinking_budget));
+                        }
+                      } catch {
+                        // ignore parse errors while typing
+                      }
+                    }}
+                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent/30 resize-none"
+                  />
+                </div>
               </div>
             )}
 

@@ -511,6 +511,7 @@ class ModelDirectoryService:
                 config.provider_name,
                 config.model_id,
                 credential,
+                config.extra_params,
             )
         return {"status": "error", "error": f"Unknown capability: {cap}"}
 

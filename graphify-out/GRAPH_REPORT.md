@@ -1,16 +1,16 @@
 # Graph Report - saas  (2026-10-29)
 
 ## Corpus Check
-- 362 files · ~280,499 words
+- 362 files · ~281,089 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5635 nodes · 12339 edges · 281 communities (233 shown, 48 thin omitted)
+- 5635 nodes · 12339 edges · 281 communities (232 shown, 49 thin omitted)
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 839 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5df4bf24`
+- Built from commit: `9755bcc4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -302,7 +302,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (281 total, 48 thin omitted)
+## Communities (281 total, 49 thin omitted)
 
 ### Community 0 - "AppointmentRepository"
 Cohesion: 0.18
@@ -346,7 +346,7 @@ Nodes (42): activate_configuration(), configure_provider(), ConfigureProviderBod
 
 ### Community 10 - "get_db"
 Cohesion: 0.04
-Nodes (90): admin_adjust_wallet(), admin_costs(), admin_create_calling_pack(), admin_dashboard(), admin_delete_calling_pack(), admin_margins(), admin_revenue(), admin_update_calling_pack() (+82 more)
+Nodes (94): admin_adjust_wallet(), admin_costs(), admin_create_calling_pack(), admin_dashboard(), admin_delete_calling_pack(), admin_margins(), admin_revenue(), admin_update_calling_pack() (+86 more)
 
 ### Community 11 - "test_m28_agent_export_import.py"
 Cohesion: 0.20
@@ -393,8 +393,8 @@ Cohesion: 0.06
 Nodes (15): _get_mock_db(), SKIP, Buy 2000 credits → wallet=2000, ledger=+2000, lot=2000, 2000 base + 200 bonus = 2200 total credits granted, Every credit movement requires an immutable WalletTransaction., Same idempotency_key does not double-grant credits., Wallet must never go negative., Customer cannot view another org's wallet via admin endpoint. (+7 more)
 
 ### Community 22 - "test_m41_model_directory.py"
-Cohesion: 0.08
-Nodes (40): _make_platform_user(), _SKIP_IF_NO_MONGOMOCK, M41 AI Models Directory — 15 acceptance test cases. All network calls are…, [mock] Empty credential for a provider requiring one raises ValueError., [mock] list_credentials returns key_hint only — never encrypted_value or…, [mock] org-scoped user gets PermissionError from require_platform dependency., [mock] Patched httpx raises ConnectError → test_llm returns status=unavailable., [mock] Patched Ollama returns 200 + response → test_llm returns status=ok. (+32 more)
+Cohesion: 0.07
+Nodes (43): Exception, RateLimitError, Raised when the test-call rate limit is exceeded., _make_platform_user(), _SKIP_IF_NO_MONGOMOCK, M41 AI Models Directory — 15 acceptance test cases. All network calls are…, [mock] Empty credential for a provider requiring one raises ValueError., [mock] list_credentials returns key_hint only — never encrypted_value or… (+35 more)
 
 ### Community 23 - "appointments.py"
 Cohesion: 0.19
@@ -446,7 +446,7 @@ Nodes (12): _get_mock_db(), SKIP, M11 tests — Agent Builder. Tests: 1. Busines
 
 ### Community 35 - "run"
 Cohesion: 0.12
-Nodes (7): SKIP, run(), TestAddNote, TestBookAppointment, TestMessaging, TestToolRegistry, TestUpdateLead
+Nodes (7): SKIP, run(), TestBookAppointment, TestMessaging, TestScheduleCallback, TestToolRegistry, TestUpdateLead
 
 ### Community 36 - "LatencyMetrics"
 Cohesion: 0.16
@@ -688,10 +688,6 @@ Nodes (18): _extract_keywords(), KnowledgeBaseRepository, KnowledgeDocumentRepos
 Cohesion: 0.09
 Nodes (14): PaymentProvider, Provider, ABC, Abstract provider interfaces for the AI Telecalling SaaS platform. Core…, Verify payment signature. Returns True if valid., Fetch payment details from provider. Returns provider payment dict., Issue a refund. Returns provider refund dict., Verify webhook signature. Called synchronously (crypto only, no I/O). Returns… (+6 more)
 
-### Community 100 - "run"
-Cohesion: 0.20
-Nodes (3): SKIP, run(), TestAppointmentService
-
 ### Community 101 - "utcnow"
 Cohesion: 0.04
 Nodes (31): add_turn(), Create a fresh lead + active call at the start of a conversation., start_call(), datetime, utcnow(), Resolve a route and durably retain any failover event for operations review., Insert multiple lead documents. Skips duplicates (same org + phone). Returns…, Create a new subscription. Cancels any existing active subscription first. (+23 more)
@@ -761,8 +757,8 @@ Cohesion: 0.05
 Nodes (27): Transcript model — full turn-by-turn call record. One Transcript document per…, A single turn (user or agent utterance) in the call transcript., Full transcript for a single call. Unique per call_id., Transcript, Turn, Get existing transcript or create one. Idempotent., Append turns to transcript and update count., TranscriptRepository (+19 more)
 
 ### Community 121 - "ModelDirectoryService"
-Cohesion: 0.05
-Nodes (29): _catalogue_to_dict(), ModelDirectoryService, AIModelCatalogue, Exception, RateLimitError, Return a single catalogue entry or raise LookupError., Run an inference test for the given configuration. Raises: LookupError — config…, Return the active ProviderConfiguration for a capability, or None. (+21 more)
+Cohesion: 0.06
+Nodes (26): _catalogue_to_dict(), ModelDirectoryService, AIModelCatalogue, Return a single catalogue entry or raise LookupError., Run an inference test for the given configuration. Raises: LookupError — config…, Return the active ProviderConfiguration for a capability, or None., List all ProviderConfiguration records (credentials stripped)., Return a single config or raise LookupError. (+18 more)
 
 ### Community 122 - "create_token_pair"
 Cohesion: 0.11
@@ -906,7 +902,7 @@ Nodes (6): Deliver a metadata event (transcript, stage, etc.). May be a no-op., 
 
 ### Community 160 - "FastAPI"
 Cohesion: 0.03
-Nodes (111): Credit reservation/settlement API — internal call billing endpoints. These are…, Demo Mode API. GET /api/v1/demo/status — check if demo mode is active and…, API v1 router — aggregates all v1 sub-routers., create_organization(), get_organization(), list_organizations(), OrgCreateRequest, OrgUpdateRequest (+103 more)
+Nodes (107): Credit reservation/settlement API — internal call billing endpoints. These are…, Demo Mode API. GET /api/v1/demo/status — check if demo mode is active and…, API v1 router — aggregates all v1 sub-routers., create_organization(), get_organization(), list_organizations(), OrgCreateRequest, OrgUpdateRequest (+99 more)
 
 ### Community 161 - "db.py"
 Cohesion: 0.13
@@ -989,8 +985,8 @@ Cohesion: 0.17
 Nodes (6): Same call_id reserve twice: no double-deduction., Can't release a call that was already settled., reserve() moves available → reserved; total unchanged., run(), TestCreditRelease, TestCreditReserve
 
 ### Community 190 - "test_password_update.py"
-Cohesion: 0.11
-Nodes (24): AdminUpdateOrgPasswordRequest, BaseModel, field_validator, change_password(), ChangePasswordRequest, Change current authenticated user's password., MongoDB user document., User (+16 more)
+Cohesion: 0.12
+Nodes (21): AdminUpdateOrgPasswordRequest, BaseModel, field_validator, change_password(), ChangePasswordRequest, Change current authenticated user's password., MongoDB user document., User (+13 more)
 
 ### Community 191 - "test_m32_documentation.py"
 Cohesion: 0.39
@@ -1081,8 +1077,8 @@ Cohesion: 0.29
 Nodes (6): Global Constraints, Model Directory Catalogue & Auto-Loading Models Implementation Plan, Task 1: Update Groq LLM Provider Adapter, Task 2: Catalogue Seeding, Credential Reuse & Live Models Endpoint, Task 3: Frontend API & Dropdown Auto-Loading, Task 4: Verification & Graphify Update
 
 ### Community 254 - "test_m1_mongodb.py"
-Cohesion: 0.16
-Nodes (8): Simple slugifier: lowercase, alphanumeric + hyphens., _slugify(), get_mock_db(), M1 tests — MongoDB foundation. Tests run against mongomock (in-memory MongoDB…, Return a mongomock-backed async Motor database substitute., health.check_all should return the correct structure (mocked)., TestHealthCheck, TestSlugGeneration
+Cohesion: 0.13
+Nodes (11): Simple slugifier: lowercase, alphanumeric + hyphens., _slugify(), hash_password(), verify_password(), get_mock_db(), M1 tests — MongoDB foundation. Tests run against mongomock (in-memory MongoDB…, Return a mongomock-backed async Motor database substitute., health.check_all should return the correct structure (mocked). (+3 more)
 
 ### Community 255 - "formatDateTime"
 Cohesion: 0.04
@@ -1151,7 +1147,7 @@ Nodes (7): ImportKbModal(), handleClose(), handleDrop(), handleFileChange(), han
 ## Knowledge Gaps
 - **533 isolated node(s):** `MRRData`, `MRRMovement`, `RevenueData`, `DailyEntry`, `PERIOD_OPTIONS` (+528 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **48 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **49 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
