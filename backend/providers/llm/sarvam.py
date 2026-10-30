@@ -36,10 +36,10 @@ def _clean_key(key: str | None) -> str:
     """Normalize and strip quotes or redundant Bearer prefix from API key."""
     if not key:
         return ""
-    cleaned = key.strip().strip("'\"")
-    if cleaned.startswith("Bearer "):
+    cleaned = key.strip()
+    if cleaned.lower().startswith("bearer "):
         cleaned = cleaned[7:].strip()
-    return cleaned
+    return cleaned.strip("'\"").strip()
 
 
 def _sanitize_sarvam_error(exc: Exception, model: str) -> str:
@@ -73,6 +73,7 @@ class SarvamLLMProvider(LLMProvider):
         max_tokens: int = 512,
         temperature: float = 0.6,
         _client: httpx.AsyncClient | None = None,
+        **kwargs: Any,
     ) -> None:
         cleaned_key = _clean_key(api_key)
         if not cleaned_key:
@@ -81,8 +82,10 @@ class SarvamLLMProvider(LLMProvider):
         self.api_key = cleaned_key
         self.model = model or DEFAULT_MODEL
         self.timeout = timeout
-        self.max_tokens = max_tokens
+        max_output_tokens = kwargs.get("max_output_tokens")
+        self.max_tokens = int(max_output_tokens) if max_output_tokens is not None else max_tokens
         self.temperature = temperature
+        self.extra_options = kwargs
         self._headers = {
             "api-subscription-key": self.api_key,
             "Authorization": f"Bearer {self.api_key}",
@@ -159,13 +162,13 @@ class SarvamLLMProvider(LLMProvider):
             data = resp.json()
         except Exception as exc:
             sanitized = _sanitize_sarvam_error(exc, model)
-            raise RuntimeError(sanitized) from exc
+            raise RuntimeError(sanitized) from None
 
-        choices = data.get("choices", [])
+        choices = data.get("choices") or []
         if not choices:
             raise ValueError(f"Sarvam returned empty response for model '{model}'")
 
-        content = (choices[0].get("message", {}).get("content") or "").strip()
+        content = ((choices[0].get("message") or {}).get("content") or "").strip()
         if not content:
             raise ValueError(f"Sarvam returned empty content for model '{model}'")
 
@@ -204,15 +207,15 @@ class SarvamLLMProvider(LLMProvider):
                     if line_str.startswith(":"):
                         # SSE comment/keep-alive line
                         continue
-                    if line_str.startswith("data: "):
-                        raw_data = line_str[6:].strip()
+                    if line_str.startswith("data:"):
+                        raw_data = line_str[5:].strip()
                         if raw_data == "[DONE]":
                             break
                         try:
                             chunk_obj = json.loads(raw_data)
-                            choices = chunk_obj.get("choices", [])
+                            choices = chunk_obj.get("choices") or []
                             if choices:
-                                delta = choices[0].get("delta", {}).get("content", "")
+                                delta = (choices[0].get("delta") or {}).get("content") or ""
                                 if delta:
                                     yield delta
                         except Exception:
@@ -220,7 +223,7 @@ class SarvamLLMProvider(LLMProvider):
                             continue
         except Exception as exc:
             sanitized = _sanitize_sarvam_error(exc, model)
-            raise RuntimeError(sanitized) from exc
+            raise RuntimeError(sanitized) from None
 
     async def get_models(self) -> list[str]:
         return sorted(SUPPORTED_MODELS)

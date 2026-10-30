@@ -231,3 +231,62 @@ def test_pricing_sync_contains_sarvam_llm():
     assert len(matching) == 1
     assert matching[0]["base_currency"] == "INR"
     assert matching[0]["billing_unit"] == "turn"
+
+
+def test_sarvam_llm_provider_accepts_extra_options():
+    """SarvamLLMProvider accepts kwargs from _llm_options without raising TypeError."""
+    provider = SarvamLLMProvider(
+        api_key="test-key",
+        max_output_tokens=1024,
+        thinking_budget=0,
+        custom_param="value",
+        _client=MagicMock(),
+    )
+    assert provider.max_tokens == 1024
+
+
+@pytest.mark.anyio
+async def test_sarvam_llm_provider_exception_suppresses_cause():
+    """RuntimeError suppresses raw exception chaining (__cause__ is None)."""
+    mock_client = AsyncMock()
+    mock_client.post.side_effect = Exception("401 key secret-key-in-cause")
+    provider = SarvamLLMProvider(api_key="test-key", _client=mock_client)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        await provider.generate([{"role": "user", "content": "hi"}])
+    assert exc_info.value.__cause__ is None
+
+
+@pytest.mark.anyio
+async def test_sarvam_llm_provider_stream_parses_no_space_sse_prefix():
+    """SarvamLLMProvider.stream handles W3C SSE lines without space after 'data:'."""
+    mock_client = AsyncMock()
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.raise_for_status = MagicMock()
+
+    async def mock_aiter_lines():
+        lines = [
+            'data:{"choices":[{"delta":{"content":"Namaste"}}]}',
+            'data:[DONE]',
+        ]
+        for line in lines:
+            yield line
+
+    mock_resp.aiter_lines = mock_aiter_lines
+
+    class MockStreamContext:
+        async def __aenter__(self):
+            return mock_resp
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            return None
+
+    mock_client.stream = MagicMock(return_value=MockStreamContext())
+
+    provider = SarvamLLMProvider(api_key="test-sarvam-key", _client=mock_client)
+    chunks = []
+    async for chunk in provider.stream([{"role": "user", "content": "Hello"}]):
+        chunks.append(chunk)
+
+    assert "".join(chunks) == "Namaste"

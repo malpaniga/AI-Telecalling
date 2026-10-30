@@ -102,7 +102,7 @@ _ENTRIES: list[dict] = [
         "model_id": "sarvam-105b-conversations",
         "capability": "llm",
         "hosting_mode": "managed_api",
-        "supported_languages": ["hi", "ta", "te", "kn", "mr", "bn", "gu", "ml", "pa", "en-IN", "multilingual"],
+        "supported_languages": ["hi-IN", "ta-IN", "te-IN", "kn-IN", "mr-IN", "bn-IN", "gu-IN", "ml-IN", "pa-IN", "en-IN", "multilingual"],
         "streaming_supported": True,
         "credential_requirements": ["SARVAM_API_KEY"],
         "setup_requirements": "Create API key at dashboard.sarvam.ai",
