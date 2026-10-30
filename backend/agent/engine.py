@@ -71,6 +71,9 @@ class ConversationEngine:
     def __init__(self, llm: LLMClient | None = None):
         self.llm = llm or LLMClient()
         self.graph = self._build_graph()
+        # Engines may serve multiple calls: only serialize extraction within
+        # the same conversation, retaining tasks until their chain completes.
+        self._extraction_tasks: dict[int, asyncio.Task] = {}
 
     # ---- graph nodes ----
     async def _understand(self, state: TurnState) -> dict:
@@ -88,9 +91,10 @@ class ConversationEngine:
             "not interested", "busy"
         }
 
-        words = user_clean.split()
-        is_short_affirmation = user_clean in AFFIRMATIONS or (len(words) <= 3 and any(w in AFFIRMATIONS for w in words) and not any(w in REJECTIONS for w in words))
-        is_short_rejection = user_clean in REJECTIONS or (len(words) <= 3 and any(w in REJECTIONS for w in words))
+        # Token membership loses meaning in phrases such as "yes tomorrow"
+        # (a date) or "not busy" (the opposite of a rejection).
+        is_short_affirmation = user_clean in AFFIRMATIONS
+        is_short_rejection = user_clean in REJECTIONS
 
         if is_short_affirmation:
             slots = dict(state["slots"])
@@ -214,12 +218,13 @@ class ConversationEngine:
                 f"\n\nCRITICAL LIVE VOICE RULES (STRICT):\n"
                 f"1. Spoken turn MUST be concise: 1 to 2 short sentences maximum (under 25 words total).\n"
                 f"2. Vary your opening acknowledgments naturally (never repeat the exact same acknowledgment twice in a row).\n"
-                f"3. If the caller asks a question or affirms to hear information, EXPLAIN the information first. Do NOT jump to offering a site survey before explaining what they asked.\n"
-                f"4. If the caller says 'नाही' (no) to a site survey, do NOT hang up or say goodbye. Acknowledge politely in one short sentence, and gently offer bill savings information or ask if they have another question.\n"
+                f"3. Answer the caller's latest question first, then ask at most one question. Do not repeat details they already provided.\n"
+                f"4. Treat a refusal in context: declining an offer is not necessarily ending the call. Respect explicit requests to stop or end the call immediately.\n"
+                f"5. After an interruption, respond to the caller's latest words rather than restarting your script. Use natural spoken phrasing, without markdown or forced filler words.\n"
             )
             if language_name and language_name != "English":
                 voice_guidelines += (
-                    f"5. The caller speaks {language_name}. Reply ONLY in natural, conversational {language_name}, "
+                    f"6. The caller speaks {language_name}. Reply ONLY in natural, conversational {language_name}, "
                     f"written in that language's NATIVE SCRIPT (e.g. Devanagari for Marathi/Hindi) — never romanized Latin text."
                 )
             prompt = prompt + voice_guidelines
@@ -229,18 +234,33 @@ class ConversationEngine:
                 yield sentence
             state["messages"].append({"role": "assistant", "content": " ".join(reply_parts)})
 
-            # Run extraction as background task so caller speech stream has zero concurrency contention
+            # Keep extraction off the speech path, but apply results in turn
+            # order. Snapshot after the prior turn completes to preserve slots.
+            conversation_id = id(state)
+            previous_extraction = self._extraction_tasks.get(conversation_id)
+
             async def _run_bg_extraction() -> None:
                 try:
-                    result = await self.graph.ainvoke(graph_input)
+                    if previous_extraction is not None:
+                        await previous_extraction
+                    current_input = {
+                        **graph_input,
+                        "stage": state["stage"],
+                        "slots": dict(state["slots"]),
+                        "output_variables": dict(state.get("output_variables") or {}),
+                    }
+                    result = await self.graph.ainvoke(current_input)
                     state["slots"] = result["slots"]
                     state["output_variables"] = result.get("output_variables", {})
                     state["flags"] = result["flags"]
                     state["stage"] = result["stage"]
                 except Exception as exc:
                     log.warning("background extraction error: %s", exc)
+                finally:
+                    if self._extraction_tasks.get(conversation_id) is asyncio.current_task():
+                        self._extraction_tasks.pop(conversation_id, None)
 
-            asyncio.create_task(_run_bg_extraction())
+            self._extraction_tasks[conversation_id] = asyncio.create_task(_run_bg_extraction())
         else:
             result = await self.graph.ainvoke(graph_input)
             state["slots"] = result["slots"]

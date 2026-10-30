@@ -193,7 +193,7 @@ async def list_payments(
 ):
     """List payments for the current org."""
     if not user.org_id:
-        raise HTTPException(status_code=400, detail="No organization")
+        return []
     db = get_db()
     svc = PaymentService(db)
     payments = await svc.payment_repo.list_for_org(user.org_id, limit=limit, skip=skip)
@@ -208,7 +208,7 @@ async def list_invoices(
 ):
     """List invoices for the current org."""
     if not user.org_id:
-        raise HTTPException(status_code=400, detail="No organization")
+        return []
     db = get_db()
     svc = PaymentService(db)
     invoices = await svc.invoice_repo.list_for_org(user.org_id, limit=limit, skip=skip)
@@ -257,8 +257,8 @@ def _payment_response(p) -> dict:
         "status": p.status,
         "provider": p.provider,
         "provider_payment_id": p.provider_payment_id,
-        "paid_at": p.paid_at.isoformat(),
-        "created_at": p.created_at.isoformat(),
+        "paid_at": p.paid_at.isoformat() if hasattr(p.paid_at, "isoformat") else str(p.paid_at) if p.paid_at else None,
+        "created_at": p.created_at.isoformat() if hasattr(p.created_at, "isoformat") else str(p.created_at) if p.created_at else None,
     }
 
 
@@ -274,6 +274,6 @@ def _invoice_response(i) -> dict:
         "currency": i.currency,
         "status": i.status,
         "org_name": i.org_name,
-        "issued_at": i.issued_at.isoformat(),
-        "created_at": i.created_at.isoformat(),
+        "issued_at": i.issued_at.isoformat() if hasattr(i.issued_at, "isoformat") else str(i.issued_at) if i.issued_at else None,
+        "created_at": i.created_at.isoformat() if hasattr(i.created_at, "isoformat") else str(i.created_at) if i.created_at else None,
     }

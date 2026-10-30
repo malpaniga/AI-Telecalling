@@ -1,16 +1,16 @@
-# Graph Report - saas  (2026-10-29)
+# Graph Report - saas  (2026-10-30)
 
 ## Corpus Check
-- 362 files · ~281,620 words
+- 362 files · ~281,945 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5641 nodes · 12349 edges · 282 communities (242 shown, 40 thin omitted)
+- 5641 nodes · 12349 edges · 279 communities (240 shown, 39 thin omitted)
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 839 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `81623ad9`
+- Built from commit: `80d900eb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -158,7 +158,6 @@
 - test_test_agent.py
 - AIModelCatalogueRepo
 - _make_mock_redis
-- ProviderConfigPanel.tsx
 - MockPaymentProvider
 - test_m4_payment.py
 - AI Telecalling SaaS
@@ -168,7 +167,6 @@
 - Agent Studio: Export & Import AI Agents & Separate Knowledge Bases Across Organizations
 - UsageEventRepository
 - AuditLogRepository
-- agents/[id]/page.tsx
 - run.py
 - Campaign
 - EntitlementCheck
@@ -271,7 +269,6 @@
 - STTProvider
 - DocumentModel
 - test_m23_customer_billing.py
-- LeadsImportPage
 - logging_setup.py
 - ImportAgentModal
 - ImportKbModal
@@ -303,7 +300,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (282 total, 40 thin omitted)
+## Communities (279 total, 39 thin omitted)
 
 ### Community 0 - "AppointmentRepository"
 Cohesion: 0.15
@@ -326,8 +323,8 @@ Cohesion: 0.29
 Nodes (4): Lead, field_validator, A single lead record owned by an organization., TestLeadModel
 
 ### Community 5 - "button.tsx"
-Cohesion: 0.11
-Nodes (34): AdminAnalyticsPage(), DailyEntry, MRRData, MRRMovement, PERIOD_OPTIONS, RevenueData, UsageSummary, LANGUAGE_OPTIONS (+26 more)
+Cohesion: 0.10
+Nodes (35): AdminAnalyticsPage(), DailyEntry, MRRData, MRRMovement, PERIOD_OPTIONS, RevenueData, UsageSummary, LANGUAGE_OPTIONS (+27 more)
 
 ### Community 6 - "repository.py"
 Cohesion: 0.07
@@ -378,8 +375,8 @@ Cohesion: 0.07
 Nodes (36): create_subscription_order(), CreateSubscriptionOrderRequest, get_invoice(), _invoice_response(), list_invoices(), list_orders(), list_payments(), _order_response() (+28 more)
 
 ### Community 18 - "pricing_repo.py"
-Cohesion: 0.15
-Nodes (12): PricingSettings, ProviderRateCard, MongoDB document models for provider pricing, FX rates, and rate cards. Tracks…, Stores the effective cost and billable rate for a provider/model., Global platform pricing and loss-protection settings., _deserialize(), Clean up a MongoDB document for use with Pydantic models., PricingSettingsRepository (+4 more)
+Cohesion: 0.23
+Nodes (9): PricingSettings, ProviderRateCard, MongoDB document models for provider pricing, FX rates, and rate cards. Tracks…, Stores the effective cost and billable rate for a provider/model., Global platform pricing and loss-protection settings., PricingSettingsRepository, Repositories for ProviderRateCard and PricingSettings., Daily Provider Pricing and FX Synchronization Service. Ensures real-time… (+1 more)
 
 ### Community 19 - "ProviderConfigurationRepo"
 Cohesion: 0.24
@@ -414,8 +411,8 @@ Cohesion: 0.09
 Nodes (19): _get_mock_db(), _make_redis(), SKIP, M33 tests — Final End-to-End Acceptance. Tests the complete SaaS workflow as…, Complete E2E: signup → org → plan → credits → voice profile → agent → phone →…, Change voice profile provider route — campaign unaffected., Active campaign pins a version_id — changing routes creates new version., Org A data completely invisible to Org B end-to-end. (+11 more)
 
 ### Community 27 - "auth-context.tsx"
-Cohesion: 0.07
-Nodes (40): AdminSettingsPage(), AdminGuard(), LoginPage(), handleSubmit(), SignupPage(), handleSubmit(), AuthGuard(), SettingsPage() (+32 more)
+Cohesion: 0.06
+Nodes (48): AdminModelsPage(), AdminSettingsPage(), AdminGuard(), LoginPage(), handleSubmit(), SignupPage(), handleSubmit(), AuthGuard() (+40 more)
 
 ### Community 28 - "call_session.py"
 Cohesion: 0.08
@@ -426,8 +423,8 @@ Cohesion: 0.11
 Nodes (19): ProviderRateCardRepository, ProviderRateCard, PricingSyncService, Any, AsyncIOMotorDatabase, ProviderRateCard, Orchestrates daily rate card updates, live FX rates, and loss protection., Fetch current USD to INR exchange rate from live open FX APIs. (+11 more)
 
 ### Community 30 - "models/page.tsx"
-Cohesion: 0.17
-Nodes (18): Capability, capabilityVariant(), formatFreeTierInfo(), freeTierDetails(), hostingIcon(), hostingLabel(), isStale(), ModelCard() (+10 more)
+Cohesion: 0.06
+Nodes (42): Capability, capabilityVariant(), formatFreeTierInfo(), freeTierDetails(), hostingIcon(), hostingLabel(), isStale(), ModelCard() (+34 more)
 
 ### Community 31 - "billing_portal.py"
 Cohesion: 0.09
@@ -643,7 +640,7 @@ Nodes (7): Subscription, Organization subscriptions — one active subscription 
 
 ### Community 86 - "new_id"
 Cohesion: 0.04
-Nodes (57): Fernet-based credential encryption for stored provider API keys. The encryption…, Appointment model — generic scheduling. Appointments are generic. Solar uses…, new_id(), Base Pydantic models for MongoDB documents. MongoDB uses _id (ObjectId) as the…, Generate a new UUID4 string., Call, Call model — an outbound AI call record. Each call is scoped to an…, An outbound AI call record. (+49 more)
+Nodes (60): Fernet-based credential encryption for stored provider API keys. The encryption…, Appointment model — generic scheduling. Appointments are generic. Solar uses…, new_id(), Base Pydantic models for MongoDB documents. MongoDB uses _id (ObjectId) as the…, Generate a new UUID4 string., Call, Call model — an outbound AI call record. Each call is scoped to an…, An outbound AI call record. (+52 more)
 
 ### Community 87 - "credits.py"
 Cohesion: 0.13
@@ -831,7 +828,7 @@ Nodes (14): 0. Prerequisites (already on this machine), 1. Why this stack (read 
 
 ### Community 137 - "api.ts"
 Cohesion: 0.05
-Nodes (49): ImportKbModalProps, CapabilityType, formatLanguageLabel(), LANGUAGE_LABELS, ModelSetupWizard(), StepConfig, STEPS, VOICE_PRESETS (+41 more)
+Nodes (44): ChatMessage, StudioTab, TestTab, ImportAgentModalProps, ImportKbModalProps, AdminDashboard, Agent, AgentExportPackage (+36 more)
 
 ### Community 139 - "TestBillingHTTP"
 Cohesion: 0.19
@@ -848,10 +845,6 @@ Nodes (12): AIModelCatalogue, One entry per (provider_name, model_id) in the cat
 ### Community 142 - "_make_mock_redis"
 Cohesion: 0.36
 Nodes (3): _get_mock_db(), _make_mock_redis(), In-memory dict-based Redis mock for credit reservation keys.
-
-### Community 143 - "ProviderConfigPanel.tsx"
-Cohesion: 0.20
-Nodes (8): configStatus(), formatDate(), formatLanguageLabel(), LANGUAGE_LABELS, ProviderConfigPanel(), ProviderConfigPanelProps, truncate(), ProviderCredentialMeta
 
 ### Community 144 - "MockPaymentProvider"
 Cohesion: 0.09
@@ -889,10 +882,6 @@ Nodes (15): datetime, Admin aggregation including provider costs and margins., A
 Cohesion: 0.07
 Nodes (38): AuditLog, create_organization(), get_organization(), list_organizations(), OrgCreateRequest, OrgUpdateRequest, BaseModel, get (+30 more)
 
-### Community 153 - "agents/[id]/page.tsx"
-Cohesion: 0.21
-Nodes (11): ChatMessage, StudioTab, TestTab, ImportAgentModalProps, Agent, AgentExportPackage, AgentVersion, VoiceProfile (+3 more)
-
 ### Community 154 - "run.py"
 Cohesion: 0.22
 Nodes (13): is_port_in_use(), kill_process_tree(), main(), preflight_checks(), Launch backend and frontend in separate console windows (Windows)., Run both services unified in the current console with log prefixing., Check if a TCP port is in use., Stream stdout/stderr line by line with a colored prefix. (+5 more)
@@ -926,8 +915,8 @@ Cohesion: 0.19
 Nodes (12): close_db(), _ensure_indexes(), init_db(), ping_db(), AsyncIOMotorDatabase, Connect to MongoDB and create all indexes., Health check — returns True if MongoDB is reachable., Create all collection indexes. Idempotent. (+4 more)
 
 ### Community 162 - "providers/page.tsx"
-Cohesion: 0.14
-Nodes (15): AdminModelsPage(), AdminProvidersPage(), HealthSummary, LatencyStats, ProviderHealth, ProviderMetric, statusIcon(), VoiceProfileHealth (+7 more)
+Cohesion: 0.29
+Nodes (7): AdminProvidersPage(), HealthSummary, LatencyStats, ProviderHealth, ProviderMetric, statusIcon(), VoiceProfileHealth
 
 ### Community 163 - "TestLargeImport"
 Cohesion: 0.29
@@ -1188,7 +1177,7 @@ Nodes (7): ImportKbModal(), handleClose(), handleDrop(), handleFileChange(), han
 ## Knowledge Gaps
 - **533 isolated node(s):** `MRRData`, `MRRMovement`, `RevenueData`, `DailyEntry`, `PERIOD_OPTIONS` (+528 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **40 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **39 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

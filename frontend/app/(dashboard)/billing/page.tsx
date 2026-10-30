@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Receipt, CreditCard, FileText, ArrowUpRight } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -19,25 +19,60 @@ export default function BillingPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingPlans, setLoadingPlans] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
   const [changingPlan, setChangingPlan] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      api.subscriptions.my().catch(() => null),
-      api.subscriptions.plans(),
-      api.billing.invoices({ limit: 20 }),
-      api.billing.payments({ limit: 20 }),
-    ])
-      .then(([sub, p, inv, pay]) => {
-        setSubscription(sub);
-        setPlans(p);
-        setInvoices(inv);
-        setPayments(pay);
-      })
-      .catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Failed to load billing"))
-      .finally(() => setLoading(false));
+  const loadPlans = useCallback(async () => {
+    setLoadingPlans(true);
+    try {
+      const p = await api.subscriptions.plans();
+      setPlans(Array.isArray(p) ? p : []);
+    } catch (e: unknown) {
+      console.error("Failed to load plans:", e);
+      toast.error(e instanceof Error ? e.message : "Failed to load subscription plans");
+    } finally {
+      setLoadingPlans(false);
+    }
   }, []);
+
+  const loadBillingData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [subRes, plansRes, invRes, payRes] = await Promise.allSettled([
+        api.subscriptions.my(),
+        api.subscriptions.plans(),
+        api.billing.invoices({ limit: 20 }),
+        api.billing.payments({ limit: 20 }),
+      ]);
+
+      if (subRes.status === "fulfilled" && subRes.value) {
+        setSubscription(subRes.value);
+      }
+      if (plansRes.status === "fulfilled" && Array.isArray(plansRes.value)) {
+        setPlans(plansRes.value);
+      }
+      if (invRes.status === "fulfilled" && Array.isArray(invRes.value)) {
+        setInvoices(invRes.value);
+      }
+      if (payRes.status === "fulfilled" && Array.isArray(payRes.value)) {
+        setPayments(payRes.value);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadBillingData();
+  }, [loadBillingData]);
+
+  // When modal is opened, if plans are empty, ensure they are loaded
+  useEffect(() => {
+    if (showPlans && plans.length === 0 && !loadingPlans) {
+      loadPlans();
+    }
+  }, [showPlans, plans.length, loadingPlans, loadPlans]);
 
   async function handleChangePlan(planId: string) {
     setChangingPlan(planId);
@@ -159,44 +194,58 @@ export default function BillingPage() {
 
       {/* Plan selection modal */}
       <Modal isOpen={showPlans} onClose={() => setShowPlans(false)} title="Choose a Plan" size="lg">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`border rounded-lg p-4 transition-colors ${
-                subscription?.plan_slug === plan.slug
-                  ? "border-accent bg-accent-subtle"
-                  : "border-border hover:border-accent"
-              }`}
-            >
-              <p className="font-semibold text-text-primary">{plan.name}</p>
-              <p className="text-2xl font-bold text-accent mt-1">
-                {formatINR(plan.price_monthly_paise)}
-                <span className="text-sm font-normal text-text-muted">/mo</span>
-              </p>
-              {plan.description && (
-                <p className="text-xs text-text-secondary mt-1">{plan.description}</p>
-              )}
-              <ul className="mt-3 space-y-1 text-xs text-text-secondary">
-                <li>Up to {plan.max_agents} agents</li>
-                <li>Up to {plan.max_campaigns} campaigns</li>
-                <li>{plan.max_concurrent_calls} concurrent calls</li>
-                {plan.knowledge_base_enabled && <li>Knowledge base</li>}
-                {plan.api_access && <li>API access</li>}
-              </ul>
-              <Button
-                size="sm"
-                className="w-full mt-4"
-                variant={subscription?.plan_slug === plan.slug ? "secondary" : "primary"}
-                loading={changingPlan === plan.id}
-                disabled={subscription?.plan_slug === plan.slug}
-                onClick={() => handleChangePlan(plan.id)}
+        {loadingPlans ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Spinner size="lg" />
+            <p className="text-sm text-text-muted">Loading subscription plans...</p>
+          </div>
+        ) : plans.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+            <p className="text-sm text-text-secondary">No subscription plans could be loaded.</p>
+            <Button size="sm" variant="secondary" onClick={loadPlans}>
+              Retry Loading Plans
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {plans.map((plan) => (
+              <div
+                key={plan.id}
+                className={`border rounded-lg p-4 transition-colors ${
+                  subscription?.plan_slug === plan.slug
+                    ? "border-accent bg-accent-subtle"
+                    : "border-border hover:border-accent"
+                }`}
               >
-                {subscription?.plan_slug === plan.slug ? "Current Plan" : "Select Plan"}
-              </Button>
-            </div>
-          ))}
-        </div>
+                <p className="font-semibold text-text-primary">{plan.name}</p>
+                <p className="text-2xl font-bold text-accent mt-1">
+                  {formatINR(plan.price_monthly_paise)}
+                  <span className="text-sm font-normal text-text-muted">/mo</span>
+                </p>
+                {plan.description && (
+                  <p className="text-xs text-text-secondary mt-1">{plan.description}</p>
+                )}
+                <ul className="mt-3 space-y-1 text-xs text-text-secondary">
+                  <li>Up to {plan.max_agents} agents</li>
+                  <li>Up to {plan.max_campaigns} campaigns</li>
+                  <li>{plan.max_concurrent_calls} concurrent calls</li>
+                  {plan.knowledge_base_enabled && <li>Knowledge base</li>}
+                  {plan.api_access && <li>API access</li>}
+                </ul>
+                <Button
+                  size="sm"
+                  className="w-full mt-4"
+                  variant={subscription?.plan_slug === plan.slug ? "secondary" : "primary"}
+                  loading={changingPlan === plan.id}
+                  disabled={subscription?.plan_slug === plan.slug}
+                  onClick={() => handleChangePlan(plan.id)}
+                >
+                  {subscription?.plan_slug === plan.slug ? "Current Plan" : "Select Plan"}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </Modal>
     </AppShell>
   );

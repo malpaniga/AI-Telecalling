@@ -130,6 +130,7 @@ export function TestAgentModal() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const nextPlayTimeRef = useRef<number>(0);
+  const playbackEpochRef = useRef(0);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const voiceScrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -228,6 +229,7 @@ export function TestAgentModal() {
   };
 
   const playPcmChunk = async (raw: ArrayBuffer | Blob) => {
+    const epoch = playbackEpochRef.current;
     let data: ArrayBuffer;
     if (raw instanceof ArrayBuffer) {
       data = raw;
@@ -244,6 +246,7 @@ export function TestAgentModal() {
         await ctx.resume();
       } catch {}
     }
+    if (epoch !== playbackEpochRef.current || ctx !== audioCtxRef.current) return;
     if (data.byteLength < 4) return;
 
     try {
@@ -296,7 +299,9 @@ export function TestAgentModal() {
   };
 
   const stopAudioPlayback = () => {
+    playbackEpochRef.current += 1;
     audioSourcesRef.current.forEach((s) => {
+      s.onended = null;
       try {
         s.stop();
       } catch {}
@@ -382,7 +387,7 @@ export function TestAgentModal() {
       const source = audioCtx.createMediaStreamSource(stream);
       sourceRef.current = source;
 
-      const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+      const processor = audioCtx.createScriptProcessor(512, 1, 1);
       processorRef.current = processor;
 
       // Connect processor through a zero-gain sink so mic does not echo through speakers
@@ -415,6 +420,7 @@ export function TestAgentModal() {
       wsRef.current = ws;
 
       ws.onopen = () => {
+        if (wsRef.current !== ws) return;
         // Send rich prompts & variables over the opened connection to avoid HTTP header length limits
         ws.send(
           JSON.stringify({
@@ -438,6 +444,7 @@ export function TestAgentModal() {
       };
 
       ws.onclose = (ev) => {
+        if (wsRef.current !== ws) return;
         if (ev.code === 4002) {
           endVoiceCall("Minimum 5 credits required to run a test call. Free trial sessions exhausted.");
           toast.error("Minimum 5 credits required to run a test call. Free trial sessions exhausted.");
@@ -452,10 +459,12 @@ export function TestAgentModal() {
       };
 
       ws.onerror = () => {
+        if (wsRef.current !== ws) return;
         setCallStatus("Connection failed. Check backend or network.");
       };
 
       ws.onmessage = (ev) => {
+        if (wsRef.current !== ws) return;
         if (typeof ev.data !== "string") {
           playPcmChunk(ev.data);
           return;
@@ -562,21 +571,8 @@ export function TestAgentModal() {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
         const inputData = e.inputBuffer.getChannelData(0);
 
-        // Calculate audio frame RMS energy
-        let sumSq = 0;
-        for (let i = 0; i < inputData.length; i++) {
-          sumSq += inputData[i] * inputData[i];
-        }
-        const rms = Math.sqrt(sumSq / inputData.length);
-
-        // While agent audio is actively playing through speakers,
-        // filter out low-level acoustic speaker bleed (rms < 0.015 / -36 dBFS).
-        // Direct human speech into the mic (barge-in) readily exceeds this and streams to backend VAD.
-        const isAgentPlaying = audioCtx.currentTime < nextPlayTimeRef.current;
-        if (isAgentPlaying && rms < 0.015) {
-          return;
-        }
-
+        // Send continuous audio, including silence, so server VAD can end turns
+        // and detect quiet interruptions. Browser AEC handles speaker echo.
         const pcm16 = downsampleTo16k(inputData, audioCtx.sampleRate);
         ws.send(pcm16.buffer);
       };
@@ -636,9 +632,10 @@ export function TestAgentModal() {
       } catch {}
       audioCtxRef.current = null;
     }
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.close();
+    if (wsRef.current) {
+      const ws = wsRef.current;
       wsRef.current = null;
+      ws.close();
     }
   };
 
@@ -658,12 +655,13 @@ export function TestAgentModal() {
   const endVoiceCallRef = useRef(endVoiceCall);
   endVoiceCallRef.current = endVoiceCall;
 
-  // Clean up on unmount or modal close
+  // Clean up even when the mounted modal is hidden by its parent.
   useEffect(() => {
+    if (!isOpen) endVoiceCallRef.current();
     return () => {
       endVoiceCallRef.current();
     };
-  }, []);
+  }, [isOpen]);
 
   const formatTimer = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

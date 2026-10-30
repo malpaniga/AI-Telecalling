@@ -159,6 +159,7 @@ class VADEndpointer:
         self._clf.reset()
 
     def reset(self) -> None:
+        self._buf.clear()
         self._reset_state()
 
     def _is_speech(self, frame: np.ndarray) -> bool:

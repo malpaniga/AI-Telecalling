@@ -1,5 +1,5 @@
 {
-  "last_turn_at": "2026-10-12T08:32:32.661Z",
-  "turn_count": 20,
-  "last_agent_output": "Added and committed as `0e8db58`.\n\n- Sarvam: `bulbul:v2`, `bulbul:v3`, and the current official V4 m"
+  "last_turn_at": "2026-10-30T14:46:47.849Z",
+  "turn_count": 24,
+  "last_agent_output": "Implemented and verified the voice/Studio fixes:\n\n- Reduced microphone batching from **256 ms to 32 "
 }

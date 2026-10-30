@@ -28,7 +28,16 @@ def test_sarvam_stt_provider_transcribe():
             _client=mock_client,
         )
 
-        transcript = await provider.transcribe(b"fake-audio-bytes", language="mr-IN")
+        # A real utterance must exceed the provider's short/no-audio guard.
+        import io
+        import wave
+        buffer = io.BytesIO()
+        with wave.open(buffer, "wb") as wav:
+            wav.setnchannels(1)
+            wav.setsampwidth(2)
+            wav.setframerate(16000)
+            wav.writeframes(b"\x01\x00" * 1600)
+        transcript = await provider.transcribe(buffer.getvalue(), language="mr-IN")
         assert transcript == "नमस्कार, मी बोलतोय"
         mock_client.post.assert_called_once()
 

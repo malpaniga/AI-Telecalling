@@ -16,6 +16,7 @@ import inspect
 import logging
 import random
 import time
+from collections.abc import Callable
 from statistics import mean
 from typing import Protocol
 
@@ -64,9 +65,8 @@ _SERVER_ERROR_FALLBACK = {
 }
 
 _HALLUCINATION_PHRASES = {
-    "thank you", "thanks", "thank you very much", "thank you so much",
     "thanks for watching", "thank you for watching", "please subscribe",
-    "you", "the", "bye", ".", "..", "...", "uh", "um", "hmm",
+    "you", "the", ".", "..", "...", "uh", "um", "hmm",
 }
 
 # Conversational fillers played concurrently with LLM to mask response latency
@@ -80,9 +80,7 @@ _FILLERS: dict[str, list[str]] = {
 def _looks_like_noise(text: str) -> bool:
     """True if the transcript is almost certainly a hallucination or noise blip."""
     t = text.strip().lower().rstrip(".!?,")
-    if len(t) <= 1:
-        return True
-    if not any(c.isalpha() for c in t):  # punctuation / numbers-only garble
+    if not any(c.isalnum() for c in t):
         return True
     return t in _HALLUCINATION_PHRASES
 
@@ -141,16 +139,23 @@ class CallSession:
         self.call_id = call_id
         self.lead_id = None
 
-        self.barge_in_sensitivity = barge_in_sensitivity or 70
+        self.barge_in_sensitivity = 70 if barge_in_sensitivity is None else barge_in_sensitivity
         # Dynamic VAD tuning to reject fan noise, breathing, and acoustic bleed:
         speech_prob = max(0.45, min(0.75, 0.80 - (self.barge_in_sensitivity / 100.0) * 0.30))
         energy_floor = max(-52.0, min(-36.0, -42.0 - (self.barge_in_sensitivity / 100.0) * 8.0))
+        # WebRTC returns binary probabilities, so probability thresholds alone
+        # cannot make its interruption onset more or less responsive.
+        confirm_ms = max(40, round(settings.vad_speech_confirm_ms * (
+            2.0 - 1.5 * self.barge_in_sensitivity / 100.0
+        )))
         self.endpointer = VADEndpointer(
             speech_prob=speech_prob,
             energy_floor_dbfs=energy_floor,
+            confirm_ms=confirm_ms,
         )
 
         self.responder: asyncio.Task | None = None
+        self._filler_task: asyncio.Task | None = None
         self._last_user_text = ""
         self._in_greeting = False
         self._is_speaking = False
@@ -163,7 +168,7 @@ class CallSession:
         )
 
     # ---- helpers ----
-    async def _say(self, text: str) -> float:
+    async def _say(self, text: str, on_audio: Callable[[], None] | None = None) -> float:
         self._is_speaking = True
         await self.t.notify({"type": "agent", "text": text})
         if self.call_id:
@@ -183,11 +188,15 @@ class CallSession:
                         duration = len(chunk) / (2.0 * max(sr, 8000))
                         total_duration += duration
                         await self.t.play(chunk, sr)
+                        if on_audio is not None:
+                            on_audio()
             else:
                 pcm, sr = await self.tts.synthesize(text, self.language, **synth_kwargs)
                 if pcm:
                     total_duration = len(pcm) / (2.0 * max(sr, 8000))
                     await self.t.play(pcm, sr)
+                    if on_audio is not None:
+                        on_audio()
         except Exception as exc:
             log.warning("TTS synthesis failed for text %r: %s", text[:30], exc)
             await self.t.notify({
@@ -256,6 +265,13 @@ class CallSession:
             except Exception:
                 pass
 
+        # Transports await start() before reading microphone frames. Own the
+        # greeting as a responder so synthesis cannot block input or barge-in.
+        self._in_greeting = True
+        self.responder = asyncio.create_task(self._run_greeting())
+        await self.t.notify({"type": "ready"})
+
+    async def _run_greeting(self) -> None:
         greeting = await self._greeting_text()
         self.state["messages"].append({"role": "assistant", "content": greeting})
         log.info("call language=%s (%s)", self.language, self.language_name)
@@ -265,7 +281,6 @@ class CallSession:
         elapsed = time.monotonic() - greeting_start
         remaining = max(0.0, greeting_duration - elapsed)
         self._greeting_end_time = time.monotonic() + remaining + 0.3
-        self.endpointer.reset()
 
         await self._persist_turn("agent", greeting, GREETING_STAGE)
         await self._save_session()
@@ -280,8 +295,16 @@ class CallSession:
     async def handle_interrupt(self) -> None:
         """Handle explicit caller interrupt event (barge-in)."""
         self._in_greeting = False
-        await self._cancel_responder()
-        await self.t.clear()
+        # Stop producers before clearing queued audio, without waiting for DB
+        # persistence in responder cancellation cleanup before flushing playback.
+        if self.responder is not None:
+            self.responder.cancel()
+        if self._filler_task is not None:
+            self._filler_task.cancel()
+        try:
+            await self.t.clear()
+        finally:
+            await self._cancel_responder()
 
     async def feed_pcm16(self, pcm: bytes) -> None:
         """Feed a chunk of caller audio; drives VAD, barge-in, and responses."""
@@ -289,9 +312,7 @@ class CallSession:
             return
         for event, payload in self.endpointer.process(pcm):
             if event == SPEECH_START:
-                self._in_greeting = False
-                await self._cancel_responder()
-                await self.t.clear()
+                await self.handle_interrupt()
             elif event == UTTERANCE:
                 log.info("VAD detected UTTERANCE: %d bytes (%.2f s)", len(payload) if payload else 0, (len(payload) / 32000.0) if payload else 0)
                 if not self._call_ending and payload:
@@ -334,6 +355,12 @@ class CallSession:
                     pass
 
             first_audio_ms: int | None = None
+
+            def record_first_audio() -> None:
+                nonlocal first_audio_ms
+                if first_audio_ms is None:
+                    first_audio_ms = int((time.perf_counter() - t0) * 1000)
+
             should_hangup = False
 
             # Use cached signature check (computed once at __init__)
@@ -344,39 +371,33 @@ class CallSession:
             else:
                 turn_generator = self.engine.run_turn(self.state, user_text, self.language_name)
 
-            # Fire filler concurrently with the first LLM tokens — saves ~300 ms per turn.
+            # Fill long LLM waits, but never delay an answer for filler synthesis.
             # Only for utterances >= 4 words (complex enough to warrant thinking time).
             filler_task: asyncio.Task | None = None
             filler_list = _FILLERS.get(self.language, [])
             if filler_list and len(user_text.split()) >= 4 and not self._in_greeting:
-                filler_task = asyncio.create_task(self._say(random.choice(filler_list)))
+                filler_task = asyncio.create_task(self._say(random.choice(filler_list), record_first_audio))
+                self._filler_task = filler_task
 
             async for sentence in turn_generator:
-                # Drain filler before overlapping real audio
-                if filler_task is not None and not filler_task.done():
-                    await filler_task
+                if filler_task is not None:
+                    await self._cancel_filler()
                     filler_task = None
-                    if first_audio_ms is None:
-                        first_audio_ms = int((time.perf_counter() - t0) * 1000)
                 clean_sentence = sentence.replace("[HANGUP]", "").replace("[hangup]", "").strip()
                 if "[HANGUP]" in sentence.upper():
                     should_hangup = True
                 if clean_sentence:
                     reply_parts.append(clean_sentence)
-                    await self._say(clean_sentence)
-                    if first_audio_ms is None:
-                        first_audio_ms = int((time.perf_counter() - t0) * 1000)
+                    await self._say(clean_sentence, record_first_audio)
 
-            # Drain any remaining filler if LLM reply was very short
-            if filler_task is not None and not filler_task.done():
-                await filler_task
+            await self._cancel_filler()
 
             if not reply_parts:
                 # LLM returned nothing — never leave the caller in silence.
                 fallback = _EMPTY_FALLBACK.get(self.language, _EMPTY_FALLBACK["en-IN"])
                 log.warning("empty LLM reply; speaking fallback")
                 reply_parts.append(fallback)
-                await self._say(fallback)
+                await self._say(fallback, record_first_audio)
 
             total_ms = int((time.perf_counter() - t0) * 1000)
             self.latencies.append(total_ms)
@@ -394,7 +415,7 @@ class CallSession:
                 "variables": self.state.get("output_variables", {}),
                 "slots": self.state["slots"],
             })
-            await self.t.notify({"type": "turn_end"})
+            await self.t.notify({"type": "turn_end", "first_audio_ms": first_audio_ms, "total_ms": total_ms})
             if self.call_id:
                 try:
                     from backend.telephony.broadcaster import call_broadcaster
@@ -453,16 +474,33 @@ class CallSession:
             log.info("responder cancelled (barge-in)")
             raise
         except Exception as exc:  # noqa: BLE001
+            await self._cancel_filler()
             log.exception("turn failed, recovering: %s", exc)
             fallback = _SERVER_ERROR_FALLBACK.get(self.language, _SERVER_ERROR_FALLBACK["en-IN"])
             await self._say(fallback)
             self.state["messages"].append({"role": "assistant", "content": fallback})
             await self._persist_turn("agent", fallback, self.state["stage"])
             await self.t.notify({"type": "turn_end"})
+        finally:
+            await self._cancel_filler()
+
+    async def _cancel_filler(self) -> None:
+        task = self._filler_task
+        self._filler_task = None
+        if task is not None:
+            if not task.done():
+                task.cancel()
+            try:
+                await task
+            except (asyncio.CancelledError, Exception):
+                pass
 
     async def _cancel_responder(self) -> None:
-        if self.responder is not None and not self.responder.done():
-            self.responder.cancel()
+        if self._filler_task is not None:
+            self._filler_task.cancel()
+        if self.responder is not None:
+            if not self.responder.done() and not self.responder.cancelling():
+                self.responder.cancel()
             try:
                 await self.responder
             except (asyncio.CancelledError, Exception):  # noqa: BLE001

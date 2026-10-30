@@ -155,6 +155,7 @@ export default function SarvamAgentStudioPage() {
   const hangupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const micMutedRef = useRef<boolean>(false);
   const initSentRef = useRef<boolean>(false);
+  const playbackEpochRef = useRef(0);
 
   // Credit & Trial status state
   const [trialStatus, setTrialStatus] = useState<{
@@ -309,18 +310,14 @@ export default function SarvamAgentStudioPage() {
             "chosen_next_step",
           ]
         );
-        if (config.knowledge_strictness) {
-          setKnowledgeStrictness(config.knowledge_strictness === "strict" ? "strict" : "flexible");
-        }
-        if (config.speech_speed) setSpeechSpeed(Number(config.speech_speed));
-        if (config.barge_in_sensitivity) setSensitivity(Number(config.barge_in_sensitivity));
-        if (config.tools) {
-          const tools = config.tools as Record<string, unknown>;
-          if (tools.whatsapp !== undefined) setToolWhatsApp(!!tools.whatsapp);
-          if (tools.calendar !== undefined) setToolCalendar(!!tools.calendar);
-          if (tools.webhook !== undefined) setToolWebhook(!!tools.webhook);
-          if (tools.webhook_url) setWebhookUrl(String(tools.webhook_url));
-        }
+        setKnowledgeStrictness(config.knowledge_strictness === "strict" ? "strict" : "flexible");
+        setSpeechSpeed(Number(config.speech_speed ?? 1));
+        setSensitivity(Number(config.barge_in_sensitivity ?? 70));
+        const tools = (config.tools ?? {}) as Record<string, unknown>;
+        setToolWhatsApp(Boolean(tools.whatsapp ?? true));
+        setToolCalendar(Boolean(tools.calendar ?? true));
+        setToolWebhook(Boolean(tools.webhook ?? false));
+        setWebhookUrl(String(tools.webhook_url ?? ""));
       }
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed to load agent");
@@ -337,6 +334,7 @@ export default function SarvamAgentStudioPage() {
   const buildConfigPayload = useCallback(
     (overrides?: Partial<{ greeting: string; primary_language: string; system_prompt: string }>) => {
       return {
+        ...activeVersion?.configuration,
         agent_name: agentName,
         greeting: overrides?.greeting ?? greeting,
         system_prompt: overrides?.system_prompt ?? instructions,
@@ -348,6 +346,7 @@ export default function SarvamAgentStudioPage() {
         voice_id: voiceId || undefined,
         knowledge_strictness: knowledgeStrictness,
         tools: {
+          ...((activeVersion?.configuration?.tools ?? {}) as Record<string, unknown>),
           whatsapp: toolWhatsApp,
           calendar: toolCalendar,
           webhook: toolWebhook,
@@ -355,7 +354,7 @@ export default function SarvamAgentStudioPage() {
         },
       };
     },
-    [agentName, greeting, instructions, primaryLanguage, inputVariables, outputVariables, speechSpeed, sensitivity, voiceId, knowledgeStrictness, toolWhatsApp, toolCalendar, toolWebhook, webhookUrl]
+    [activeVersion, agentName, greeting, instructions, primaryLanguage, inputVariables, outputVariables, speechSpeed, sensitivity, voiceId, knowledgeStrictness, toolWhatsApp, toolCalendar, toolWebhook, webhookUrl]
   );
 
   // Knowledge Base Association Toggle
@@ -598,7 +597,9 @@ export default function SarvamAgentStudioPage() {
   // Embedded Test Agent: Web Audio & WebSocket Streamer
   // ---------------------------------------------------------------------------
   function stopPlayback() {
+    playbackEpochRef.current += 1;
     audioSourcesRef.current.forEach((s) => {
+      s.onended = null;
       try {
         s.stop();
       } catch {}
@@ -624,6 +625,7 @@ export default function SarvamAgentStudioPage() {
   }
 
   async function playPcmChunk(raw: ArrayBuffer | Blob) {
+    const epoch = playbackEpochRef.current;
     let data: ArrayBuffer;
     if (raw instanceof ArrayBuffer) {
       data = raw;
@@ -640,6 +642,7 @@ export default function SarvamAgentStudioPage() {
         await ctx.resume();
       } catch {}
     }
+    if (epoch !== playbackEpochRef.current || ctx !== audioCtxRef.current) return;
     if (data.byteLength < 4) return;
 
     try {
@@ -775,6 +778,7 @@ export default function SarvamAgentStudioPage() {
       wsRef.current = ws;
 
       ws.onopen = () => {
+        if (wsRef.current !== ws) return;
         // Send full rich prompt, variables & parameters over the accepted WebSocket stream
         ws.send(
           JSON.stringify({
@@ -801,6 +805,7 @@ export default function SarvamAgentStudioPage() {
       };
 
       ws.onmessage = async (event) => {
+        if (wsRef.current !== ws) return;
         // Binary PCM chunk received from backend TTS
         if (event.data instanceof ArrayBuffer || (typeof Blob !== "undefined" && event.data instanceof Blob)) {
           await playPcmChunk(event.data);
@@ -872,6 +877,7 @@ export default function SarvamAgentStudioPage() {
       };
 
       ws.onclose = (ev) => {
+        if (wsRef.current !== ws) return;
         // If an auto-hangup is already scheduled to play out remaining audio, let it finish cleanly
         if (!hangupTimeoutRef.current) {
           if (ev.code === 1011) {
@@ -885,6 +891,7 @@ export default function SarvamAgentStudioPage() {
       };
 
       ws.onerror = () => {
+        if (wsRef.current !== ws) return;
         toast.error("WebSocket connection failed. Verify backend is running.");
         handleEndCall();
       };
@@ -892,7 +899,7 @@ export default function SarvamAgentStudioPage() {
       // 4. Setup Audio Worklet / ScriptProcessor for Mic stream
       const source = audioCtx.createMediaStreamSource(stream);
       sourceNodeRef.current = source;
-      const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+      const processor = audioCtx.createScriptProcessor(512, 1, 1);
       processorRef.current = processor;
 
       processor.onaudioprocess = (e) => {
@@ -902,25 +909,8 @@ export default function SarvamAgentStudioPage() {
 
         const inputData = e.inputBuffer.getChannelData(0);
 
-        // 1. Calculate audio frame root-mean-square (RMS) energy
-        let sumSq = 0;
-        for (let i = 0; i < inputData.length; i++) {
-          sumSq += inputData[i] * inputData[i];
-        }
-        const rms = Math.sqrt(sumSq / inputData.length);
-
-        // 2. While agent audio is actively playing through speakers:
-        // Protect against speaker audio bleeding into mic. Only allow transmission
-        // if user intentionally speaks up firmly to barge in (rms >= bargeInThreshold)
-        const isAgentPlaying = audioCtx.currentTime < nextPlayTimeRef.current;
-        if (isAgentPlaying) {
-          const bargeInThreshold = Math.max(0.012, 0.025 - (sensitivity / 100) * 0.013);
-          if (rms < bargeInThreshold) return;
-        }
-
-        // 3. When agent is listening, send all continuous audio frames to backend.
-        // Server-side Silero / WebRTC VAD needs the continuous unbroken stream
-        // (including trailing silence) to detect speech onset and the end of each turn.
+        // Keep speech and silence continuous: server VAD owns turn detection.
+        // Browser echo cancellation handles speaker bleed without discarding quiet speech.
         const pcm16 = downsampleTo16k(inputData, audioCtx.sampleRate);
         wsRef.current.send(pcm16.buffer);
       };
@@ -974,13 +964,18 @@ export default function SarvamAgentStudioPage() {
       audioCtxRef.current = null;
     }
     if (wsRef.current) {
-      try {
-        wsRef.current.close();
-      } catch {}
+      const ws = wsRef.current;
       wsRef.current = null;
+      try {
+        ws.close();
+      } catch {}
     }
     refreshCreditsStatus();
   }
+
+  const endCallRef = useRef(handleEndCall);
+  endCallRef.current = handleEndCall;
+  useEffect(() => () => endCallRef.current(), [id]);
 
   // Send simulated text chat message
   function handleSendChat() {

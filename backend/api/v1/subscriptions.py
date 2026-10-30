@@ -191,7 +191,7 @@ async def get_my_subscription(
 ):
     """Get the current organization's subscription."""
     if not user.org_id:
-        raise HTTPException(status_code=400, detail="No organization associated with this account")
+        return {"has_subscription": False}
     db = get_db()
     svc = SubscriptionService(db)
     sub = await svc.sub_repo.find_for_org(user.org_id)

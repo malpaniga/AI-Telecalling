@@ -112,6 +112,7 @@ class SarvamTTSProvider(TTSProvider):
         }
 
         carry = b""
+        emitted_audio = False
         try:
             async with self._client.stream("POST", "https://api.sarvam.ai/text-to-speech/stream", json=body) as resp:
                 resp.raise_for_status()
@@ -124,12 +125,17 @@ class SarvamTTSProvider(TTSProvider):
                     else:
                         carry = b""
                     if data:
+                        emitted_audio = True
                         yield {
                             "audio": data,
                             "sample_rate": self.sample_rate,
                         }
         except Exception:
-            # Fall back to single-shot synthesis if stream endpoint is unavailable
+            # Replaying the whole sentence after partial playback duplicates
+            # speech. Let the call pipeline handle a mid-stream failure.
+            if emitted_audio:
+                raise
+            # Fall back only when the caller has not heard any of this sentence.
             synth_res = await self.synthesize(text, **kwargs)
             yield synth_res
 
