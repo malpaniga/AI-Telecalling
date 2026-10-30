@@ -16,6 +16,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, field_validator
 
+from backend.config import settings
 from backend.core.auth import CurrentUser, get_current_user
 from backend.core.db import get_db
 from backend.services.payment_service import PaymentService
@@ -27,6 +28,28 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 # ---------------------------------------------------------------------------
 # Schemas
 # ---------------------------------------------------------------------------
+class CreateManualRequestSchema(BaseModel):
+    plan_id: str
+    billing_cycle: str = "monthly"
+    utr_number: str
+    payer_note: Optional[str] = None
+
+    @field_validator("billing_cycle")
+    @classmethod
+    def valid_cycle(cls, v: str) -> str:
+        if v not in ("monthly", "yearly"):
+            raise ValueError("billing_cycle must be 'monthly' or 'yearly'")
+        return v
+
+    @field_validator("utr_number")
+    @classmethod
+    def valid_utr(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("utr_number cannot be empty")
+        return v
+
+
 class CreateSubscriptionOrderRequest(BaseModel):
     plan_id: str
     billing_cycle: str = "monthly"
@@ -61,6 +84,21 @@ class RefundRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+@router.get("/settings")
+async def get_public_billing_settings():
+    """Return public billing mode and payment parameters."""
+    db = get_db()
+    from backend.repositories.billing_repo import PlatformBillingSettingsRepository
+    repo = PlatformBillingSettingsRepository(db)
+    settings_doc = await repo.get()
+    return {
+        "payment_mode": settings_doc.payment_mode,
+        "admin_upi_id": settings_doc.admin_upi_id,
+        "admin_payee_name": settings_doc.admin_payee_name,
+        "razorpay_key_id": settings.razorpay_key_id if not settings.demo_mode else "rzp_test_mock",
+    }
+
+
 @router.post("/orders/subscription")
 async def create_subscription_order(
     body: CreateSubscriptionOrderRequest,
@@ -76,6 +114,12 @@ async def create_subscription_order(
         raise HTTPException(status_code=403, detail="Insufficient permissions")
 
     db = get_db()
+    from backend.repositories.billing_repo import PlatformBillingSettingsRepository
+    settings_repo = PlatformBillingSettingsRepository(db)
+    settings_doc = await settings_repo.get()
+    if settings_doc.payment_mode == "manual":
+        raise HTTPException(status_code=400, detail="Manual payment mode is active. Please pay via UPI.")
+
     svc = PaymentService(db)
     try:
         result = await svc.create_subscription_order(
@@ -86,7 +130,104 @@ async def create_subscription_order(
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        log.exception("Payment gateway order creation failed: %s", e)
+        raise HTTPException(status_code=502, detail=f"Payment gateway error: {str(e)}")
     return result
+
+
+@router.post("/manual-request")
+async def submit_manual_subscription_request(
+    body: CreateManualRequestSchema,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Submit a manual payment (UPI UTR) for admin verification."""
+    if not user.org_id:
+        raise HTTPException(status_code=400, detail="No organization")
+    if user.role not in ("organization_owner", "organization_admin") and not user.is_platform:
+        raise HTTPException(status_code=403, detail="Only org owners/admins can submit subscription requests")
+
+    db = get_db()
+    from backend.repositories.billing_repo import ManualSubscriptionRequestRepository
+    from backend.repositories.subscription_repo import SubscriptionPlanRepository
+    from backend.repositories.organization_repo import OrganizationRepository
+
+    req_repo = ManualSubscriptionRequestRepository(db)
+    plan_repo = SubscriptionPlanRepository(db)
+    org_repo = OrganizationRepository(db)
+
+    # Check for active pending request
+    existing_pending = await req_repo.find_pending_for_org(user.org_id)
+    if existing_pending:
+        raise HTTPException(status_code=400, detail="You already have a pending payment request under review")
+
+    # Check for duplicate UTR
+    existing_utr = await req_repo.find_by_utr(body.utr_number)
+    if existing_utr:
+        raise HTTPException(status_code=400, detail="This Transaction ID / UTR has already been submitted")
+
+    # Fetch plan
+    plan = await plan_repo.find_by_id(body.plan_id)
+    if not plan or not plan.is_active:
+        raise HTTPException(status_code=400, detail="Selected plan is not available")
+
+    # Fetch org
+    org = await org_repo.find_by_id(user.org_id)
+    org_name = org.name if org else "Unknown Organization"
+
+    amount_paise = plan.price_yearly_paise if body.billing_cycle == "yearly" else plan.price_monthly_paise
+
+    req_doc = await req_repo.create(
+        organization_id=user.org_id,
+        user_id=user.user_id,
+        user_email=user.email,
+        org_name=org_name,
+        plan_id=plan.id,
+        plan_slug=plan.slug,
+        plan_name=plan.name,
+        amount_paise=amount_paise,
+        utr_number=body.utr_number,
+        billing_cycle=body.billing_cycle,
+        payer_note=body.payer_note,
+    )
+    return _manual_request_response(req_doc)
+
+
+@router.get("/my-manual-requests")
+async def get_my_manual_requests(
+    user: CurrentUser = Depends(get_current_user),
+):
+    """List manual subscription requests for current user organization."""
+    if not user.org_id:
+        raise HTTPException(status_code=400, detail="No organization")
+    db = get_db()
+    from backend.repositories.billing_repo import ManualSubscriptionRequestRepository
+    req_repo = ManualSubscriptionRequestRepository(db)
+    requests = await req_repo.list_for_org(user.org_id, limit=20)
+    return [_manual_request_response(r) for r in requests]
+
+
+@router.post("/manual-request/{request_id}/cancel")
+async def cancel_manual_request(
+    request_id: str,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Cancel a pending manual subscription request."""
+    if not user.org_id:
+        raise HTTPException(status_code=400, detail="No organization")
+    db = get_db()
+    from backend.repositories.billing_repo import ManualSubscriptionRequestRepository
+    req_repo = ManualSubscriptionRequestRepository(db)
+    req = await req_repo.find_by_id(request_id)
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    if req.organization_id != user.org_id and not user.is_platform:
+        raise HTTPException(status_code=403, detail="Not authorized to cancel this request")
+    if req.status != "pending":
+        raise HTTPException(status_code=400, detail="Only pending requests can be cancelled")
+
+    await req_repo.set_status(request_id, "cancelled")
+    return {"ok": True, "status": "cancelled"}
 
 
 @router.post("/verify")
@@ -277,3 +418,28 @@ def _invoice_response(i) -> dict:
         "issued_at": i.issued_at.isoformat() if hasattr(i.issued_at, "isoformat") else str(i.issued_at) if i.issued_at else None,
         "created_at": i.created_at.isoformat() if hasattr(i.created_at, "isoformat") else str(i.created_at) if i.created_at else None,
     }
+
+
+def _manual_request_response(r) -> dict:
+    return {
+        "id": r.id,
+        "organization_id": r.organization_id,
+        "org_name": r.org_name,
+        "user_email": r.user_email,
+        "plan_id": r.plan_id,
+        "plan_slug": r.plan_slug,
+        "plan_name": r.plan_name,
+        "billing_cycle": r.billing_cycle,
+        "amount_paise": r.amount_paise,
+        "amount_inr": r.amount_paise / 100,
+        "currency": r.currency,
+        "utr_number": r.utr_number,
+        "payer_note": r.payer_note,
+        "status": r.status,
+        "rejection_reason": r.rejection_reason,
+        "reviewed_by": r.reviewed_by,
+        "reviewed_at": r.reviewed_at.isoformat() if hasattr(r.reviewed_at, "isoformat") else str(r.reviewed_at) if r.reviewed_at else None,
+        "created_at": r.created_at.isoformat() if hasattr(r.created_at, "isoformat") else str(r.created_at) if r.created_at else None,
+        "updated_at": r.updated_at.isoformat() if hasattr(r.updated_at, "isoformat") else str(r.updated_at) if r.updated_at else None,
+    }
+

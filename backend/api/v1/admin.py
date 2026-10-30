@@ -690,3 +690,193 @@ async def _platform_usage_stats(db) -> dict:
         "total_provider_cost_paise": r["total_provider_cost_paise"],
         "gross_profit_paise": r["total_charge_paise"] - r["total_provider_cost_paise"],
     }
+
+
+# ---------------------------------------------------------------------------
+# Billing Settings & Manual Payment Request Management
+# ---------------------------------------------------------------------------
+class UpdateBillingSettingsRequest(BaseModel):
+    payment_mode: Optional[str] = None
+    admin_upi_id: Optional[str] = None
+    admin_payee_name: Optional[str] = None
+
+    @field_validator("payment_mode")
+    @classmethod
+    def valid_mode(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in ("manual", "razorpay"):
+            raise ValueError("payment_mode must be 'manual' or 'razorpay'")
+        return v
+
+
+class RejectManualRequestSchema(BaseModel):
+    reason: str = ""
+
+
+@router.get("/billing/settings")
+async def admin_get_billing_settings():
+    """Get full platform payment settings."""
+    db = get_db()
+    from backend.repositories.billing_repo import PlatformBillingSettingsRepository
+    repo = PlatformBillingSettingsRepository(db)
+    doc = await repo.get()
+    return {
+        "payment_mode": doc.payment_mode,
+        "admin_upi_id": doc.admin_upi_id,
+        "admin_payee_name": doc.admin_payee_name,
+        "updated_at": doc.updated_at.isoformat() if hasattr(doc.updated_at, "isoformat") else str(doc.updated_at),
+        "updated_by": doc.updated_by,
+    }
+
+
+@router.put("/billing/settings")
+async def admin_update_billing_settings(
+    body: UpdateBillingSettingsRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Update platform payment mode (razorpay/manual) and UPI payee details."""
+    db = get_db()
+    from backend.repositories.billing_repo import PlatformBillingSettingsRepository
+    repo = PlatformBillingSettingsRepository(db)
+    updated = await repo.update(
+        payment_mode=body.payment_mode,
+        admin_upi_id=body.admin_upi_id,
+        admin_payee_name=body.admin_payee_name,
+        updated_by=user.user_id,
+    )
+    return {
+        "payment_mode": updated.payment_mode,
+        "admin_upi_id": updated.admin_upi_id,
+        "admin_payee_name": updated.admin_payee_name,
+        "updated_at": updated.updated_at.isoformat() if hasattr(updated.updated_at, "isoformat") else str(updated.updated_at),
+        "updated_by": updated.updated_by,
+    }
+
+
+@router.get("/billing/manual-requests")
+async def admin_list_manual_requests(
+    status: Optional[str] = None,
+    limit: int = 50,
+    skip: int = 0,
+):
+    """List manual subscription payment requests."""
+    db = get_db()
+    from backend.repositories.billing_repo import ManualSubscriptionRequestRepository
+    from backend.api.v1.billing import _manual_request_response
+    repo = ManualSubscriptionRequestRepository(db)
+    reqs = await repo.list_all(status=status, limit=limit, skip=skip)
+    return [_manual_request_response(r) for r in reqs]
+
+
+@router.post("/billing/manual-requests/{request_id}/approve")
+async def admin_approve_manual_request(
+    request_id: str,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Approve a manual subscription request, activating the plan and creating orders/invoices."""
+    db = get_db()
+    from backend.repositories.billing_repo import (
+        ManualSubscriptionRequestRepository,
+        OrderRepository,
+        PaymentRepository,
+        InvoiceRepository,
+    )
+    from backend.services.subscription_service import SubscriptionService
+    from backend.models.base import utcnow
+
+    req_repo = ManualSubscriptionRequestRepository(db)
+    req = await req_repo.find_by_id(request_id)
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    if req.status != "pending":
+        raise HTTPException(status_code=400, detail=f"Request is already {req.status}")
+
+    # 1. Activate subscription
+    sub_svc = SubscriptionService(db)
+    try:
+        sub = await sub_svc.activate_plan(
+            organization_id=req.organization_id,
+            plan_id=req.plan_id,
+            billing_cycle=req.billing_cycle,
+        )
+    except Exception as e:
+        log.exception("Failed to activate plan for manual request %s: %s", request_id, e)
+        raise HTTPException(status_code=400, detail=f"Activation failed: {str(e)}")
+
+    # 2. Record Order marked as paid
+    order_repo = OrderRepository(db)
+    payment_repo = PaymentRepository(db)
+    invoice_repo = InvoiceRepository(db)
+
+    order = await order_repo.create(
+        organization_id=req.organization_id,
+        order_type="subscription",
+        amount_paise=req.amount_paise,
+        description=f"{req.plan_name} subscription ({req.billing_cycle}) - Manual UPI",
+        provider="manual_upi",
+        plan_id=req.plan_id,
+        currency=req.currency,
+        created_by=req.user_id,
+    )
+    await order_repo.update_by_id(order.id, {
+        "status": "paid",
+        "provider_order_id": f"upi_{req.utr_number}",
+    })
+
+    # 3. Record Payment
+    payment = await payment_repo.create(
+        organization_id=req.organization_id,
+        order_id=order.id,
+        amount_paise=req.amount_paise,
+        provider="manual_upi",
+        provider_payment_id=f"pay_upi_{req.utr_number}",
+        provider_order_id=f"upi_{req.utr_number}",
+        created_by=req.user_id,
+    )
+    await payment_repo.update_by_id(payment.id, {"paid_at": utcnow()})
+
+    # 4. Record Invoice
+    invoice = await invoice_repo.create(
+        organization_id=req.organization_id,
+        order_id=order.id,
+        payment_id=payment.id,
+        description=order.description,
+        subtotal_paise=req.amount_paise,
+        tax_paise=0,
+        currency=req.currency,
+        org_name=req.org_name,
+    )
+    await invoice_repo.update_by_id(invoice.id, {"paid_at": utcnow()})
+    await order_repo.mark_paid(order.id, payment.id, invoice.id)
+
+    # 5. Mark request approved
+    await req_repo.set_status(request_id, "approved", reviewed_by=user.user_id)
+
+    log.info("manual subscription request approved id=%s org=%s sub_id=%s", request_id, req.organization_id, sub.id)
+    return {"ok": True, "status": "approved", "subscription_id": sub.id}
+
+
+@router.post("/billing/manual-requests/{request_id}/reject")
+async def admin_reject_manual_request(
+    request_id: str,
+    body: RejectManualRequestSchema,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Reject a manual subscription request with a reason."""
+    db = get_db()
+    from backend.repositories.billing_repo import ManualSubscriptionRequestRepository
+    req_repo = ManualSubscriptionRequestRepository(db)
+    req = await req_repo.find_by_id(request_id)
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    if req.status != "pending":
+        raise HTTPException(status_code=400, detail=f"Request is already {req.status}")
+
+    await req_repo.set_status(
+        request_id,
+        "rejected",
+        reviewed_by=user.user_id,
+        rejection_reason=body.reason or "Payment verification failed",
+    )
+    log.info("manual subscription request rejected id=%s org=%s reason=%s", request_id, req.organization_id, body.reason)
+    return {"ok": True, "status": "rejected"}
+
