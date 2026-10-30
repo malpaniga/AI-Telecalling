@@ -185,6 +185,36 @@ export interface Invoice {
   created_at: string;
 }
 
+export interface BillingSettings {
+  payment_mode: "razorpay" | "manual";
+  admin_upi_id: string;
+  admin_payee_name: string;
+  razorpay_key_id?: string;
+  updated_at?: string;
+}
+
+export interface ManualSubscriptionRequest {
+  id: string;
+  organization_id: string;
+  org_name: string;
+  user_email: string;
+  plan_id: string;
+  plan_slug: string;
+  plan_name: string;
+  billing_cycle: "monthly" | "yearly";
+  amount_paise: number;
+  amount_inr: number;
+  currency: string;
+  utr_number: string;
+  payer_note?: string;
+  status: "pending" | "approved" | "rejected" | "cancelled";
+  rejection_reason?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Agent {
   id: string;
   organization_id: string;
@@ -1139,6 +1169,16 @@ export const api = {
 
   // ── Billing ───────────────────────────────────────────────────────────────
   billing: {
+    getSettings: () => apiRequest<BillingSettings>("GET", "/api/v1/billing/settings"),
+    submitManualRequest: (body: {
+      plan_id: string;
+      billing_cycle: "monthly" | "yearly";
+      utr_number: string;
+      payer_note?: string;
+    }) => apiRequest<ManualSubscriptionRequest>("POST", "/api/v1/billing/manual-request", body),
+    getMyManualRequests: () => apiRequest<ManualSubscriptionRequest[]>("GET", "/api/v1/billing/my-manual-requests"),
+    cancelManualRequest: (requestId: string) =>
+      apiRequest<{ ok: boolean; status: string }>("POST", `/api/v1/billing/manual-request/${requestId}/cancel`),
     createSubscriptionOrder: (plan_id: string, billing_cycle: "monthly" | "yearly") =>
       apiRequest<{ order_id: string; provider_order_id: string; amount_paise: number }>(
         "POST", "/api/v1/billing/orders/subscription", { plan_id, billing_cycle }
@@ -1398,6 +1438,26 @@ export const api = {
       activate: (orgId: string, body: { plan_id: string; billing_cycle: string; payment_id?: string }) =>
         apiRequest<Subscription>(
           "POST", `/api/v1/subscriptions/admin/orgs/${orgId}/activate`, body
+        ),
+    },
+    billing: {
+      getSettings: () => apiRequest<BillingSettings>("GET", "/api/v1/admin/billing/settings"),
+      updateSettings: (body: {
+        payment_mode?: "razorpay" | "manual";
+        admin_upi_id?: string;
+        admin_payee_name?: string;
+      }) => apiRequest<BillingSettings>("PUT", "/api/v1/admin/billing/settings", body),
+      getManualRequests: (status?: string) => {
+        const q = status ? `?status=${encodeURIComponent(status)}` : "";
+        return apiRequest<ManualSubscriptionRequest[]>("GET", `/api/v1/admin/billing/manual-requests${q}`);
+      },
+      approveManualRequest: (requestId: string) =>
+        apiRequest<{ ok: boolean; status: string; subscription_id: string }>(
+          "POST", `/api/v1/admin/billing/manual-requests/${requestId}/approve`
+        ),
+      rejectManualRequest: (requestId: string, reason?: string) =>
+        apiRequest<{ ok: boolean; status: string }>(
+          "POST", `/api/v1/admin/billing/manual-requests/${requestId}/reject`, { reason: reason || "" }
         ),
     },
     callingPacks: {
