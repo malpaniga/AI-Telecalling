@@ -111,7 +111,24 @@ class CloudProviderRuntime:
             from backend.providers.tts.sarvam import SarvamTTSProvider
             return SarvamTTSProvider(api_key=_required_credential(config, credential), model=config.model_id,
                                      voice_id=config.voice, language=config.language or "en-IN", timeout=_timeout(params))
+        if config.capability == "tts" and config.provider_name in ("google-wavenet", "google-cloud-tts"):
+            from backend.providers.tts.google_wavenet import GoogleWaveNetTTSProvider
+            return GoogleWaveNetTTSProvider(
+                api_key=_required_credential(config, credential),
+                model=config.model_id or "wavenet",
+                voice_id=config.voice,
+                language=config.language or "hi-IN",
+                timeout=_timeout(params),
+            )
         if config.capability == "stt":
+            if config.provider_name == "soniox":
+                from backend.providers.stt.soniox import SonioxSTTProvider
+                return SonioxSTTProvider(
+                    api_key=_required_credential(config, credential),
+                    model=config.model_id or "stt-async-v5",
+                    language=config.language or "en-IN",
+                    timeout=_timeout(params),
+                )
             if config.provider_name == "sarvam":
                 from backend.providers.stt.sarvam import SarvamSTTProvider
                 return SarvamSTTProvider(

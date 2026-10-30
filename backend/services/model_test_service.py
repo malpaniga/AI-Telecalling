@@ -89,6 +89,8 @@ class ModelTestService:
                 audio = await self._test_sarvam_tts(credential, language, model_id)
             elif provider_name == "elevenlabs":
                 audio = await self._test_elevenlabs_tts(credential, voice, model_id)
+            elif provider_name in ("google-wavenet", "google-cloud-tts"):
+                audio = await self._test_google_wavenet_tts(credential, voice, language)
             elif provider_name == "piper":
                 audio = await self._test_piper_tts()
             else:
@@ -227,6 +229,8 @@ class ModelTestService:
                 transcript = await self._test_sarvam_stt(credential, language, model_id)
             elif provider_name == "google-cloud-stt":
                 transcript = await self._test_google_cloud_stt(credential, language)
+            elif provider_name == "soniox":
+                transcript = await self._test_soniox_stt(credential, language, model_id)
             else:
                 return {
                     "status": "unavailable",
@@ -429,6 +433,41 @@ class ModelTestService:
         return await provider.generate(
             [{"role": "user", "content": "Say hello in one sentence."}]
         )
+
+    async def _test_google_wavenet_tts(
+        self,
+        credential: str | None,
+        voice: str | None,
+        language: str | None,
+    ) -> bytes:
+        """[LIVE] Test Google Cloud WaveNet TTS using injected API key."""
+        if not credential:
+            raise ValueError("GOOGLE_API_KEY is required for Google WaveNet TTS")
+        from backend.providers.tts.google_wavenet import GoogleWaveNetTTSProvider
+        provider = GoogleWaveNetTTSProvider(
+            api_key=credential,
+            voice_id=voice,
+            language=language or "hi-IN",
+        )
+        res = await provider.synthesize("Hello, this is a test.")
+        return res.get("audio", b"")
+
+    async def _test_soniox_stt(
+        self,
+        credential: str | None,
+        language: str | None,
+        model_id: str | None = None,
+    ) -> str:
+        """[LIVE] Test Soniox STT using injected API key."""
+        if not credential:
+            raise ValueError("SONIOX_API_KEY is required for Soniox STT")
+        from backend.providers.stt.soniox import SonioxSTTProvider
+        provider = SonioxSTTProvider(
+            api_key=credential,
+            model=model_id or "stt-async-v5",
+            language=language or "en-IN",
+        )
+        return await provider.transcribe(_SILENT_WAV, language=language)
 
     async def _test_ollama_llm(self, model_id: str) -> str:
         """Test Ollama local runtime reachability then generate.

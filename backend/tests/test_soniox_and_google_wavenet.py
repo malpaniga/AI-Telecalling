@@ -197,3 +197,73 @@ def test_soniox_stt_capabilities_and_models():
     assert caps["provider"] == "soniox"
     assert "hi-IN" in caps["languages"]
     assert "mr-IN" in caps["languages"]
+
+
+
+# ---------------------------------------------------------------------------
+# Task 3: Runtime & ModelTestService Integration Tests
+# ---------------------------------------------------------------------------
+
+def test_runtime_builds_google_wavenet_tts():
+    """CloudProviderRuntime._build_provider builds GoogleWaveNetTTSProvider."""
+    from backend.models.model_directory import ProviderConfiguration
+    from backend.services.provider_runtime import CloudProviderRuntime
+
+    config = ProviderConfiguration(
+        provider_name="google-wavenet",
+        capability="tts",
+        model_id="wavenet",
+        voice="hi-IN-Wavenet-A",
+        language="hi-IN",
+        is_active=True,
+    )
+    provider = CloudProviderRuntime._build_provider(config, credential="test-google-key")
+    assert isinstance(provider, GoogleWaveNetTTSProvider)
+    assert provider.voice_id == "hi-IN-Wavenet-A"
+
+
+def test_runtime_builds_soniox_stt():
+    """CloudProviderRuntime._build_provider builds SonioxSTTProvider."""
+    from backend.models.model_directory import ProviderConfiguration
+    from backend.services.provider_runtime import CloudProviderRuntime
+    from backend.providers.stt.soniox import SonioxSTTProvider
+
+    config = ProviderConfiguration(
+        provider_name="soniox",
+        capability="stt",
+        model_id="stt-async-v5",
+        language="en-IN",
+        is_active=True,
+    )
+    provider = CloudProviderRuntime._build_provider(config, credential="test-soniox-key")
+    assert isinstance(provider, SonioxSTTProvider)
+    assert provider.model == "stt-async-v5"
+
+
+@pytest.mark.anyio
+async def test_model_test_service_google_wavenet(monkeypatch):
+    """ModelTestService.test_tts routes to Google WaveNet."""
+    from backend.services.model_test_service import ModelTestService
+
+    svc = ModelTestService()
+    mock_synth = AsyncMock(return_value={"audio": b"DUMMY_AUDIO", "sample_rate": 16000})
+    monkeypatch.setattr(GoogleWaveNetTTSProvider, "synthesize", mock_synth)
+
+    res = await svc.test_tts("google-wavenet", "wavenet", credential="test-key", voice="hi-IN-Wavenet-A", language="hi-IN")
+    assert res["status"] == "ok"
+    assert "sample_output_b64" in res
+
+
+@pytest.mark.anyio
+async def test_model_test_service_soniox(monkeypatch):
+    """ModelTestService.test_stt routes to Soniox."""
+    from backend.services.model_test_service import ModelTestService
+    from backend.providers.stt.soniox import SonioxSTTProvider
+
+    svc = ModelTestService()
+    mock_transcribe = AsyncMock(return_value="Test Hello")
+    monkeypatch.setattr(SonioxSTTProvider, "transcribe", mock_transcribe)
+
+    res = await svc.test_stt("soniox", "stt-async-v5", credential="test-key", language="en-IN")
+    assert res["status"] == "ok"
+    assert res["transcript"] == "Test Hello"
