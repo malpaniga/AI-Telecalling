@@ -1,5 +1,5 @@
 {
-  "last_turn_at": "2026-10-30T16:15:40.533Z",
-  "turn_count": 32,
-  "last_agent_output": "**Sarvam 105B Conversations (`sarvam-105b-conversations`)** currently has these API rates, excluding"
+  "last_turn_at": "2026-10-30T17:19:55.825Z",
+  "turn_count": 33,
+  "last_agent_output": "**Yes. Soniox is worth testing for cheaper STT, and Google WaveNet is worth testing for cheaper TTS."
 }
