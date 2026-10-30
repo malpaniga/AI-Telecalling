@@ -90,7 +90,7 @@ class ModelTestService:
             elif provider_name == "elevenlabs":
                 audio = await self._test_elevenlabs_tts(credential, voice, model_id)
             elif provider_name in ("google-wavenet", "google-cloud-tts"):
-                audio = await self._test_google_wavenet_tts(credential, voice, language)
+                audio = await self._test_google_wavenet_tts(credential, voice, language, model_id=model_id)
             elif provider_name == "piper":
                 audio = await self._test_piper_tts()
             else:
@@ -439,6 +439,7 @@ class ModelTestService:
         credential: str | None,
         voice: str | None,
         language: str | None,
+        model_id: str | None = None,
     ) -> bytes:
         """[LIVE] Test Google Cloud WaveNet TTS using injected API key."""
         if not credential:
@@ -448,6 +449,7 @@ class ModelTestService:
             api_key=credential,
             voice_id=voice,
             language=language or "hi-IN",
+            model=model_id or "wavenet",
         )
         res = await provider.synthesize("Hello, this is a test.")
         return res.get("audio", b"")

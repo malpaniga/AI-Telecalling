@@ -130,12 +130,13 @@ class SonioxSTTProvider(STTProvider):
                 raise RuntimeError("Soniox file upload did not return a file_id")
 
             # 2. Create transcription request
-            trans_payload = {
+            trans_payload: dict[str, Any] = {
                 "model": target_model,
                 "file_id": file_id,
             }
             if language or self.language:
-                trans_payload["language"] = language or self.language
+                lang_code = (language or self.language).split("-")[0].lower()
+                trans_payload["language_hints"] = [lang_code]
 
             trans_resp = await self._client.post(
                 f"{SONIOX_API_BASE}/transcriptions",
@@ -151,8 +152,9 @@ class SonioxSTTProvider(STTProvider):
                 raise RuntimeError("Soniox transcription request did not return an id")
 
             # 3. Wait for completion if queued/processing
+            max_attempts = max(1, int(self.timeout / 0.5))
             attempts = 0
-            while status not in ("completed", "done") and attempts < 15:
+            while status not in ("completed", "done") and attempts < max_attempts:
                 if status in ("failed", "error"):
                     error_msg = trans_data.get("error") or "Unknown transcription failure"
                     raise RuntimeError(f"Soniox transcription failed: {error_msg}")
@@ -165,6 +167,9 @@ class SonioxSTTProvider(STTProvider):
                 status_resp.raise_for_status()
                 trans_data = status_resp.json()
                 status = trans_data.get("status")
+
+            if status not in ("completed", "done"):
+                raise TimeoutError(f"Soniox transcription timed out after {self.timeout}s (status: {status})")
 
             # 4. Fetch transcript text
             transcript_resp = await self._client.get(

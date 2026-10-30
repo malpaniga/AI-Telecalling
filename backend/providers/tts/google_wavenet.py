@@ -112,15 +112,22 @@ class GoogleWaveNetTTSProvider(TTSProvider):
         }
 
     def _resolve_voice_and_lang(self, kwargs: dict[str, Any]) -> tuple[str, str]:
-        voice = kwargs.get("voice_id") or self.voice_id or DEFAULT_VOICES.get(self.language, "hi-IN-Wavenet-A")
-        lang = kwargs.get("language") or self.language or "hi-IN"
+        req_lang = kwargs.get("language")
+        req_voice = kwargs.get("voice_id")
 
-        # If voice name has BCP-47 prefix (e.g. "hi-IN-Wavenet-A"), synchronize language
-        parts = voice.split("-")
-        if len(parts) >= 3:
-            inferred_lang = f"{parts[0]}-{parts[1]}"
-            if not kwargs.get("language"):
-                lang = inferred_lang
+        if req_voice:
+            voice = req_voice
+            lang = req_lang or self.language
+            parts = voice.split("-")
+            if len(parts) >= 3 and not req_lang:
+                lang = f"{parts[0]}-{parts[1]}"
+        elif req_lang and req_lang != self.language:
+            lang = req_lang
+            voice = DEFAULT_VOICES.get(lang, self.voice_id)
+        else:
+            lang = self.language
+            voice = self.voice_id or DEFAULT_VOICES.get(lang, "hi-IN-Wavenet-A")
+
         return voice, lang
 
     async def synthesize(self, text: str, **kwargs: Any) -> dict:
@@ -165,7 +172,7 @@ class GoogleWaveNetTTSProvider(TTSProvider):
             raise ValueError(f"Invalid base64 audio returned by Google WaveNet: {exc}") from None
 
         # Google Cloud LINEAR16 includes a standard 44-byte WAV header (RIFF...)
-        if raw_audio.startswith(b"RIFF") and len(raw_audio) > 44:
+        if raw_audio.startswith(b"RIFF") and len(raw_audio) >= 44:
             pcm_audio = raw_audio[44:]
         else:
             pcm_audio = raw_audio

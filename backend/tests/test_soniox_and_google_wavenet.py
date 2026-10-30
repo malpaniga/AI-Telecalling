@@ -327,3 +327,75 @@ def test_pricing_sync_contains_soniox_and_wavenet():
         if d["provider_name"] == "google-wavenet" and d["capability"] == "tts"
     ]
     assert len(wavenet_defs) == 1
+
+
+
+# ---------------------------------------------------------------------------
+# Code Review Improvements Tests
+# ---------------------------------------------------------------------------
+
+@pytest.mark.anyio
+async def test_google_wavenet_dynamic_language_switch():
+    """GoogleWaveNetTTSProvider automatically switches voice when language changes dynamically."""
+    mock_client = AsyncMock()
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    wav_header = b"RIFF" + b"\x00" * 36 + b"WAVE"
+    mock_resp.json.return_value = {"audioContent": base64.b64encode(wav_header + b"pcm").decode()}
+    mock_resp.raise_for_status = MagicMock()
+    mock_client.post = AsyncMock(return_value=mock_resp)
+
+    # Provider initialized with default Hindi
+    provider = GoogleWaveNetTTSProvider(api_key="test-key", language="hi-IN", _client=mock_client)
+
+    # Dynamic synthesis call in Marathi
+    await provider.synthesize("Namaskar", language="mr-IN")
+
+    call_kwargs = mock_client.post.call_args.kwargs
+    assert call_kwargs["json"]["voice"]["languageCode"] == "mr-IN"
+    assert call_kwargs["json"]["voice"]["name"] == "mr-IN-Wavenet-A"
+
+
+@pytest.mark.anyio
+async def test_google_wavenet_empty_wav_header_stripped():
+    """44-byte empty WAV payload returns empty audio instead of raw RIFF header."""
+    mock_client = AsyncMock()
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    # Exactly 44-byte WAV header without PCM data
+    wav_header = b"RIFF" + b"\x00" * 36 + b"WAVE"
+    mock_resp.json.return_value = {"audioContent": base64.b64encode(wav_header).decode()}
+    mock_resp.raise_for_status = MagicMock()
+    mock_client.post = AsyncMock(return_value=mock_resp)
+
+    provider = GoogleWaveNetTTSProvider(api_key="test-key", _client=mock_client)
+    res = await provider.synthesize("...")
+    assert res["audio"] == b""
+
+
+@pytest.mark.anyio
+async def test_soniox_stt_timeout_handled():
+    """SonioxSTTProvider raises TimeoutError if transcription exceeds configured timeout."""
+    from backend.providers.stt.soniox import SonioxSTTProvider
+
+    mock_client = AsyncMock()
+    mock_upload_resp = MagicMock(status_code=200, json=lambda: {"id": "f_1"})
+    mock_upload_resp.raise_for_status = MagicMock()
+
+    mock_trans_resp = MagicMock(status_code=200, json=lambda: {"id": "t_1", "status": "queued"})
+    mock_trans_resp.raise_for_status = MagicMock()
+
+    mock_status_resp = MagicMock(status_code=200, json=lambda: {"id": "t_1", "status": "queued"})
+    mock_status_resp.raise_for_status = MagicMock()
+
+    mock_client.post = AsyncMock(side_effect=[mock_upload_resp, mock_trans_resp])
+    mock_client.get = AsyncMock(return_value=mock_status_resp)
+    mock_client.delete = AsyncMock()
+
+    # Short timeout of 1.0s (2 polling attempts)
+    provider = SonioxSTTProvider(api_key="key", timeout=1.0, _client=mock_client)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        await provider.transcribe(b"test audio")
+
+    assert "Soniox" in str(exc_info.value)
