@@ -87,6 +87,16 @@ DEFAULT_PROVIDER_DEFINITIONS: List[Dict[str, Any]] = [
         "base_unit_rate": 0.0,
         "notes": "Open-source self-hosted model.",
     },
+    {
+        "provider_name": "soniox",
+        "model_id": "stt-async-v5",
+        "capability": "stt",
+        "display_name": "Soniox Speech-to-Text",
+        "base_currency": "INR",
+        "billing_unit": "audio_minute",
+        "base_unit_rate": 0.10,
+        "notes": "Official Soniox low-latency speech recognition.",
+    },
 
     # ── LLM (Language Model) ──
     {
@@ -170,6 +180,16 @@ DEFAULT_PROVIDER_DEFINITIONS: List[Dict[str, Any]] = [
         "billing_unit": "1k_characters",
         "base_unit_rate": 0.016,  # $0.016 per 1,000 characters
         "notes": "Google Cloud TTS Neural2 voices.",
+    },
+    {
+        "provider_name": "google-wavenet",
+        "model_id": "wavenet",
+        "capability": "tts",
+        "display_name": "Google Cloud WaveNet",
+        "base_currency": "INR",
+        "billing_unit": "1k_characters",
+        "base_unit_rate": 0.13,
+        "notes": "Google Cloud WaveNet neural voices (~$16/1M chars).",
     },
     {
         "provider_name": "piper",

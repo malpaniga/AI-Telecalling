@@ -568,6 +568,17 @@ class ModelDirectoryService:
                 "eleven_v4",
                 "eleven_v4_turbo",
             ])
+        elif provider_name == "soniox":
+            cat_models.update([
+                "stt-async-v5",
+                "stt-rt-v5",
+            ])
+        elif provider_name in ("google-wavenet", "google-cloud-tts"):
+            cat_models.update([
+                "wavenet",
+                "neural2",
+                "standard",
+            ])
 
         return sorted(cat_models)
 

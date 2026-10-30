@@ -267,3 +267,63 @@ async def test_model_test_service_soniox(monkeypatch):
     res = await svc.test_stt("soniox", "stt-async-v5", credential="test-key", language="en-IN")
     assert res["status"] == "ok"
     assert res["transcript"] == "Test Hello"
+
+
+
+# ---------------------------------------------------------------------------
+# Task 4: Catalogue, Directory, and Pricing Tests
+# ---------------------------------------------------------------------------
+
+def test_catalogue_contains_soniox_and_google_wavenet():
+    """Model catalogue seed contains entries for Soniox STT and Google WaveNet TTS."""
+    from backend.services.model_catalogue_seed import _ENTRIES
+
+    soniox_entries = [
+        e for e in _ENTRIES
+        if e["provider_name"] == "soniox" and e["capability"] == "stt"
+    ]
+    assert len(soniox_entries) >= 1
+    assert "SONIOX_API_KEY" in soniox_entries[0]["credential_requirements"]
+
+    wavenet_entries = [
+        e for e in _ENTRIES
+        if e["provider_name"] == "google-wavenet" and e["capability"] == "tts"
+    ]
+    assert len(wavenet_entries) >= 1
+    assert "GOOGLE_API_KEY" in wavenet_entries[0]["credential_requirements"]
+
+
+@pytest.mark.anyio
+async def test_directory_service_lists_soniox_and_wavenet():
+    """ModelDirectoryService lists live models for Soniox and Google WaveNet."""
+    from backend.services.model_directory_service import ModelDirectoryService
+
+    mock_db = MagicMock()
+    svc = ModelDirectoryService(mock_db)
+    svc._catalogue_repo = MagicMock()
+    svc._catalogue_repo.find_many = AsyncMock(return_value=[])
+    svc._cred_repo = MagicMock()
+    svc._cred_repo.find_current = AsyncMock(return_value=None)
+
+    soniox_models = await svc.list_provider_live_models("soniox")
+    assert "stt-async-v5" in soniox_models
+
+    wavenet_models = await svc.list_provider_live_models("google-wavenet")
+    assert "wavenet" in wavenet_models
+
+
+def test_pricing_sync_contains_soniox_and_wavenet():
+    """Pricing sync definitions include Soniox and Google WaveNet rate cards."""
+    from backend.services.pricing_sync_service import DEFAULT_PROVIDER_DEFINITIONS
+
+    soniox_defs = [
+        d for d in DEFAULT_PROVIDER_DEFINITIONS
+        if d["provider_name"] == "soniox" and d["capability"] == "stt"
+    ]
+    assert len(soniox_defs) == 1
+
+    wavenet_defs = [
+        d for d in DEFAULT_PROVIDER_DEFINITIONS
+        if d["provider_name"] == "google-wavenet" and d["capability"] == "tts"
+    ]
+    assert len(wavenet_defs) == 1
