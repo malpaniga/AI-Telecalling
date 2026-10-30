@@ -99,3 +99,101 @@ def test_google_wavenet_capabilities_and_models():
     assert caps["streaming"] is True
     assert caps["sample_rate"] == 16000
     assert "hi-IN" in caps["languages"]
+
+
+
+# ---------------------------------------------------------------------------
+# Task 2: Soniox STT Tests
+# ---------------------------------------------------------------------------
+
+@pytest.mark.anyio
+async def test_soniox_stt_transcribe_success():
+    """SonioxSTTProvider.transcribe uploads audio and retrieves transcript."""
+    from backend.providers.stt.soniox import SonioxSTTProvider, DEFAULT_MODEL
+
+    mock_client = AsyncMock()
+
+    # 1. Upload file response
+    mock_upload_resp = MagicMock()
+    mock_upload_resp.status_code = 200
+    mock_upload_resp.json.return_value = {"id": "file_abc123"}
+    mock_upload_resp.raise_for_status = MagicMock()
+
+    # 2. Create transcription response
+    mock_trans_resp = MagicMock()
+    mock_trans_resp.status_code = 200
+    mock_trans_resp.json.return_value = {"id": "tr_xyz789", "status": "completed"}
+    mock_trans_resp.raise_for_status = MagicMock()
+
+    # 3. Get transcript response
+    mock_transcript_resp = MagicMock()
+    mock_transcript_resp.status_code = 200
+    mock_transcript_resp.json.return_value = {"text": "Hello world from Soniox"}
+    mock_transcript_resp.raise_for_status = MagicMock()
+
+    # 4. Delete file response
+    mock_delete_resp = MagicMock()
+    mock_delete_resp.status_code = 200
+    mock_delete_resp.raise_for_status = MagicMock()
+
+    def mock_post(url, *args, **kwargs):
+        if "/v1/files" in url:
+            return mock_upload_resp
+        if "/v1/transcriptions" in url:
+            return mock_trans_resp
+        raise ValueError(f"Unexpected POST url {url}")
+
+    def mock_get(url, *args, **kwargs):
+        if "/transcript" in url:
+            return mock_transcript_resp
+        if "/v1/transcriptions/" in url:
+            return mock_trans_resp
+        raise ValueError(f"Unexpected GET url {url}")
+
+    mock_client.post = AsyncMock(side_effect=mock_post)
+    mock_client.get = AsyncMock(side_effect=mock_get)
+    mock_client.delete = AsyncMock(return_value=mock_delete_resp)
+
+    provider = SonioxSTTProvider(api_key="soniox_secret_key_123", _client=mock_client)
+    transcript = await provider.transcribe(b"WAV_AUDIO_BYTES_TEST_SAMPLE")
+    assert transcript == "Hello world from Soniox"
+
+    # Verify authorization header was sent
+    post_calls = mock_client.post.call_args_list
+    assert any("Bearer soniox_secret_key_123" in str(call) for call in post_calls)
+
+
+def test_soniox_stt_missing_key_raises():
+    """Constructing SonioxSTTProvider without key raises ValueError."""
+    from backend.providers.stt.soniox import SonioxSTTProvider
+
+    with pytest.raises(ValueError, match="SONIOX_API_KEY"):
+        SonioxSTTProvider(api_key="")
+
+
+@pytest.mark.anyio
+async def test_soniox_stt_auth_error_sanitized():
+    """Authentication errors never expose API key and suppress cause."""
+    from backend.providers.stt.soniox import SonioxSTTProvider
+
+    mock_client = AsyncMock()
+    mock_client.post.side_effect = Exception("401 Unauthorized: key soniox_super_secret invalid")
+    provider = SonioxSTTProvider(api_key="soniox_super_secret", _client=mock_client)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        await provider.transcribe(b"audio-bytes-sample")
+
+    assert "soniox_super_secret" not in str(exc_info.value)
+    assert "Soniox" in str(exc_info.value)
+    assert exc_info.value.__cause__ is None
+
+
+def test_soniox_stt_capabilities_and_models():
+    """Soniox capabilities and models return expected structure."""
+    from backend.providers.stt.soniox import SonioxSTTProvider
+
+    provider = SonioxSTTProvider(api_key="test-key", _client=MagicMock())
+    caps = provider.get_capabilities()
+    assert caps["provider"] == "soniox"
+    assert "hi-IN" in caps["languages"]
+    assert "mr-IN" in caps["languages"]
