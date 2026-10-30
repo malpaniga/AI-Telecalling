@@ -368,6 +368,8 @@ class ModelTestService:
                 response = await self._test_groq_llm(credential, model_id)
             elif provider_name == "gemini":
                 response = await self._test_gemini_llm(credential, model_id, extra_params=extra_params)
+            elif provider_name == "sarvam":
+                response = await self._test_sarvam_llm(credential, model_id)
             elif provider_name == "ollama":
                 # Ollama is local-only — test connectivity but return unavailable
                 # if the runtime is not reachable (cloud-only mode check happens at activation)
@@ -413,6 +415,19 @@ class ModelTestService:
         return await provider.generate(
             [{"role": "user", "content": "Say hello in one sentence."}],
             thinking_budget=thinking_budget,
+        )
+
+    async def _test_sarvam_llm(self, credential: str | None, model_id: str) -> str:
+        """[LIVE] Test Sarvam LLM with the injected API key."""
+        if not credential:
+            raise ValueError("SARVAM_API_KEY is required for Sarvam LLM")
+        from backend.providers.llm.sarvam import SarvamLLMProvider
+        provider = SarvamLLMProvider(
+            api_key=credential,
+            model=model_id or "sarvam-105b-conversations",
+        )
+        return await provider.generate(
+            [{"role": "user", "content": "Say hello in one sentence."}]
         )
 
     async def _test_ollama_llm(self, model_id: str) -> str:

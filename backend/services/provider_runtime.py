@@ -89,6 +89,13 @@ class CloudProviderRuntime:
                     model=config.model_id,
                     **_llm_options(params),
                 )
+            if config.provider_name == "sarvam":
+                from backend.providers.llm.sarvam import SarvamLLMProvider
+                return SarvamLLMProvider(
+                    api_key=_required_credential(config, credential),
+                    model=config.model_id,
+                    **_llm_options(params),
+                )
         if config.capability == "tts" and config.provider_name == "elevenlabs":
             from backend.providers.tts.elevenlabs_v2 import (
                 DEFAULT_VOICE_ID,

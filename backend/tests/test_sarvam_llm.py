@@ -141,3 +141,45 @@ async def test_sarvam_llm_provider_get_models():
     provider = SarvamLLMProvider(api_key="test-key", _client=MagicMock())
     models = await provider.get_models()
     assert "sarvam-105b-conversations" in models
+
+
+def test_runtime_service_builds_sarvam_llm():
+    """CloudProviderRuntime._build_provider instantiates SarvamLLMProvider."""
+    from backend.services.provider_runtime import CloudProviderRuntime
+    from backend.models.model_directory import ProviderConfiguration
+
+    config = ProviderConfiguration(
+        provider_name="sarvam",
+        capability="llm",
+        model_id="sarvam-105b-conversations",
+        is_active=True,
+    )
+    provider = CloudProviderRuntime._build_provider(config, credential="test-key-123")
+    assert isinstance(provider, SarvamLLMProvider)
+    assert provider.model == "sarvam-105b-conversations"
+
+
+@pytest.mark.anyio
+async def test_model_test_service_sarvam_llm(monkeypatch):
+    """ModelTestService.test_llm routes correctly to Sarvam provider."""
+    from backend.services.model_test_service import ModelTestService
+
+    svc = ModelTestService()
+    mock_generate = AsyncMock(return_value="Hello from Sarvam!")
+    monkeypatch.setattr(SarvamLLMProvider, "generate", mock_generate)
+
+    res = await svc.test_llm("sarvam", "sarvam-105b-conversations", credential="test-key")
+    assert res["status"] == "ok"
+    assert res["response"] == "Hello from Sarvam!"
+    assert "latency_ms" in res
+
+
+@pytest.mark.anyio
+async def test_model_test_service_sarvam_missing_credential():
+    """ModelTestService.test_llm for sarvam returns error when credential is missing."""
+    from backend.services.model_test_service import ModelTestService
+
+    svc = ModelTestService()
+    res = await svc.test_llm("sarvam", "sarvam-105b-conversations", credential=None)
+    assert res["status"] == "error"
+    assert "SARVAM_API_KEY" in res["error"]
