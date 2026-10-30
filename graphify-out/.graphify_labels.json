@@ -142,7 +142,6 @@
   "140": "test_test_agent.py",
   "141": "AIModelCatalogueRepo",
   "142": "_make_mock_redis",
-  "143": "ProviderConfigPanel.tsx",
   "144": "MockPaymentProvider",
   "145": "test_m4_payment.py",
   "146": "AI Telecalling SaaS",
@@ -152,7 +151,6 @@
   "150": "Agent Studio: Export & Import AI Agents & Separate Knowledge Bases Across Organizations",
   "151": "UsageEventRepository",
   "152": "AuditLogRepository",
-  "153": "agents/[id]/page.tsx",
   "154": "run.py",
   "155": "Campaign",
   "156": "EntitlementCheck",
@@ -277,7 +275,6 @@
   "275": "STTProvider",
   "276": "DocumentModel",
   "277": "test_m23_customer_billing.py",
-  "278": "LeadsImportPage",
   "283": "logging_setup.py",
   "285": "ImportAgentModal",
   "286": "ImportKbModal"

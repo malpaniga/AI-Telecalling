@@ -33,6 +33,7 @@ import {
   Info,
   BookOpen,
   Download,
+  CreditCard,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AppShell } from "@/components/layout/app-shell";
@@ -154,6 +155,35 @@ export default function SarvamAgentStudioPage() {
   const hangupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const micMutedRef = useRef<boolean>(false);
   const initSentRef = useRef<boolean>(false);
+
+  // Credit & Trial status state
+  const [trialStatus, setTrialStatus] = useState<{
+    free_tests_remaining: number;
+    free_test_session_max_minutes: number;
+    max_call_duration_minutes: number;
+  }>({
+    free_tests_remaining: 10,
+    free_test_session_max_minutes: 3,
+    max_call_duration_minutes: 7,
+  });
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [callDuration, setCallDuration] = useState<number>(0);
+  const callDurationTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const refreshCreditsStatus = useCallback(() => {
+    api.wallet
+      .trialStatus()
+      .then((ts) => setTrialStatus(ts))
+      .catch(() => {});
+    api.wallet
+      .summary()
+      .then((w) => setWalletBalance(w.available_credits))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    refreshCreditsStatus();
+  }, [refreshCreditsStatus]);
 
   // Scroll transcript to bottom
   useEffect(() => {
@@ -689,6 +719,10 @@ export default function SarvamAgentStudioPage() {
   }
 
   async function handleStartCall() {
+    if (trialStatus.free_tests_remaining <= 0 && walletBalance !== null && walletBalance < 5) {
+      toast.error("Minimum 5 credits required to run a test call. Free trial sessions exhausted.");
+      return;
+    }
     if (hangupTimeoutRef.current) {
       clearTimeout(hangupTimeoutRef.current);
       hangupTimeoutRef.current = null;
@@ -758,6 +792,11 @@ export default function SarvamAgentStudioPage() {
         );
         initSentRef.current = true;
         setCallActive(true);
+        setCallDuration(0);
+        if (callDurationTimerRef.current) clearInterval(callDurationTimerRef.current);
+        callDurationTimerRef.current = setInterval(() => {
+          setCallDuration((prev) => prev + 1);
+        }, 1000);
         setCallStatus("Connected · Waiting for greeting");
       };
 
@@ -902,6 +941,10 @@ export default function SarvamAgentStudioPage() {
 
   function handleEndCall(status?: string | unknown) {
     const finalStatus = typeof status === "string" ? status : "Disconnected";
+    if (callDurationTimerRef.current) {
+      clearInterval(callDurationTimerRef.current);
+      callDurationTimerRef.current = null;
+    }
     if (hangupTimeoutRef.current) {
       clearTimeout(hangupTimeoutRef.current);
       hangupTimeoutRef.current = null;
@@ -936,6 +979,7 @@ export default function SarvamAgentStudioPage() {
       } catch {}
       wsRef.current = null;
     }
+    refreshCreditsStatus();
   }
 
   // Send simulated text chat message
@@ -2046,6 +2090,12 @@ export default function SarvamAgentStudioPage() {
                       }`}
                     />
                     <span className="text-text-primary">{callStatus}</span>
+                    {callActive && (
+                      <span className="font-mono text-xs text-text-muted border-l border-border pl-2">
+                        {Math.floor(callDuration / 60).toString().padStart(2, "0")}:{(callDuration % 60).toString().padStart(2, "0")}
+                        {trialStatus.free_tests_remaining > 0 ? " / 03:00" : ""}
+                      </span>
+                    )}
                   </div>
 
                   {/* Pulsing Audio Waves */}
@@ -2065,6 +2115,26 @@ export default function SarvamAgentStudioPage() {
                         }}
                       />
                     ))}
+                  </div>
+
+                  {/* Quota & Billing Status Pill */}
+                  <div className="flex flex-col items-center gap-1 w-full text-center">
+                    {trialStatus.free_tests_remaining > 0 ? (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold py-0.5 px-2.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                        <Sparkles className="w-3 h-3 text-blue-500" />
+                        Free Trial: {trialStatus.free_tests_remaining}/10 left (3m limit)
+                      </span>
+                    ) : (
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold py-0.5 px-2.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          <CreditCard className="w-3 h-3 text-amber-500" />
+                          Standard Billing: 1 cr/min {walletBalance !== null ? `(${walletBalance} cr available)` : ""}
+                        </span>
+                        <span className="text-[10px] text-text-muted">
+                          Free tests exhausted · 5 cr held on connect
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Call Controls: Mic Mute & Start/End */}
@@ -2087,12 +2157,26 @@ export default function SarvamAgentStudioPage() {
                     </button>
 
                     {!callActive ? (
-                      <button
-                        onClick={handleStartCall}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30 transition-all hover:scale-105"
-                      >
-                        <Phone className="w-4 h-4" /> Start Call
-                      </button>
+                      trialStatus.free_tests_remaining <= 0 && walletBalance !== null && walletBalance < 5 ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <button
+                            disabled
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-muted text-text-muted cursor-not-allowed opacity-60"
+                          >
+                            <Phone className="w-4 h-4" /> Start Call
+                          </button>
+                          <Link href="/credits" className="text-[10px] text-amber-500 underline font-semibold">
+                            Min 5 credits needed · Top up wallet
+                          </Link>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={handleStartCall}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30 transition-all hover:scale-105"
+                        >
+                          <Phone className="w-4 h-4" /> Start Call
+                        </button>
+                      )
                     ) : (
                       <button
                         onClick={() => handleEndCall("Disconnected")}

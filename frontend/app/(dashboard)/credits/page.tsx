@@ -122,7 +122,7 @@ export default function CreditsPage() {
 
           {wallet.is_low && (
             <div className="mb-6 rounded-md bg-[#FEF6E7] border border-[#F5D99A] px-4 py-3 text-sm text-warning flex items-center justify-between">
-              <span>⚠ Low calling balance — your wallet has dropped below {wallet.low_threshold} credits.</span>
+              <span>⚠ Low calling balance — your wallet has dropped below {wallet.low_threshold ?? (wallet as any).low_credit_threshold ?? 100} credits.</span>
               <Button size="sm" variant="secondary" onClick={() => setShowBuy(true)}>Top Up Credits</Button>
             </div>
           )}

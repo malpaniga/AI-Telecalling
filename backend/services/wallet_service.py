@@ -446,6 +446,7 @@ class WalletService:
             "total_bonus": wallet.total_bonus,
             "is_low": wallet.available_credits <= wallet.low_credit_threshold,
             "low_credit_threshold": wallet.low_credit_threshold,
+            "low_threshold": wallet.low_credit_threshold,
             "next_expiry": next_expiry.isoformat() if next_expiry else None,
             "active_lots": len(lots),
         }
