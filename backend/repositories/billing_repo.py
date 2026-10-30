@@ -8,7 +8,14 @@ from pymongo import ASCENDING, DESCENDING
 from pymongo.errors import DuplicateKeyError
 
 from backend.models.base import new_id, utcnow
-from backend.models.billing import Invoice, Order, Payment, WebhookEvent
+from backend.models.billing import (
+    Invoice,
+    ManualSubscriptionRequest,
+    Order,
+    Payment,
+    PlatformPaymentSettings,
+    WebhookEvent,
+)
 from backend.repositories.base import BaseRepository
 
 log = logging.getLogger("repo.billing")
@@ -282,3 +289,148 @@ class WebhookEventRepository(BaseRepository):
             sort=[("received_at", DESCENDING)],
             limit=limit,
         )
+
+
+class PlatformBillingSettingsRepository(BaseRepository):
+    collection_name = "system_settings"
+    model_class = PlatformPaymentSettings
+
+    async def get(self) -> PlatformPaymentSettings:
+        doc = await self.find_by_id("billing_settings")
+        if doc is None:
+            doc = PlatformPaymentSettings(_id="billing_settings")
+            await self.insert(doc)
+        return doc
+
+    async def update(
+        self,
+        payment_mode: Optional[str] = None,
+        admin_upi_id: Optional[str] = None,
+        admin_payee_name: Optional[str] = None,
+        updated_by: Optional[str] = None,
+    ) -> PlatformPaymentSettings:
+        updates: dict = {"updated_at": utcnow()}
+        if payment_mode is not None:
+            updates["payment_mode"] = payment_mode
+        if admin_upi_id is not None:
+            updates["admin_upi_id"] = admin_upi_id
+        if admin_payee_name is not None:
+            updates["admin_payee_name"] = admin_payee_name
+        if updated_by is not None:
+            updates["updated_by"] = updated_by
+
+        await self.col.update_one(
+            {"_id": "billing_settings"},
+            {"$set": updates},
+            upsert=True,
+        )
+        return await self.get()
+
+
+class ManualSubscriptionRequestRepository(BaseRepository):
+    collection_name = "manual_subscription_requests"
+    model_class = ManualSubscriptionRequest
+
+    async def create(
+        self,
+        organization_id: str,
+        user_id: str,
+        user_email: str,
+        org_name: str,
+        plan_id: str,
+        plan_slug: str,
+        plan_name: str,
+        amount_paise: int,
+        utr_number: str,
+        billing_cycle: str = "monthly",
+        currency: str = "INR",
+        payer_note: Optional[str] = None,
+    ) -> ManualSubscriptionRequest:
+        req = ManualSubscriptionRequest(
+            _id=new_id(),
+            organization_id=organization_id,
+            user_id=user_id,
+            user_email=user_email,
+            org_name=org_name,
+            plan_id=plan_id,
+            plan_slug=plan_slug,
+            plan_name=plan_name,
+            billing_cycle=billing_cycle,
+            amount_paise=amount_paise,
+            currency=currency,
+            utr_number=utr_number.strip(),
+            payer_note=payer_note,
+            status="pending",
+        )
+        await self.insert(req)
+        log.info(
+            "manual subscription request created id=%s org=%s utr=%s amount_paise=%d",
+            req.id,
+            organization_id,
+            req.utr_number,
+            amount_paise,
+        )
+        return req
+
+    async def find_pending_for_org(
+        self, organization_id: str
+    ) -> Optional[ManualSubscriptionRequest]:
+        return await self.find_one({
+            "organization_id": organization_id,
+            "status": "pending",
+        })
+
+    async def find_by_utr(
+        self, utr_number: str
+    ) -> Optional[ManualSubscriptionRequest]:
+        clean_utr = utr_number.strip()
+        # Find any non-cancelled/non-rejected request matching this UTR
+        return await self.find_one({
+            "utr_number": clean_utr,
+            "status": {"$in": ["pending", "approved"]},
+        })
+
+    async def list_for_org(
+        self, organization_id: str, limit: int = 20
+    ) -> list[ManualSubscriptionRequest]:
+        return await self.find_many(
+            {"organization_id": organization_id},
+            sort=[("created_at", DESCENDING)],
+            limit=limit,
+        )
+
+    async def list_all(
+        self,
+        status: Optional[str] = None,
+        limit: int = 50,
+        skip: int = 0,
+    ) -> list[ManualSubscriptionRequest]:
+        filter_doc = {}
+        if status:
+            filter_doc["status"] = status
+        return await self.find_many(
+            filter_doc,
+            sort=[("created_at", DESCENDING)],
+            limit=limit,
+            skip=skip,
+        )
+
+    async def set_status(
+        self,
+        id: str,
+        status: str,
+        reviewed_by: Optional[str] = None,
+        rejection_reason: Optional[str] = None,
+    ) -> bool:
+        updates: dict = {
+            "status": status,
+            "updated_at": utcnow(),
+        }
+        if reviewed_by:
+            updates["reviewed_by"] = reviewed_by
+            updates["reviewed_at"] = utcnow()
+        if rejection_reason is not None:
+            updates["rejection_reason"] = rejection_reason
+
+        return await self.update_by_id(id, updates)
+

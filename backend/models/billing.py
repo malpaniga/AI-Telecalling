@@ -171,3 +171,37 @@ class WebhookEvent(DocumentModel):
 
     # Raw signature for audit
     signature: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Platform Payment Settings — controls payment mode and admin UPI details
+# ---------------------------------------------------------------------------
+class PlatformPaymentSettings(DocumentModel):
+    payment_mode: str = "manual"        # "razorpay" | "manual"
+    admin_upi_id: str = "nivcall@icici"
+    admin_payee_name: str = "NivCall Connect"
+    updated_at: datetime = Field(default_factory=utcnow)
+    updated_by: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Manual Subscription Request — tracks user UPI submission and admin review
+# ---------------------------------------------------------------------------
+class ManualSubscriptionRequest(TimestampedModel):
+    organization_id: str
+    user_id: str
+    user_email: str
+    org_name: str
+    plan_id: str
+    plan_slug: str
+    plan_name: str
+    billing_cycle: str = "monthly"      # "monthly" | "yearly"
+    amount_paise: int
+    currency: str = "INR"
+    utr_number: str
+    payer_note: Optional[str] = None
+    status: str = "pending"             # "pending" | "approved" | "rejected" | "cancelled"
+    rejection_reason: Optional[str] = None
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+
