@@ -183,3 +183,51 @@ async def test_model_test_service_sarvam_missing_credential():
     res = await svc.test_llm("sarvam", "sarvam-105b-conversations", credential=None)
     assert res["status"] == "error"
     assert "SARVAM_API_KEY" in res["error"]
+
+
+def test_catalogue_seed_contains_sarvam_105b_conversations():
+    """Model catalogue seed contains sarvam-105b-conversations with valid specs."""
+    from backend.services.model_catalogue_seed import _ENTRIES
+
+    matching = [
+        entry for entry in _ENTRIES
+        if entry["provider_name"] == "sarvam"
+        and entry["model_id"] == "sarvam-105b-conversations"
+        and entry["capability"] == "llm"
+    ]
+    assert len(matching) == 1
+    entry = matching[0]
+    assert entry["streaming_supported"] is True
+    assert "SARVAM_API_KEY" in entry["credential_requirements"]
+    assert entry["implementation_status"] == "supported"
+
+
+@pytest.mark.anyio
+async def test_directory_service_lists_sarvam_llm_model():
+    """ModelDirectoryService.list_provider_live_models lists sarvam-105b-conversations."""
+    from backend.services.model_directory_service import ModelDirectoryService
+
+    mock_db = MagicMock()
+    svc = ModelDirectoryService(mock_db)
+    svc._catalogue_repo = MagicMock()
+    svc._catalogue_repo.find_many = AsyncMock(return_value=[])
+    svc._cred_repo = MagicMock()
+    svc._cred_repo.find_current = AsyncMock(return_value=None)
+
+    models = await svc.list_provider_live_models("sarvam")
+    assert "sarvam-105b-conversations" in models
+
+
+def test_pricing_sync_contains_sarvam_llm():
+    """Pricing sync definitions include sarvam-105b-conversations default rate card."""
+    from backend.services.pricing_sync_service import DEFAULT_PROVIDER_DEFINITIONS
+
+    matching = [
+        defn for defn in DEFAULT_PROVIDER_DEFINITIONS
+        if defn["provider_name"] == "sarvam"
+        and defn["model_id"] == "sarvam-105b-conversations"
+        and defn["capability"] == "llm"
+    ]
+    assert len(matching) == 1
+    assert matching[0]["base_currency"] == "INR"
+    assert matching[0]["billing_unit"] == "turn"

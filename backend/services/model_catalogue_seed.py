@@ -97,6 +97,30 @@ _ENTRIES: list[dict] = [
         "implementation_status": "supported",
         "notes": "Deprecated on free tier by Groq. Requires enterprise or paid tier. Use openai/gpt-oss-20b for free tier.",
     },
+    {
+        "provider_name": "sarvam",
+        "model_id": "sarvam-105b-conversations",
+        "capability": "llm",
+        "hosting_mode": "managed_api",
+        "supported_languages": ["hi", "ta", "te", "kn", "mr", "bn", "gu", "ml", "pa", "en-IN", "multilingual"],
+        "streaming_supported": True,
+        "credential_requirements": ["SARVAM_API_KEY"],
+        "setup_requirements": "Create API key at dashboard.sarvam.ai",
+        "license_spdx": "Proprietary",
+        "commercial_use_allowed": True,
+        "free_tier_info": {
+            "note": "Free tier available; contact Sarvam for current quota. Verified 2026-Q1."
+        },
+        "free_tier_verified_date": "2026-01-01",
+        "pricing_per_minute_usd": None,
+        "doc_url": "https://docs.sarvam.ai",
+        "model_card_url": None,
+        "implementation_status": "supported",
+        "notes": (
+            "Sarvam 105B conversational dialogue model (MoE) fine-tuned specifically "
+            "for voice agents, chatbots, and low-latency multi-turn conversations across Indian languages."
+        ),
+    },
     # ------------------------------------------------------------------
     # STT
     # ------------------------------------------------------------------

@@ -551,6 +551,8 @@ class ModelDirectoryService:
             ])
         elif provider_name == "sarvam":
             cat_models.update([
+                "sarvam-105b-conversations",
+                "sarvam-105b",
                 "saaras:v4",
                 "saaras:v4-turbo",
                 "saaras-v3",

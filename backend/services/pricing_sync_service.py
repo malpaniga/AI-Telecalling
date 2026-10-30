@@ -119,6 +119,16 @@ DEFAULT_PROVIDER_DEFINITIONS: List[Dict[str, Any]] = [
         "base_unit_rate": 0.0,
         "notes": "Self-hosted Ollama runtime.",
     },
+    {
+        "provider_name": "sarvam",
+        "model_id": "sarvam-105b-conversations",
+        "capability": "llm",
+        "display_name": "Sarvam 105B Conversations",
+        "base_currency": "INR",
+        "billing_unit": "turn",
+        "base_unit_rate": 0.05,
+        "notes": "Official Sarvam conversational 105B model estimated per-turn rate.",
+    },
 
     # ── TTS (Text-to-Speech) ──
     {
