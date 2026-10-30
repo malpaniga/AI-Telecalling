@@ -65,6 +65,7 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   confirmed: "success",
   appointment_set: "success",
   booked: "success",
+  approved: "success",
 
   // Default / neutral states
   draft: "default",
@@ -83,6 +84,7 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   no_show: "warning",
 
   // Danger states
+  rejected: "danger",
   cancelled: "danger",
   failed: "danger",
   no_answer: "danger",

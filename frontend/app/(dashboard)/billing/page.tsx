@@ -251,7 +251,7 @@ export default function BillingPage() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-text-primary">Billing & Subscription</h2>
-          <p className="text-xs text-text-secondary mt-0.5">Manage your organization's subscription plan, invoices, and payments</p>
+          <p className="text-xs text-text-secondary mt-0.5">Manage your organization&apos;s subscription plan, invoices, and payments</p>
         </div>
       </div>
 
