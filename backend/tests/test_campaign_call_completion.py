@@ -196,3 +196,69 @@ class TestCampaignCallCompletion:
             assert camp2.leads_completed == 1
 
         run(_t())
+
+    def test_call_session_finalize_integrates_with_campaign(self, monkeypatch):
+        """CallSession.finalize() directly finalizes the SaaS call without hitting legacy repo,
+        updating campaign counters, releasing slots, and completing the campaign.
+        """
+        async def _t():
+            campaign, leads = await self._setup_data(org_id="org-c3", num_leads=1)
+            await self.camp_svc.start_campaign(campaign.id, "org-c3", skip_preflight=True)
+
+            await self.camp_svc.acquire_call_slot(campaign.id)
+            res = await self.call_svc.initiate_call(
+                organization_id="org-c3",
+                to_number=leads[0].phone,
+                from_number=campaign.calling_number,
+                campaign_id=campaign.id,
+                lead_id=leads[0].id,
+                slot_already_acquired=True,
+            )
+            call_id = res["call_id"]
+
+            from backend.memory import repository as mem_repo
+            monkeypatch.setattr(mem_repo, "get_db", lambda: self.db)
+
+            from backend.core import redis as core_redis
+            monkeypatch.setattr(core_redis, "get_redis", lambda: self.redis)
+
+            import sys
+            if "groq" not in sys.modules:
+                sys.modules["groq"] = MagicMock()
+            if "onnxruntime" not in sys.modules:
+                sys.modules["onnxruntime"] = MagicMock()
+
+            # Mock transport, stt, engine, tts, store
+            transport = MagicMock()
+            stt = MagicMock()
+            engine = MagicMock()
+            tts = MagicMock()
+            store = MagicMock()
+            async def _dummy_del(k): return None
+            store.delete = _dummy_del
+
+            from backend.call_session import CallSession
+            session = CallSession(
+                transport=transport,
+                stt=stt,
+                engine=engine,
+                tts=tts,
+                store=store,
+                call_id=call_id,
+            )
+            session.latencies = [150, 200]
+            session.state = {"slots": {"budget": "50L"}, "flags": {"interested": True}, "stage": "pitch"}
+
+            # Finalize via CallSession
+            await session.finalize()
+
+            camp = await self.camp_svc.get_campaign(campaign.id, "org-c3")
+            assert camp.leads_dialed == 1
+            assert camp.leads_connected == 1
+            assert camp.leads_completed == 1
+            assert camp.status == "completed"
+
+            active = await self.camp_svc.get_active_call_count(campaign.id)
+            assert active == 0
+
+        run(_t())

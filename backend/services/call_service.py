@@ -290,8 +290,10 @@ class CallService:
         if call is None:
             raise ValueError(f"Call {call_id} not found")
 
-        if call.status in ("completed", "cancelled", "failed"):
-            log.info("call %s already in terminal status '%s'; skipping duplicate finalize", call_id, call.status)
+        # Idempotency guard: only skip if this call has already been finalized by CallService
+        call_raw = await self.db["calls"].find_one({"_id": call_id})
+        if call_raw and call_raw.get("call_service_finalized"):
+            log.info("call %s already finalized by CallService; skipping duplicate finalize", call_id)
             return {
                 "call_id": call_id,
                 "status": call.status,
@@ -345,6 +347,12 @@ class CallService:
             error_message=error_message,
         )
 
+        # Mark as finalized by CallService
+        await self.db["calls"].update_one(
+            {"_id": call_id},
+            {"$set": {"call_service_finalized": True}},
+        )
+
         # Update lead status based on outcome
         if call.lead_id and outcome:
             lead_status_map = {
@@ -355,6 +363,8 @@ class CallService:
                 "no_answer": "failed",
                 "failed": "failed",
                 "transferred": "contacted",
+                "booked": "qualified",
+                "contacted": "contacted",
             }
             new_lead_status = lead_status_map.get(outcome, "contacted")
             await self.lead_repo.update_status(
@@ -370,7 +380,12 @@ class CallService:
             await self.campaign_repo.increment_counter(call.campaign_id, "leads_dialed")
             if status == "completed":
                 await self.campaign_repo.increment_counter(call.campaign_id, "leads_completed")
-            if outcome in ("qualified", "appointment_set"):
+            is_connected = (
+                call.connected_at is not None
+                or (duration_s is not None and duration_s > 0)
+                or outcome in ("qualified", "appointment_set", "booked", "callback", "contacted", "not_interested")
+            )
+            if is_connected:
                 await self.campaign_repo.increment_counter(call.campaign_id, "leads_connected")
 
             # Auto-complete campaign if all leads have been dialed/completed and no calls active
@@ -378,7 +393,7 @@ class CallService:
             if campaign and campaign.status == "running":
                 query = {
                     "organization_id": organization_id,
-                    "status": {"$in": ["new", "callback", "scheduled"]},
+                    "status": {"$in": ["new", "scheduled"]},
                 }
                 if campaign.lead_filter:
                     query.update(campaign.lead_filter)

@@ -528,11 +528,6 @@ class CallSession:
                         self.lead_id = str(call_doc["lead_id"])
 
                 score = 0
-                if self.lead_id is not None:
-                    score = await repo.finalize_call(
-                        self.call_id, self.lead_id, self.state, avg_latency
-                    )
-
                 if db is not None and call_doc:
                     org_id = call_doc.get("organization_id", "demo")
                     from backend.agent.scoring import call_outcome, score_lead
@@ -541,8 +536,15 @@ class CallSession:
                     stage = self.state.get("stage", "")
                     lead_score = score_lead(slots, flags)
                     outcome = call_outcome(flags, stage)
+                    if outcome == "callback" and not flags.get("callback"):
+                        outcome = "contacted"
+                    from backend.core.redis import get_redis
+                    try:
+                        r = get_redis()
+                    except Exception:
+                        r = None
                     from backend.services.call_service import CallService
-                    call_svc = CallService(db)
+                    call_svc = CallService(db, redis=r)
                     await call_svc.finalize_call(
                         call_id=str(self.call_id),
                         organization_id=org_id,
@@ -550,8 +552,14 @@ class CallSession:
                         outcome=outcome,
                         avg_latency_ms=avg_latency,
                         turn_count=len(self.latencies),
-                        score=lead_score or score,
+                        score=lead_score,
                         qualification=slots,
+                    )
+                    score = lead_score
+                elif self.lead_id is not None:
+                    # Legacy fallback only for demo calls without a db call document
+                    score = await repo.finalize_call(
+                        self.call_id, self.lead_id, self.state, avg_latency
                     )
 
                 await self.store.delete(str(self.call_id))

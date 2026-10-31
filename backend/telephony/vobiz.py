@@ -519,9 +519,14 @@ async def ws_vobiz(ws: WebSocket):
                 from backend.repositories.call_repo import CallRepository
                 c_doc = await CallRepository(db).find_by_id(call_id)
                 if c_doc:
+                    from backend.core.redis import get_redis
+                    try:
+                        r = get_redis()
+                    except Exception:
+                        r = None
                     from backend.services.call_service import CallService
                     qualification = session.state.get("output_variables") if session else None
-                    call_svc = CallService(db)
+                    call_svc = CallService(db, redis=r)
                     await call_svc.finalize_call(
                         call_id=call_id,
                         organization_id=c_doc.organization_id,

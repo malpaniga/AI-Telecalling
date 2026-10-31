@@ -461,8 +461,13 @@ async def ws_plivo(ws: WebSocket):
             try:
                 call_doc = await db.calls.find_one({"_id": call_id})
                 if call_doc:
+                    from backend.core.redis import get_redis
+                    try:
+                        r = get_redis()
+                    except Exception:
+                        r = None
                     from backend.services.call_service import CallService
-                    call_svc = CallService(db)
+                    call_svc = CallService(db, redis=r)
                     await call_svc.finalize_call(
                         call_id=call_id,
                         organization_id=call_doc["organization_id"],
