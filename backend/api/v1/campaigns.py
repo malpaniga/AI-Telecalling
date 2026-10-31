@@ -53,6 +53,12 @@ class CreateCampaignRequest(BaseModel):
         return v
 
 
+class EnrollCampaignLeadsRequest(BaseModel):
+    lead_ids: Optional[list[str]] = None
+    tags: Optional[list[str]] = None
+    all_contacts: bool = False
+
+
 class UpdateCampaignRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
@@ -286,3 +292,114 @@ async def campaign_stats(
         return await svc.get_stats(campaign_id, org_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Campaign Leads Management Endpoints
+# ---------------------------------------------------------------------------
+@router.get("/{campaign_id}/leads")
+async def list_campaign_leads(
+    campaign_id: str,
+    status: Optional[str] = None,
+    limit: int = 50,
+    skip: int = 0,
+    user: CurrentUser = Depends(get_current_user),
+):
+    org_id = _require_org(user)
+    db = get_db()
+    from backend.repositories.campaign_repo import CampaignRepository
+    from backend.repositories.campaign_lead_repo import CampaignLeadRepository
+
+    campaign = await CampaignRepository(db).get_for_org(campaign_id, org_id)
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    repo = CampaignLeadRepository(db)
+    docs, total = await repo.list_for_campaign(campaign_id, org_id, status=status, limit=limit, skip=skip)
+
+    # Fetch corresponding lead details
+    lead_ids = [d["lead_id"] for d in docs]
+    leads_cursor = db["leads"].find({"_id": {"$in": lead_ids}, "organization_id": org_id})
+    leads_list = await leads_cursor.to_list(length=len(lead_ids))
+    lead_map = {str(l["_id"]): l for l in leads_list}
+
+    items = []
+    for d in docs:
+        lid = d["lead_id"]
+        master = lead_map.get(lid, {})
+        items.append({
+            "id": str(d.get("_id", "")),
+            "lead_id": lid,
+            "campaign_id": campaign_id,
+            "phone": d.get("phone") or master.get("phone", ""),
+            "name": master.get("name") or d.get("custom_fields", {}).get("user_name"),
+            "email": master.get("email"),
+            "status": d.get("status", "new"),
+            "attempts": d.get("attempts", 0),
+            "max_attempts": d.get("max_attempts", 3),
+            "last_called_at": d["last_called_at"].isoformat() if d.get("last_called_at") else None,
+            "next_attempt_at": d["next_attempt_at"].isoformat() if d.get("next_attempt_at") else None,
+            "disposition": d.get("disposition"),
+            "custom_fields": d.get("custom_fields", {}),
+            "created_at": d["created_at"].isoformat() if d.get("created_at") else None,
+        })
+
+    return {"items": items, "total": total}
+
+
+@router.post("/{campaign_id}/leads")
+async def enroll_campaign_leads(
+    campaign_id: str,
+    body: EnrollCampaignLeadsRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    org_id = _require_org(user)
+    db = get_db()
+    from backend.repositories.campaign_repo import CampaignRepository
+    from backend.repositories.campaign_lead_repo import CampaignLeadRepository
+
+    campaign = await CampaignRepository(db).get_for_org(campaign_id, org_id)
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    query: dict[str, Any] = {"organization_id": org_id}
+    if body.all_contacts:
+        pass
+    elif body.lead_ids:
+        query["_id"] = {"$in": body.lead_ids}
+    elif body.tags:
+        query["tags"] = {"$in": body.tags}
+    else:
+        raise HTTPException(status_code=400, detail="Must specify lead_ids, tags, or all_contacts=true")
+
+    cursor = db["leads"].find(query)
+    leads = await cursor.to_list(length=5000)
+    if not leads:
+        return {"enrolled": 0, "skipped": 0}
+
+    items = [
+        {
+            "lead_id": str(l["_id"]),
+            "phone": l["phone"],
+            "custom_fields": l.get("custom_fields") or {},
+        }
+        for l in leads
+    ]
+
+    repo = CampaignLeadRepository(db)
+    res = await repo.bulk_enroll(campaign_id, org_id, items)
+    return res
+
+
+@router.delete("/{campaign_id}/leads/{lead_id}")
+async def remove_campaign_lead(
+    campaign_id: str,
+    lead_id: str,
+    user: CurrentUser = Depends(get_current_user),
+):
+    org_id = _require_org(user)
+    db = get_db()
+    from backend.repositories.campaign_lead_repo import CampaignLeadRepository
+    repo = CampaignLeadRepository(db)
+    removed = await repo.remove_lead(campaign_id, lead_id, org_id)
+    return {"removed": removed}
