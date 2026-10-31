@@ -60,6 +60,7 @@ class CallService:
         agent_version: Optional[int] = None,
         provider: str = "mock",
         reserve_credits: int = DEFAULT_RESERVE_CREDITS,
+        slot_already_acquired: bool = False,
     ) -> dict:
         """
         Initiate an outbound call.
@@ -248,8 +249,8 @@ class CallService:
                     )
                 raise RuntimeError(f"Telephony dispatch failed: {err_msg}") from exc
 
-        # Increment campaign concurrency counter
-        if campaign_id:
+        # Increment campaign concurrency counter if not already acquired by caller
+        if campaign_id and not slot_already_acquired:
             from backend.services.campaign_service import CampaignService
             camp_svc = CampaignService(self.db, redis=self._get_redis())
             await camp_svc.increment_active_calls(campaign_id)
@@ -288,6 +289,16 @@ class CallService:
         call = await self.call_repo.get_for_org(call_id, organization_id)
         if call is None:
             raise ValueError(f"Call {call_id} not found")
+
+        if call.status in ("completed", "cancelled", "failed"):
+            log.info("call %s already in terminal status '%s'; skipping duplicate finalize", call_id, call.status)
+            return {
+                "call_id": call_id,
+                "status": call.status,
+                "outcome": call.outcome,
+                "duration_s": call.duration_s,
+                "credits_consumed": call.credits_consumed,
+            }
 
         # Calculate duration
         duration_s = None
@@ -351,7 +362,7 @@ class CallService:
                 qualification=qualification, score=score,
             )
 
-        # Decrement campaign concurrency
+        # Decrement campaign concurrency and update campaign stats
         if call.campaign_id:
             from backend.services.campaign_service import CampaignService
             camp_svc = CampaignService(self.db, redis=self._get_redis())
@@ -361,6 +372,23 @@ class CallService:
                 await self.campaign_repo.increment_counter(call.campaign_id, "leads_completed")
             if outcome in ("qualified", "appointment_set"):
                 await self.campaign_repo.increment_counter(call.campaign_id, "leads_connected")
+
+            # Auto-complete campaign if all leads have been dialed/completed and no calls active
+            campaign = await self.campaign_repo.get_for_org(call.campaign_id, organization_id)
+            if campaign and campaign.status == "running":
+                query = {
+                    "organization_id": organization_id,
+                    "status": {"$in": ["new", "callback", "scheduled"]},
+                }
+                if campaign.lead_filter:
+                    query.update(campaign.lead_filter)
+                if campaign.campaign_id_filter:
+                    query["campaign_id"] = campaign.campaign_id_filter
+                remaining_leads = await self.lead_repo.count(query)
+                active_calls = await camp_svc.get_active_call_count(call.campaign_id)
+                if remaining_leads == 0 and active_calls == 0:
+                    log.info("Auto-completing campaign=%s: all leads dialed and 0 active calls", call.campaign_id)
+                    await camp_svc.complete_campaign(call.campaign_id, organization_id)
 
         log.info("call finalized id=%s status=%s outcome=%s credits=%d",
                  call_id, status, outcome, actual_credits)

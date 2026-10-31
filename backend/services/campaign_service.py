@@ -176,10 +176,23 @@ class CampaignService:
                     + "; ".join(failed)
                 )
 
+        # Count eligible leads for this campaign
+        from backend.repositories.lead_repo import LeadRepository
+        lead_repo = LeadRepository(self.db)
+        lead_query = {
+            "organization_id": organization_id,
+            "status": {"$in": ["new", "callback", "scheduled"]},
+        }
+        if campaign.lead_filter:
+            lead_query.update(campaign.lead_filter)
+        if campaign.campaign_id_filter:
+            lead_query["campaign_id"] = campaign.campaign_id_filter
+        total_leads = await lead_repo.count(lead_query)
+
         now = utcnow()
         ok = await self.repo.transition_status(
             campaign_id, organization_id, "running",
-            extra_updates={"started_at": now},
+            extra_updates={"started_at": now, "total_leads": total_leads},
         )
         if not ok:
             raise RuntimeError("Failed to start campaign")

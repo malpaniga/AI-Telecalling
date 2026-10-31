@@ -256,7 +256,15 @@ class CallSession:
             except Exception as exc:  # noqa: BLE001
                 log.warning("failed to create call record (continuing unpersisted): %s", exc)
         else:
-            log.info("call connected with existing call=%s (%s)", self.call_id, self.direction)
+            db = repo.get_db()
+            if db is not None and self.lead_id is None:
+                try:
+                    call_doc = await db["calls"].find_one({"_id": str(self.call_id)})
+                    if call_doc and call_doc.get("lead_id"):
+                        self.lead_id = str(call_doc["lead_id"])
+                except Exception as exc:  # noqa: BLE001
+                    log.warning("failed to resolve lead_id for call %s: %s", self.call_id, exc)
+            log.info("call connected with existing call=%s lead=%s (%s)", self.call_id, self.lead_id, self.direction)
 
         if self.call_id:
             try:
@@ -509,12 +517,43 @@ class CallSession:
 
     async def finalize(self) -> None:
         await self._cancel_responder()
-        if self.call_id is not None and self.lead_id is not None:
+        if self.call_id is not None:
             avg_latency = int(mean(self.latencies)) if self.latencies else None
             try:
-                score = await repo.finalize_call(
-                    self.call_id, self.lead_id, self.state, avg_latency
-                )
+                db = repo.get_db()
+                call_doc = None
+                if db is not None:
+                    call_doc = await db["calls"].find_one({"_id": str(self.call_id)})
+                    if call_doc and not self.lead_id and call_doc.get("lead_id"):
+                        self.lead_id = str(call_doc["lead_id"])
+
+                score = 0
+                if self.lead_id is not None:
+                    score = await repo.finalize_call(
+                        self.call_id, self.lead_id, self.state, avg_latency
+                    )
+
+                if db is not None and call_doc:
+                    org_id = call_doc.get("organization_id", "demo")
+                    from backend.agent.scoring import call_outcome, score_lead
+                    slots = self.state.get("slots", {})
+                    flags = self.state.get("flags", {})
+                    stage = self.state.get("stage", "")
+                    lead_score = score_lead(slots, flags)
+                    outcome = call_outcome(flags, stage)
+                    from backend.services.call_service import CallService
+                    call_svc = CallService(db)
+                    await call_svc.finalize_call(
+                        call_id=str(self.call_id),
+                        organization_id=org_id,
+                        status="completed",
+                        outcome=outcome,
+                        avg_latency_ms=avg_latency,
+                        turn_count=len(self.latencies),
+                        score=lead_score or score,
+                        qualification=slots,
+                    )
+
                 await self.store.delete(str(self.call_id))
                 log.info("call %s finalized (score=%d)", self.call_id, score)
             except Exception as exc:  # noqa: BLE001

@@ -456,39 +456,17 @@ async def ws_plivo(ws: WebSocket):
             except Exception as exc:
                 log.warning("Session finalize error for call_id=%s: %s", call_id, exc)
 
-        # Finalize and settle credits for call in DB
+        # Finalize and settle credits / campaign counters for call in DB
         if call_id and db is not None:
             try:
-                from backend.services.credit_service import CreditService
-                from backend.models.base import utcnow
-                from datetime import timezone as _tz
-
                 call_doc = await db.calls.find_one({"_id": call_id})
-                if call_doc and call_doc.get("status") not in ("completed", "failed", "cancelled"):
-                    connected_at = call_doc.get("connected_at")
-                    now = utcnow()
-                    duration_s = 0
-                    if connected_at:
-                        if connected_at.tzinfo is None:
-                            connected_at = connected_at.replace(tzinfo=_tz.utc)
-                        duration_s = max(0, int((now - connected_at).total_seconds()))
-
-                    credit_svc = CreditService(db)
-                    await credit_svc.settle_duration(
-                        organization_id=call_doc["organization_id"],
+                if call_doc:
+                    from backend.services.call_service import CallService
+                    call_svc = CallService(db)
+                    await call_svc.finalize_call(
                         call_id=call_id,
-                        duration_seconds=duration_s,
-                    )
-
-                    await db.calls.update_one(
-                        {"_id": call_id},
-                        {"$set": {
-                            "status": "completed",
-                            "outcome": "answered" if duration_s > 0 else "no-answer",
-                            "duration_s": duration_s,
-                            "credits_consumed": (duration_s + 59) // 60 if duration_s > 0 else 0,
-                            "ended_at": now,
-                        }},
+                        organization_id=call_doc["organization_id"],
+                        status="completed",
                     )
             except Exception as exc:
-                log.warning("Failed settling credits on plivo websocket close for call %s: %s", call_id, exc)
+                log.warning("Failed finalizing plivo call %s via CallService: %s", call_id, exc)

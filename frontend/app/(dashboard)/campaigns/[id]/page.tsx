@@ -41,9 +41,9 @@ export default function CampaignDetailPage() {
     isCallingHours: boolean;
   } | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (silent = false) => {
     if (!id) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const [c, s] = await Promise.all([
         api.campaigns.get(id),
@@ -52,13 +52,24 @@ export default function CampaignDetailPage() {
       setCampaign(c);
       setStats(s);
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load campaign");
+      if (!silent) {
+        toast.error(e instanceof Error ? e.message : "Failed to load campaign");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Real-time polling when campaign is running
+  useEffect(() => {
+    if (!campaign || campaign.status !== "running") return;
+    const interval = setInterval(() => {
+      load(true);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [campaign?.status, load]);
 
   async function action(fn: () => Promise<Campaign>, label: string) {
     setActing(true);
@@ -119,7 +130,7 @@ export default function CampaignDetailPage() {
           </Button>
         </Link>
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={load} disabled={loading}>
+          <Button variant="ghost" size="sm" onClick={() => load()} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           </Button>
           {campaign.status === "draft" && (

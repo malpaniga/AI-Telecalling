@@ -124,6 +124,11 @@ class CampaignWorker:
             return_document=True,
         )
         if lead_doc is None:
+            # Check if active calls are still in flight
+            active = await camp_svc.get_active_call_count(campaign.id)
+            if active > 0:
+                log.info("campaign=%s waiting for %d active call(s) to finish", campaign.id, active)
+                return
             # No more leads — campaign complete
             log.info("campaign=%s complete (no more leads)", campaign.id)
             await camp_svc.complete_campaign(campaign.id, campaign.organization_id)
@@ -160,6 +165,7 @@ class CampaignWorker:
                 agent_id=campaign.agent_id,
                 agent_version=campaign.agent_version,
                 provider="mock",  # M8: provider from voice profile route
+                slot_already_acquired=True,
             )
             log.info("call initiated call=%s lead=%s", result["call_id"], lead_id)
         except Exception as exc:  # noqa: BLE001

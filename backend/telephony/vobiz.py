@@ -513,36 +513,20 @@ async def ws_vobiz(ws: WebSocket):
                 await call_broadcaster.broadcast(call_id, {"type": "hangup", "reason": "call_disconnected", "call_id": call_id})
             except Exception:
                 pass
-        # Finalize call status and settle credits if call record exists
+        # Finalize call status and settle credits / campaign counters if call record exists
         if call_id and db is not None:
             try:
                 from backend.repositories.call_repo import CallRepository
-                from backend.services.credit_service import CreditService
-                from backend.models.base import utcnow
-                call_repo = CallRepository(db)
-                c_doc = await call_repo.find_by_id(call_id)
+                c_doc = await CallRepository(db).find_by_id(call_id)
                 if c_doc:
-                    from datetime import timezone as _tz
-                    now = utcnow()
-                    ref_dt = c_doc.connected_at or c_doc.started_at or c_doc.created_at
-                    if ref_dt and ref_dt.tzinfo is None:
-                        ref_dt = ref_dt.replace(tzinfo=_tz.utc)
-                    duration = max(0, int((now - ref_dt).total_seconds())) if ref_dt else 0
-                    consumed = max(0, (duration + 59) // 60) if duration > 0 else 0
+                    from backend.services.call_service import CallService
                     qualification = session.state.get("output_variables") if session else None
-                    await call_repo.finalize(
+                    call_svc = CallService(db)
+                    await call_svc.finalize_call(
                         call_id=call_id,
                         organization_id=c_doc.organization_id,
                         status="completed",
-                        duration_s=duration,
-                        credits_consumed=consumed,
                         qualification=qualification,
                     )
-                    credit_svc = CreditService(db)
-                    await credit_svc.settle_duration(
-                        organization_id=c_doc.organization_id,
-                        call_id=call_id,
-                        duration_seconds=duration,
-                    )
             except Exception as e:
-                log.warning("Failed finalizing/settling Vobiz call %s: %s", call_id, e)
+                log.warning("Failed finalizing/settling Vobiz call %s via CallService: %s", call_id, e)
