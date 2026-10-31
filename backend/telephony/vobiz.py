@@ -274,13 +274,13 @@ async def vobiz_voice(request: Request) -> Response:
     lead_repo = LeadRepository(db)
     lead = None
     if from_number:
-        lead = await lead_repo.find_by_phone(inbound_org, from_number)
+        lead = await lead_repo.find_by_phone_org(phone=from_number, organization_id=inbound_org)
         if not lead:
             lead = await lead_repo.create(
                 organization_id=inbound_org,
-                name=f"Inbound Caller {from_number[-4:]}",
                 phone=from_number,
-                metadata={"source": "vobiz_inbound"},
+                name=f"Inbound Caller {from_number[-4:]}",
+                source="vobiz_inbound",
             )
 
     # Create Call record

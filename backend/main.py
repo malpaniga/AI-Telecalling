@@ -549,6 +549,15 @@ except Exception as exc:  # noqa: BLE001
     log.warning("Vobiz router not loaded: %s", exc)
 
 # ---------------------------------------------------------------------------
+# Plivo telephony routes
+# ---------------------------------------------------------------------------
+try:
+    from backend.telephony.plivo import router as plivo_router  # noqa: E402
+    app.include_router(plivo_router)
+except Exception as exc:  # noqa: BLE001
+    log.warning("Plivo router not loaded: %s", exc)
+
+# ---------------------------------------------------------------------------
 # Real-time Call Live Stream / Monitoring (for Studio Phone Testing & Live Dash)
 # ---------------------------------------------------------------------------
 @app.websocket("/ws/calls/{call_id}")
