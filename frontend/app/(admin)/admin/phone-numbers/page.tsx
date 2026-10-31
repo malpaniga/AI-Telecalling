@@ -56,6 +56,9 @@ export default function AdminPhoneNumbersPage() {
     vobiz_auth_id: "",
     vobiz_auth_token: "",
     vobiz_trunk_id: "",
+    plivo_auth_id: "",
+    plivo_auth_token: "",
+    plivo_app_id: "",
     display_name: "",
     country_code: "IN",
     number_type: "local",
@@ -145,10 +148,23 @@ export default function AdminPhoneNumbersPage() {
     setAdding(true);
     try {
       const isVobiz = addForm.provider === "vobiz";
+      const isPlivo = addForm.provider === "plivo";
+      if (isPlivo && (!addForm.plivo_auth_id.trim() || !addForm.plivo_auth_token.trim())) {
+        toast.error("Plivo Auth ID and Auth Token are required");
+        setAdding(false);
+        return;
+      }
+      if (isVobiz && (!addForm.vobiz_auth_id.trim() || !addForm.vobiz_auth_token.trim())) {
+        toast.error("Vobiz Auth ID and Auth Token are required");
+        setAdding(false);
+        return;
+      }
       await api.phoneNumbers.addAdmin({
         number: addForm.number.trim(),
         provider: addForm.provider,
-        provider_resource_id: isVobiz
+        provider_resource_id: isPlivo
+          ? addForm.plivo_auth_id.trim() || addForm.number.trim()
+          : isVobiz
           ? addForm.vobiz_auth_id || addForm.number.trim()
           : addForm.provider_resource_id || addForm.number.trim(),
         display_name: addForm.display_name || undefined,
@@ -157,7 +173,13 @@ export default function AdminPhoneNumbersPage() {
         rental_paise_per_month: addForm.rental_paise_per_month
           ? parseInt(addForm.rental_paise_per_month)
           : undefined,
-        provider_metadata: isVobiz
+        provider_metadata: isPlivo
+          ? {
+              plivo_auth_id: addForm.plivo_auth_id.trim(),
+              plivo_auth_token: addForm.plivo_auth_token.trim(),
+              plivo_app_id: addForm.plivo_app_id.trim() || undefined,
+            }
+          : isVobiz
           ? {
               vobiz_auth_id: addForm.vobiz_auth_id.trim(),
               vobiz_auth_token: addForm.vobiz_auth_token.trim(),
@@ -174,6 +196,9 @@ export default function AdminPhoneNumbersPage() {
         vobiz_auth_id: "",
         vobiz_auth_token: "",
         vobiz_trunk_id: "",
+        plivo_auth_id: "",
+        plivo_auth_token: "",
+        plivo_app_id: "",
         display_name: "",
         country_code: "IN",
         number_type: "local",
@@ -349,6 +374,8 @@ export default function AdminPhoneNumbersPage() {
                         className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold uppercase ${
                           n.provider === "vobiz"
                             ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                            : n.provider === "plivo"
+                            ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
                             : n.provider === "twilio"
                             ? "bg-red-500/10 text-red-400 border border-red-500/20"
                             : "bg-secondary text-text-muted"
@@ -496,6 +523,7 @@ export default function AdminPhoneNumbersPage() {
               }
               options={[
                 { value: "vobiz", label: "Vobiz.ai (Recommended)" },
+                { value: "plivo", label: "Plivo" },
                 { value: "twilio", label: "Twilio" },
                 { value: "exotel", label: "Exotel" },
                 { value: "mock", label: "Mock / Simulator" },
@@ -504,8 +532,51 @@ export default function AdminPhoneNumbersPage() {
             />
           </div>
 
-          {/* Vobiz.ai Specific Credentials */}
-          {addForm.provider === "vobiz" ? (
+          {/* Plivo Specific Credentials */}
+          {addForm.provider === "plivo" ? (
+            <div className="p-3.5 rounded-xl border border-blue-500/20 bg-blue-500/5 space-y-3">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-400">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Plivo Account Credentials</span>
+              </div>
+              <Input
+                label="Plivo Auth ID"
+                value={addForm.plivo_auth_id}
+                onChange={(e) =>
+                  setAddForm((f) => ({ ...f, plivo_auth_id: e.target.value }))
+                }
+                placeholder="Account Auth ID from Plivo console"
+                required
+              />
+              <div className="relative">
+                <Input
+                  label="Plivo Auth Token"
+                  type={showToken ? "text" : "password"}
+                  value={addForm.plivo_auth_token}
+                  onChange={(e) =>
+                    setAddForm((f) => ({ ...f, plivo_auth_token: e.target.value }))
+                  }
+                  placeholder="Secret API Auth Token"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken(!showToken)}
+                  className="absolute right-3 top-8 text-xs text-text-muted hover:text-text-primary"
+                >
+                  {showToken ? "Hide" : "Show"}
+                </button>
+              </div>
+              <Input
+                label="Application / Subaccount ID (Optional)"
+                value={addForm.plivo_app_id}
+                onChange={(e) =>
+                  setAddForm((f) => ({ ...f, plivo_app_id: e.target.value }))
+                }
+                placeholder="Optional Plivo App SID"
+              />
+            </div>
+          ) : addForm.provider === "vobiz" ? (
             <div className="p-3.5 rounded-xl border border-purple-500/20 bg-purple-500/5 space-y-3">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-400">
                 <ShieldCheck className="w-4 h-4" />
