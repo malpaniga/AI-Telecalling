@@ -97,9 +97,9 @@ class CampaignWorker:
         if not check["allowed"]:
             return
 
-        # Check credits
+        # Check credits (1 credit = 1 minute; call reservation holds 5 credits)
         credit_check = await credit_svc.can_start_call(
-            campaign.organization_id, required_credits=60
+            campaign.organization_id, required_credits=5
         )
         if not credit_check["can_start"]:
             log.warning("campaign=%s pausing: insufficient credits", campaign.id)
@@ -111,7 +111,7 @@ class CampaignWorker:
         # Pick next eligible lead
         query = {
             "organization_id": campaign.organization_id,
-            "status": {"$in": ["new", "callback", "scheduled"]},
+            "status": {"$in": ["new", "scheduled"]},
         }
         if campaign.lead_filter:
             query.update(campaign.lead_filter)

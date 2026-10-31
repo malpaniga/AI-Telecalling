@@ -121,7 +121,7 @@ async def settle_credits(
 
 @router.get("/check")
 async def check_credits(
-    required_credits: int = 60,
+    required_credits: int = 5,
     user: CurrentUser = Depends(get_current_user),
 ):
     """Pre-flight credit check. No state change."""
