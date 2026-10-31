@@ -178,6 +178,76 @@ class CallService:
                     )
                 raise RuntimeError(f"Telephony dispatch failed: {err_msg}") from exc
 
+        # Dispatch call via Plivo telephony provider if configured
+        elif provider == "plivo" and phone_doc:
+            from backend.providers.telephony.plivo import PlivoTelephonyProvider
+            from backend.config import settings
+            base_public = (
+                settings.public_base_url.rstrip("/")
+                if getattr(settings, "public_base_url", None) and "ngrok" not in settings.public_base_url
+                else "https://92.5.149.29.sslip.io"
+            )
+            call_lang = "en-IN"
+            if agent_id:
+                try:
+                    agent_doc = await self.db.agents.find_one({"_id": agent_id})
+                    if agent_doc:
+                        active_vid = agent_doc.get("active_version_id")
+                        ver_doc = None
+                        if active_vid:
+                            ver_doc = await self.db.agent_versions.find_one({"_id": active_vid})
+                        if not ver_doc:
+                            ver_doc = await self.db.agent_versions.find_one(
+                                {"agent_id": agent_id}, sort=[("version", -1)]
+                            )
+                        if ver_doc:
+                            cfg = ver_doc.get("configuration") or {}
+                            call_lang = cfg.get("primary_language") or call_lang
+                except Exception as e:
+                    log.warning("could not resolve agent language: %s", e)
+
+            answer_url = f"{base_public}/plivo/voice?call_id={call.id}&agent_id={agent_id or ''}&lang={call_lang}"
+            metadata = phone_doc.provider_metadata or {}
+            auth_id = metadata.get("plivo_auth_id") or metadata.get("auth_id")
+            auth_token = metadata.get("plivo_auth_token") or metadata.get("auth_token")
+
+            if not auth_id or not auth_token:
+                raise ValueError("Plivo phone number is missing API credentials in provider_metadata")
+
+            plivo_provider = PlivoTelephonyProvider()
+            try:
+                dispatch_res = await plivo_provider.initiate_call(
+                    to=to_number,
+                    from_number=from_number,
+                    auth_id=auth_id,
+                    auth_token=auth_token,
+                    url=answer_url,
+                )
+                await self.call_repo.update_by_id(call.id, {
+                    "provider": "plivo",
+                    "provider_resource_id": dispatch_res.get("provider_resource_id"),
+                })
+            except Exception as exc:
+                log.error("Failed to dispatch call %s via Plivo: %s", call.id, exc)
+                await self.call_repo.update_by_id(call.id, {
+                    "status": "failed",
+                    "error_message": str(exc),
+                })
+                try:
+                    await credit_svc.release(
+                        organization_id=organization_id,
+                        call_id=call.id,
+                    )
+                except Exception as rel_exc:
+                    log.warning("Failed releasing credits after dispatch failure: %s", rel_exc)
+                err_msg = str(exc)
+                if "answer_url parameter is not valid" in err_msg:
+                    err_msg += (
+                        " (Plivo requires a publicly accessible HTTPS answer_url. "
+                        "Please configure PUBLIC_BASE_URL in backend/.env with a public HTTPS domain or ngrok tunnel URL)."
+                    )
+                raise RuntimeError(f"Telephony dispatch failed: {err_msg}") from exc
+
         # Increment campaign concurrency counter
         if campaign_id:
             from backend.services.campaign_service import CampaignService

@@ -228,6 +228,12 @@ async def hangup_call(
             await hangup_vobiz_call(call_id, db=db)
         except Exception:
             pass
+    elif call.get("provider") == "plivo":
+        try:
+            from backend.telephony.plivo import hangup_plivo_call
+            await hangup_plivo_call(call_id, db=db)
+        except Exception:
+            pass
 
     # Calculate duration if call was connected
     from backend.models.base import utcnow
