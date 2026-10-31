@@ -30,10 +30,10 @@ SHUTDOWN_TIMEOUT_S = 30 # graceful shutdown window
 
 
 class CampaignWorker:
-    def __init__(self):
+    def __init__(self, db=None, redis=None):
         self._running = True
-        self._db = None
-        self._redis = None
+        self._db = db
+        self._redis = redis
 
     async def setup(self):
         from backend.core.db import init_db, get_db
@@ -41,10 +41,12 @@ class CampaignWorker:
         from backend.services.subscription_service import seed_default_plans
         from backend.services.wallet_service import seed_default_packs
 
-        await init_db()
-        await init_redis()
-        self._db = get_db()
-        self._redis = get_redis()
+        if self._db is None:
+            await init_db()
+            self._db = get_db()
+        if self._redis is None:
+            await init_redis()
+            self._redis = get_redis()
         log.info("Campaign worker started")
 
     async def teardown(self):
@@ -108,40 +110,84 @@ class CampaignWorker:
             )
             return
 
-        # Pick next eligible lead
-        query = {
-            "organization_id": campaign.organization_id,
-            "status": {"$in": ["new", "scheduled"]},
-        }
-        if campaign.lead_filter:
-            query.update(campaign.lead_filter)
-        if campaign.campaign_id_filter:
-            query["campaign_id"] = campaign.campaign_id_filter
+        # Pick next eligible lead from campaign_leads first
+        from backend.models.base import utcnow
+        from backend.repositories.campaign_lead_repo import CampaignLeadRepository
+        from backend.repositories.lead_repo import DNCRepository
+        camp_lead_repo = CampaignLeadRepository(self._db)
 
-        lead_doc = await self._db["leads"].find_one_and_update(
-            query,
-            {"$set": {"status": "scheduled"}},
-            return_document=True,
-        )
-        if lead_doc is None:
-            # Check if active calls are still in flight
-            active = await camp_svc.get_active_call_count(campaign.id)
-            if active > 0:
-                log.info("campaign=%s waiting for %d active call(s) to finish", campaign.id, active)
+        camp_lead = await camp_lead_repo.pick_next_eligible(campaign.id)
+        lead_doc = None
+        is_campaign_lead = False
+
+        if camp_lead is not None:
+            is_campaign_lead = True
+            phone = camp_lead.get("phone") or ""
+            # Just-in-time DNC verification
+            if await DNCRepository(self._db).is_dnc(campaign.organization_id, phone):
+                log.info("lead %s phone %s is DNC; skipping", camp_lead.get("lead_id"), phone)
+                await camp_lead_repo.update_status(campaign.id, camp_lead["lead_id"], "dnc")
                 return
-            # No more leads — campaign complete
-            log.info("campaign=%s complete (no more leads)", campaign.id)
-            await camp_svc.complete_campaign(campaign.id, campaign.organization_id)
-            return
+
+            lead_doc = await self._db["leads"].find_one({"_id": camp_lead["lead_id"]})
+            if not lead_doc:
+                lead_doc = {
+                    "_id": camp_lead["lead_id"],
+                    "phone": phone,
+                    "organization_id": campaign.organization_id,
+                }
+        else:
+            # Check if any leads in this campaign are waiting for a scheduled retry
+            now = utcnow()
+            pending_retries = await self._db["campaign_leads"].count_documents({
+                "campaign_id": campaign.id,
+                "status": {"$in": ["new", "callback"]},
+                "next_attempt_at": {"$gt": now},
+            })
+            if pending_retries > 0:
+                log.debug("campaign=%s waiting for %d pending retry leads", campaign.id, pending_retries)
+                return
+
+            # Check legacy leads if campaign_leads collection is empty for this campaign
+            total_in_camp_leads = await self._db["campaign_leads"].count_documents({"campaign_id": campaign.id})
+            if total_in_camp_leads == 0:
+                query = {
+                    "organization_id": campaign.organization_id,
+                    "status": {"$in": ["new", "scheduled"]},
+                }
+                if campaign.lead_filter:
+                    query.update(campaign.lead_filter)
+                if campaign.campaign_id_filter:
+                    query["campaign_id"] = campaign.campaign_id_filter
+
+                lead_doc = await self._db["leads"].find_one_and_update(
+                    query,
+                    {"$set": {"status": "scheduled"}},
+                    return_document=True,
+                )
+
+            if lead_doc is None:
+                # Check if active calls are still in flight
+                active = await camp_svc.get_active_call_count(campaign.id)
+                if active > 0:
+                    log.info("campaign=%s waiting for %d active call(s) to finish", campaign.id, active)
+                    return
+                # No more leads and no pending retries — campaign complete
+                log.info("campaign=%s complete (no more leads)", campaign.id)
+                await camp_svc.complete_campaign(campaign.id, campaign.organization_id)
+                return
 
         # Acquire concurrency slot
         acquired = await camp_svc.acquire_call_slot(campaign.id)
         if not acquired:
             # Release lead back
-            await self._db["leads"].update_one(
-                {"_id": lead_doc["_id"]},
-                {"$set": {"status": "new"}},
-            )
+            if is_campaign_lead and camp_lead:
+                await camp_lead_repo.update_status(campaign.id, camp_lead["lead_id"], "new")
+            else:
+                await self._db["leads"].update_one(
+                    {"_id": lead_doc["_id"]},
+                    {"$set": {"status": "new"}},
+                )
             return
 
         # Initiate call (async — worker continues polling)

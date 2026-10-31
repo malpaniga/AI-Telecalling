@@ -324,17 +324,21 @@ class PreflightService:
             from backend.repositories.lead_repo import LeadRepository
             repo = LeadRepository(self.db)
 
-            # Count leads in scope (new + callback, not DNC/completed)
-            query: dict = {
-                "organization_id": campaign.organization_id,
+            # Count leads in scope (check campaign_leads first)
+            count = await self.db["campaign_leads"].count_documents({
+                "campaign_id": campaign.id,
                 "status": {"$in": ["new", "callback", "scheduled"]},
-            }
-            if campaign.lead_filter:
-                query.update(campaign.lead_filter)
-            if campaign.campaign_id_filter:
-                query["campaign_id"] = campaign.campaign_id_filter
-
-            count = await repo.count(query)
+            })
+            if count == 0:
+                query: dict = {
+                    "organization_id": campaign.organization_id,
+                    "status": {"$in": ["new", "callback", "scheduled"]},
+                }
+                if campaign.lead_filter:
+                    query.update(campaign.lead_filter)
+                if campaign.campaign_id_filter:
+                    query["campaign_id"] = campaign.campaign_id_filter
+                count = await repo.count(query)
             if count == 0:
                 result.add(PreflightCheck(
                     "leads_available", False,

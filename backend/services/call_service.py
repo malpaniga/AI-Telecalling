@@ -374,8 +374,10 @@ class CallService:
 
         # Decrement campaign concurrency and update campaign stats
         if call.campaign_id:
+            from datetime import timedelta
             from backend.services.campaign_service import CampaignService
             camp_svc = CampaignService(self.db, redis=self._get_redis())
+            campaign = await self.campaign_repo.get_for_org(call.campaign_id, organization_id)
             await camp_svc.release_call_slot(call.campaign_id)
             await self.campaign_repo.increment_counter(call.campaign_id, "leads_dialed")
             if status == "completed":
@@ -388,18 +390,63 @@ class CallService:
             if is_connected:
                 await self.campaign_repo.increment_counter(call.campaign_id, "leads_connected")
 
+            # Update CampaignLead status & retry schedule
+            if call.lead_id:
+                cl = await self.db["campaign_leads"].find_one({
+                    "campaign_id": call.campaign_id,
+                    "lead_id": call.lead_id,
+                })
+                if cl:
+                    attempts = cl.get("attempts", 0) + 1
+                    retry_policy = campaign.retry_policy if campaign else None
+                    retry_on = retry_policy.retry_on if retry_policy else ["no_answer", "busy", "failed"]
+                    max_attempts = retry_policy.max_attempts if retry_policy else 3
+                    retry_delay = retry_policy.retry_delay_minutes if retry_policy else 60
+
+                    effective_outcome = outcome or status
+                    next_attempt_at = None
+                    if status == "completed" or outcome in ("qualified", "appointment_set", "booked", "contacted", "not_interested"):
+                        new_cl_status = "qualified" if outcome == "qualified" else ("not_interested" if outcome == "not_interested" else "contacted")
+                    elif effective_outcome in retry_on and attempts < max_attempts:
+                        new_cl_status = "callback"
+                        next_attempt_at = utcnow() + timedelta(minutes=retry_delay)
+                    else:
+                        new_cl_status = "failed"
+
+                    await self.db["campaign_leads"].update_one(
+                        {"_id": cl["_id"]},
+                        {
+                            "$set": {
+                                "status": new_cl_status,
+                                "attempts": attempts,
+                                "next_attempt_at": next_attempt_at,
+                                "last_called_at": utcnow(),
+                                "call_id": call_id,
+                                "disposition": outcome or status,
+                                "updated_at": utcnow(),
+                            }
+                        },
+                    )
+
             # Auto-complete campaign if all leads have been dialed/completed and no calls active
-            campaign = await self.campaign_repo.get_for_org(call.campaign_id, organization_id)
             if campaign and campaign.status == "running":
-                query = {
-                    "organization_id": organization_id,
-                    "status": {"$in": ["new", "scheduled"]},
-                }
-                if campaign.lead_filter:
-                    query.update(campaign.lead_filter)
-                if campaign.campaign_id_filter:
-                    query["campaign_id"] = campaign.campaign_id_filter
-                remaining_leads = await self.lead_repo.count(query)
+                total_camp_leads = await self.db["campaign_leads"].count_documents({"campaign_id": call.campaign_id})
+                if total_camp_leads > 0:
+                    remaining_leads = await self.db["campaign_leads"].count_documents({
+                        "campaign_id": call.campaign_id,
+                        "status": {"$in": ["new", "scheduled", "callback"]},
+                    })
+                else:
+                    query = {
+                        "organization_id": organization_id,
+                        "status": {"$in": ["new", "scheduled"]},
+                    }
+                    if campaign.lead_filter:
+                        query.update(campaign.lead_filter)
+                    if campaign.campaign_id_filter:
+                        query["campaign_id"] = campaign.campaign_id_filter
+                    remaining_leads = await self.lead_repo.count(query)
+
                 active_calls = await camp_svc.get_active_call_count(call.campaign_id)
                 if remaining_leads == 0 and active_calls == 0:
                     log.info("Auto-completing campaign=%s: all leads dialed and 0 active calls", call.campaign_id)
