@@ -29,6 +29,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from backend.models.base import new_id, utcnow
 from backend.models.lead import Lead, LEAD_STATUSES
 from backend.repositories.lead_repo import DNCRepository, LeadRepository
+from backend.repositories.campaign_lead_repo import CampaignLeadRepository
 
 log = logging.getLogger("service.lead")
 
@@ -37,6 +38,7 @@ STANDARD_FIELDS = {
     "phone", "name", "email", "status", "tags", "source",
     "next_contact_at",
 }
+NAME_ALIASES = {"user_name", "customer_name", "contact_name", "lead_name", "full_name"}
 
 # Required fields for a valid lead
 REQUIRED_FIELDS = {"phone"}
@@ -102,13 +104,13 @@ def _apply_mapping(
     headers: list[str],
     rows: list,
     column_mapping: Optional[dict[str, str]] = None,
-) -> list[dict[str, str]]:
-    """Apply column mapping to raw rows → list of dicts with standard field names.
+) -> list[dict[str, Any]]:
+    """Apply column mapping to raw rows → list of dicts with standard and custom field names.
 
-    column_mapping: {source_col_name: standard_field_name}
+    column_mapping: {source_col_name: target_field_name}
     If no mapping provided, auto-map by matching header names case-insensitively.
     """
-    mapping = column_mapping or {}
+    mapping = dict(column_mapping or {})
 
     # Auto-map: try to match standard fields by name
     if not mapping:
@@ -119,29 +121,48 @@ def _apply_mapping(
             # Common aliases
             elif normalized in ("mobile", "mobile_number", "phone_number", "contact"):
                 mapping[h] = "phone"
-            elif normalized in ("full_name", "customer_name", "contact_name", "lead_name"):
+            elif normalized in ("full_name", "customer_name", "contact_name", "lead_name", "user_name"):
                 mapping[h] = "name"
             elif normalized in ("email_address", "mail"):
                 mapping[h] = "email"
 
     result = []
     for row in rows:
-        if isinstance(row, dict):
-            record: dict = {}
-            for src_key, val in row.items():
-                if src_key in mapping:
-                    record[mapping[src_key]] = str(val).strip() if val is not None else ""
+        record: dict[str, Any] = {}
+        items = (
+            row.items()
+            if isinstance(row, dict)
+            else [(headers[i], row[i]) for i in range(min(len(headers), len(row)))]
+        )
+
+        for src_key, raw_val in items:
+            str_val = str(raw_val).strip() if raw_val is not None else ""
+            target = mapping.get(src_key)
+
+            if target:
+                norm_target = target.strip().lower().replace(" ", "_")
+                if norm_target in STANDARD_FIELDS:
+                    record[norm_target] = str_val
+                    record.setdefault("_custom", {})[norm_target] = str_val
+                    if norm_target == "name":
+                        record.setdefault("_custom", {})["user_name"] = str_val
+                elif norm_target in NAME_ALIASES:
+                    record.setdefault("name", str_val)
+                    record.setdefault("_custom", {})[norm_target] = str_val
+                    record.setdefault("_custom", {})["name"] = str_val
+                    record.setdefault("_custom", {})["user_name"] = str_val
                 else:
-                    # Put unmapped fields into custom_fields
-                    record.setdefault("_custom", {})[src_key] = val
-        else:
-            record = {}
-            for i, header in enumerate(headers):
-                val = row[i] if i < len(row) else ""
-                if header in mapping:
-                    record[mapping[header]] = str(val).strip() if val is not None else ""
-                else:
-                    record.setdefault("_custom", {})[header] = val
+                    # Custom variable (e.g. city, address, due_amount)
+                    record.setdefault("_custom", {})[norm_target] = str_val
+                    record.setdefault("_custom", {})[src_key] = str_val
+            else:
+                # Unmapped field stored under original header
+                record.setdefault("_custom", {})[src_key] = raw_val
+
+        # Ensure name is mirrored in custom fields
+        if record.get("name"):
+            record.setdefault("_custom", {})["name"] = record["name"]
+            record.setdefault("_custom", {})["user_name"] = record["name"]
 
         result.append(record)
     return result
@@ -363,31 +384,81 @@ class LeadService:
         valid_docs = [d for d in valid_docs if d["phone"] not in dnc_phones]
         skipped_dnc = pre_dnc_count - len(valid_docs)
 
-        # 5. Bulk insert — pre-filter known duplicates for mongomock compatibility
-        existing_phones = await self.lead_repo.phones_in_org(
-            organization_id, [d["phone"] for d in valid_docs]
-        )
-        pre_dup_count = len(valid_docs)
-        valid_docs = [d for d in valid_docs if d["phone"] not in existing_phones]
-        pre_dedup = pre_dup_count - len(valid_docs)
-
-        if not valid_docs:
-            return {
-                "imported": 0, "skipped_dnc": skipped_dnc,
-                "skipped_duplicate": pre_dedup,
-                "skipped_invalid": len(validation_errors),
-                "errors": validation_errors,
-                "total_rows": total_rows, "batch_id": batch_id,
+        # 5. Partition into new vs existing contacts (upsert)
+        cursor = self.db["leads"].find(
+            {
+                "organization_id": organization_id,
+                "phone": {"$in": [d["phone"] for d in valid_docs]},
             }
+        )
+        existing_list = await cursor.to_list(length=len(valid_docs))
+        existing_by_phone = {d["phone"]: d for d in existing_list}
 
-        result = await self.lead_repo.bulk_insert(valid_docs, organization_id)
+        new_docs = []
+        updated_docs = []
+        campaign_items = []
+
+        now = utcnow()
+        for d in valid_docs:
+            phone = d["phone"]
+            custom_data = d.get("custom_fields", {})
+            if phone in existing_by_phone:
+                existing = existing_by_phone[phone]
+                lead_id = str(existing["_id"])
+
+                merged_custom = dict(existing.get("custom_fields") or {})
+                merged_custom.update(custom_data)
+
+                updates: dict[str, Any] = {
+                    "custom_fields": merged_custom,
+                    "updated_at": now,
+                }
+                if d.get("name"):
+                    updates["name"] = d["name"]
+                if d.get("email"):
+                    updates["email"] = d["email"]
+                if tags:
+                    existing_tags = set(existing.get("tags") or [])
+                    existing_tags.update(tags)
+                    updates["tags"] = list(existing_tags)
+
+                await self.db["leads"].update_one(
+                    {"_id": existing["_id"]},
+                    {"$set": updates},
+                )
+                updated_docs.append(existing)
+            else:
+                lead_id = d["_id"]
+                new_docs.append(d)
+
+            if campaign_id:
+                campaign_items.append({
+                    "lead_id": lead_id,
+                    "phone": phone,
+                    "custom_fields": custom_data,
+                })
+
+        inserted_count = 0
+        if new_docs:
+            result = await self.lead_repo.bulk_insert(new_docs, organization_id)
+            inserted_count = result["inserted"]
+
+        # 6. Campaign enrollment vs Standalone contact import
+        if campaign_id:
+            camp_lead_repo = CampaignLeadRepository(self.db)
+            enroll_res = await camp_lead_repo.bulk_enroll(campaign_id, organization_id, campaign_items)
+            total_imported = enroll_res["enrolled"]
+            skipped_dup = enroll_res["skipped"]
+        else:
+            total_imported = inserted_count
+            skipped_dup = len(updated_docs)
 
         return {
-            "imported": result["inserted"],
+            "imported": total_imported,
             "skipped_dnc": skipped_dnc,
-            "skipped_duplicate": pre_dedup + result["skipped"],
+            "skipped_duplicate": skipped_dup,
             "skipped_invalid": len(validation_errors),
-            "errors": validation_errors + result["errors"],
+            "errors": validation_errors,
             "total_rows": total_rows,
             "batch_id": batch_id,
         }
