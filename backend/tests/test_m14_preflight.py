@@ -366,8 +366,8 @@ class TestPreflightChecks:
         async def _t():
             from backend.services.preflight_service import MIN_CREDITS_TO_START
             await _seed_subscription(self.db, "org-lowcred")
-            # Give just above minimum but below LOW_CREDIT_WARNING (300)
-            await _seed_credits(self.db, "org-lowcred", MIN_CREDITS_TO_START + 10)
+            # Give just above minimum (5) but below LOW_CREDIT_WARNING (15)
+            await _seed_credits(self.db, "org-lowcred", MIN_CREDITS_TO_START + 2)
             await _seed_agent(self.db, "org-lowcred", "agent-lc")
             await _seed_voice_profile(self.db, "org-lowcred", "vp-lc")
             await _seed_phone_number(self.db, "org-lowcred", "pn-lc")

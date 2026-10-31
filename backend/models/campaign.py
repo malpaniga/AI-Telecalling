@@ -36,12 +36,53 @@ ACTIVE_STATUSES = {"running", "scheduled"}
 PAUSABLE_STATUSES = {"running", "scheduled", "paused_low_credits"}
 
 
+DAY_NAME_MAP = {
+    "sun": 0, "sunday": 0,
+    "mon": 1, "monday": 1,
+    "tue": 2, "tues": 2, "tuesday": 2,
+    "wed": 3, "wednesday": 3,
+    "thu": 4, "thur": 4, "thurs": 4, "thursday": 4,
+    "fri": 5, "friday": 5,
+    "sat": 6, "saturday": 6,
+}
+
+
 class CallingHours(TimestampedModel):
     """Time window during which calls are allowed."""
     start_time: str = "09:00"   # HH:MM in campaign timezone
     end_time: str = "19:00"
     days_of_week: list[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5])
     # 0=Sunday, 1=Monday, ..., 6=Saturday
+
+    @field_validator("days_of_week", mode="before")
+    @classmethod
+    def validate_days(cls, v: Any) -> list[int]:
+        if not v:
+            raise ValueError("days_of_week cannot be empty")
+        parsed: set[int] = set()
+        for item in v:
+            if isinstance(item, str):
+                cleaned = item.strip().lower()
+                if cleaned in DAY_NAME_MAP:
+                    parsed.add(DAY_NAME_MAP[cleaned])
+                elif cleaned.isdigit():
+                    num = int(cleaned)
+                    if 0 <= num <= 6:
+                        parsed.add(num)
+                    else:
+                        raise ValueError(f"Day number must be 0-6, got {num}")
+                else:
+                    raise ValueError(f"Invalid day of week: '{item}'")
+            elif isinstance(item, int):
+                if 0 <= item <= 6:
+                    parsed.add(item)
+                else:
+                    raise ValueError(f"Day number must be 0-6, got {item}")
+            else:
+                raise ValueError(f"Invalid day type: {type(item)}")
+        if not parsed:
+            raise ValueError("days_of_week cannot be empty")
+        return sorted(parsed)
 
 
 class RetryPolicy(TimestampedModel):

@@ -17,14 +17,14 @@ const TIMEZONE_OPTIONS = [
   { value: "UTC", label: "UTC" },
 ];
 
-const DAYS_OF_WEEK = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
+const DAY_OPTIONS = [
+  { label: "Mon", full: "Monday", value: 1 },
+  { label: "Tue", full: "Tuesday", value: 2 },
+  { label: "Wed", full: "Wednesday", value: 3 },
+  { label: "Thu", full: "Thursday", value: 4 },
+  { label: "Fri", full: "Friday", value: 5 },
+  { label: "Sat", full: "Saturday", value: 6 },
+  { label: "Sun", full: "Sunday", value: 0 },
 ];
 
 export default function NewCampaignPage() {
@@ -49,13 +49,7 @@ export default function NewCampaignPage() {
     scheduled_at: "",
   });
 
-  const [selectedDays, setSelectedDays] = useState<string[]>([
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-  ]);
+  const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]);
 
   const selectedAgent = agents.find((a) => a.id === form.agent_id);
 
@@ -76,10 +70,20 @@ export default function NewCampaignPage() {
       .finally(() => setLoadingData(false));
   }, []);
 
-  function toggleDay(day: string) {
+  function toggleDay(dayVal: number) {
     setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+      prev.includes(dayVal)
+        ? prev.filter((d) => d !== dayVal)
+        : [...prev, dayVal].sort((a, b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b))
     );
+  }
+
+  function setWeekdaysOnly() {
+    setSelectedDays([1, 2, 3, 4, 5]);
+  }
+
+  function setAllDays() {
+    setSelectedDays([1, 2, 3, 4, 5, 6, 0]);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -97,6 +101,10 @@ export default function NewCampaignPage() {
     );
     if (!callingNumber) {
       toast.error("Select a phone number");
+      return;
+    }
+    if (selectedDays.length === 0) {
+      toast.error("Select at least one calling day");
       return;
     }
 
@@ -292,25 +300,47 @@ export default function NewCampaignPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Calling Days
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {DAYS_OF_WEEK.map((day) => (
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-text-primary">
+                  Calling Days
+                </label>
+                <div className="flex items-center gap-2">
                   <button
-                    key={day}
                     type="button"
-                    onClick={() => toggleDay(day)}
-                    className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
-                      selectedDays.includes(day)
-                        ? "border-accent bg-accent text-white"
+                    onClick={setWeekdaysOnly}
+                    className="text-xs text-accent hover:underline cursor-pointer"
+                  >
+                    Weekdays
+                  </button>
+                  <span className="text-xs text-text-muted">·</span>
+                  <button
+                    type="button"
+                    onClick={setAllDays}
+                    className="text-xs text-accent hover:underline cursor-pointer"
+                  >
+                    All Days
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {DAY_OPTIONS.map((day) => (
+                  <button
+                    key={day.value}
+                    type="button"
+                    onClick={() => toggleDay(day.value)}
+                    className={`px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer ${
+                      selectedDays.includes(day.value)
+                        ? "border-accent bg-accent text-white font-medium"
                         : "border-border text-text-secondary hover:border-accent-hover"
                     }`}
                   >
-                    {day.slice(0, 3)}
+                    {day.label}
                   </button>
                 ))}
               </div>
+              {selectedDays.length === 0 && (
+                <p className="text-xs text-danger mt-1">Please select at least one calling day.</p>
+              )}
             </div>
           </CardBody>
         </Card>

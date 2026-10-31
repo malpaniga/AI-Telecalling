@@ -316,6 +316,18 @@ export interface DNCEntry {
   added_at: string;
 }
 
+export interface CallingHoursConfig {
+  start_time: string;
+  end_time: string;
+  days_of_week: number[];
+}
+
+export interface RetryPolicyConfig {
+  max_attempts: number;
+  retry_delay_minutes: number;
+  retry_on?: string[];
+}
+
 export interface Campaign {
   id: string;
   organization_id: string;
@@ -330,6 +342,8 @@ export interface Campaign {
   max_concurrent_calls: number;
   timezone: string;
   status: string;
+  calling_hours?: CallingHoursConfig;
+  retry_policy?: RetryPolicyConfig;
   total_leads: number;
   leads_dialed: number;
   leads_connected: number;

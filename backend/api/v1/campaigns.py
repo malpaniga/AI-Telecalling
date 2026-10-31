@@ -73,6 +73,20 @@ def _require_org(user: CurrentUser) -> str:
 
 
 def _campaign_response(c) -> dict:
+    calling_hours_data = None
+    if getattr(c, "calling_hours", None):
+        if hasattr(c.calling_hours, "model_dump"):
+            calling_hours_data = c.calling_hours.model_dump()
+        elif isinstance(c.calling_hours, dict):
+            calling_hours_data = c.calling_hours
+
+    retry_policy_data = None
+    if getattr(c, "retry_policy", None):
+        if hasattr(c.retry_policy, "model_dump"):
+            retry_policy_data = c.retry_policy.model_dump()
+        elif isinstance(c.retry_policy, dict):
+            retry_policy_data = c.retry_policy
+
     return {
         "id": c.id,
         "organization_id": c.organization_id,
@@ -86,6 +100,8 @@ def _campaign_response(c) -> dict:
         "calling_number": c.calling_number,
         "max_concurrent_calls": c.max_concurrent_calls,
         "timezone": c.timezone,
+        "calling_hours": calling_hours_data,
+        "retry_policy": retry_policy_data,
         "status": c.status,
         "total_leads": c.total_leads,
         "leads_dialed": c.leads_dialed,
@@ -171,6 +187,12 @@ async def update_campaign(
     if campaign.status != "draft":
         raise HTTPException(status_code=400, detail="Only draft campaigns can be updated")
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    if "calling_hours" in updates and updates["calling_hours"]:
+        from backend.models.campaign import CallingHours
+        try:
+            updates["calling_hours"] = CallingHours(**updates["calling_hours"]).model_dump()
+        except (ValueError, TypeError) as exc:
+            raise HTTPException(status_code=422, detail=f"Invalid calling_hours: {exc}")
     if updates:
         await svc.repo.update_by_id(campaign_id, updates)
     updated = await svc.get_campaign(campaign_id, org_id)
