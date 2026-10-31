@@ -361,7 +361,13 @@ async def ws_plivo(ws: WebSocket):
                     agent_name = cfg.get("agent_name") or agent_name
                     custom_greeting = cfg.get("custom_greeting")
                     system_prompt = cfg.get("system_prompt")
-                    variables = cfg.get("variables") or {}
+                    from backend.telephony.variables import resolve_call_variables
+                    variables = await resolve_call_variables(
+                        db,
+                        call_id=call_id,
+                        agent_id=agent_id,
+                        default_variables=cfg.get("variables") or cfg.get("input_variables") or {},
+                    )
                     barge_in_sensitivity = cfg.get("barge_in_sensitivity", 0.5)
                     resolved_voice_id = cfg.get("voice_id")
                     language = cfg.get("primary_language", language)
