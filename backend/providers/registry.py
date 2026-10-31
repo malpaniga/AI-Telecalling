@@ -17,6 +17,7 @@ class ProviderRegistry:
 def build_demo_registry() -> ProviderRegistry:
     from backend.providers.telephony.mock import MockTelephonyProvider
     from backend.providers.telephony.vobiz import VobizTelephonyProvider
+    from backend.providers.telephony.plivo import PlivoTelephonyProvider
     from backend.providers.stt.mock import MockSTTProvider
     from backend.providers.tts.mock import MockTTSProvider
     from backend.providers.llm.mock import MockLLMProvider
@@ -25,6 +26,7 @@ def build_demo_registry() -> ProviderRegistry:
     for kind, provider in (
         ("telephony", MockTelephonyProvider()),
         ("telephony", VobizTelephonyProvider()),
+        ("telephony", PlivoTelephonyProvider()),
         ("stt", MockSTTProvider()),
         ("tts", MockTTSProvider()),
         ("llm", MockLLMProvider()),
