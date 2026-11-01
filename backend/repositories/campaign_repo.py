@@ -133,3 +133,13 @@ class CampaignRepository(BaseRepository):
             limit=limit,
             skip=skip,
         )
+
+
+    async def delete_for_org(
+        self, campaign_id: str, organization_id: str
+    ) -> bool:
+        result = await self.col.delete_one({
+            "_id": campaign_id,
+            "organization_id": organization_id,
+        })
+        return result.deleted_count > 0

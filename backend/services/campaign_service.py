@@ -79,8 +79,11 @@ class CampaignService:
     async def _redis_clear(self, campaign_id: str) -> None:
         r = self._get_redis()
         if r:
-            await r.delete(_STATE_KEY.format(campaign_id))
-            await r.delete(_ACTIVE_CALLS_KEY.format(campaign_id))
+            import inspect
+            for k in (_STATE_KEY.format(campaign_id), _ACTIVE_CALLS_KEY.format(campaign_id)):
+                res = r.delete(k)
+                if inspect.isawaitable(res):
+                    await res
 
     async def get_active_call_count(self, campaign_id: str) -> int:
         r = self._get_redis()
@@ -381,3 +384,22 @@ class CampaignService:
             "active_calls": active_calls,
             "max_concurrent_calls": campaign.max_concurrent_calls,
         }
+
+
+    async def delete_campaign(
+        self, campaign_id: str, organization_id: str
+    ) -> bool:
+        campaign = await self.get_campaign(campaign_id, organization_id)
+        if not campaign:
+            return False
+        if campaign.status == "running":
+            raise ValueError("Cannot delete a running campaign. Please pause or cancel it first.")
+        # Clear Redis state
+        await self._redis_clear(campaign_id)
+        # Delete enrolled campaign leads junction records
+        try:
+            await self.db.campaign_leads.delete_many({"campaign_id": campaign_id})
+        except Exception as exc:
+            log.warning("error removing campaign_leads for campaign=%s: %s", campaign_id, exc)
+        # Delete campaign doc
+        return await self.repo.delete_for_org(campaign_id, organization_id)

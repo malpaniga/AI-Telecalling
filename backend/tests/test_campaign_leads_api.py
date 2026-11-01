@@ -24,6 +24,7 @@ class TestCampaignLeadsAPI:
         mock_redis = MagicMock()
         mock_redis.set = AsyncMock()
         mock_redis.get = AsyncMock(return_value=None)
+        mock_redis.delete = AsyncMock()
         mock_redis.exists = AsyncMock(return_value=0)
         redis_module._redis = mock_redis
 
@@ -107,3 +108,60 @@ class TestCampaignLeadsAPI:
             headers=self.headers,
         )
         assert res_list2.json()["total"] == 0
+
+
+    def test_campaign_update_and_delete_api(self):
+        camp_id = "camp-crud-1"
+        now = utcnow()
+        import asyncio
+        loop = asyncio.new_event_loop()
+
+        async def _seed():
+            await self.mock_db.campaigns.insert_one({
+                "_id": camp_id,
+                "organization_id": "org-1",
+                "name": "Draft Campaign",
+                "agent_id": "ag-1",
+                "agent_version": 1,
+                "voice_profile_id": "vp-1",
+                "voice_profile_version": 1,
+                "calling_number_id": "pn-1",
+                "calling_number": "+918000000000",
+                "status": "draft",
+                "max_concurrent_calls": 1,
+                "created_at": now,
+                "updated_at": now,
+            })
+            await self.mock_db.campaign_leads.insert_one({
+                "campaign_id": camp_id,
+                "lead_id": "lead-crud-1",
+                "organization_id": "org-1",
+                "phone": "+919876543210",
+                "status": "new",
+            })
+        loop.run_until_complete(_seed())
+
+        # 1. Update Campaign via PATCH /api/v1/campaigns/{id}
+        res_patch = self.client.patch(
+            f"/api/v1/campaigns/{camp_id}",
+            headers=self.headers,
+            json={"name": "Renamed Campaign", "max_concurrent_calls": 3},
+        )
+        assert res_patch.status_code == 200
+        assert res_patch.json()["name"] == "Renamed Campaign"
+        assert res_patch.json()["max_concurrent_calls"] == 3
+
+        # 2. Delete Campaign via DELETE /api/v1/campaigns/{id}
+        res_del = self.client.delete(
+            f"/api/v1/campaigns/{camp_id}",
+            headers=self.headers,
+        )
+        assert res_del.status_code == 200
+        assert res_del.json()["deleted"] is True
+
+        # 3. Verify GET returns 404
+        res_get = self.client.get(
+            f"/api/v1/campaigns/{camp_id}",
+            headers=self.headers,
+        )
+        assert res_get.status_code == 404

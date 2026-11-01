@@ -67,6 +67,9 @@ class UpdateCampaignRequest(BaseModel):
     calling_hours: Optional[dict[str, Any]] = None
     retry_policy: Optional[dict[str, Any]] = None
     scheduled_at: Optional[datetime] = None
+    agent_id: Optional[str] = None
+    calling_number_id: Optional[str] = None
+    calling_number: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -190,19 +193,56 @@ async def update_campaign(
     campaign = await svc.get_campaign(campaign_id, org_id)
     if campaign is None:
         raise HTTPException(status_code=404, detail="Campaign not found")
-    if campaign.status != "draft":
-        raise HTTPException(status_code=400, detail="Only draft campaigns can be updated")
+    if campaign.status == "running":
+        raise HTTPException(status_code=400, detail="Cannot edit a running campaign. Please pause it first.")
+
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
+
+    # Resolve agent version if agent_id updated
+    if updates.get("agent_id") and updates["agent_id"] != campaign.agent_id:
+        agent_doc = await svc.db.agents.find_one({"_id": updates["agent_id"]})
+        if not agent_doc:
+            raise HTTPException(status_code=404, detail="Agent not found")
+        updates["agent_version"] = agent_doc.get("active_version") or 1
+        if agent_doc.get("voice_profile_id"):
+            updates["voice_profile_id"] = agent_doc["voice_profile_id"]
+            vp_doc = await svc.db.voice_profiles.find_one({"_id": agent_doc["voice_profile_id"]})
+            if vp_doc:
+                updates["voice_profile_version"] = vp_doc.get("active_version") or 1
+
+    # Resolve calling number if calling_number_id updated
+    if updates.get("calling_number_id") and not updates.get("calling_number"):
+        pn_doc = await svc.db.phone_numbers.find_one({"_id": updates["calling_number_id"]})
+        if pn_doc:
+            updates["calling_number"] = pn_doc.get("number")
+
     if "calling_hours" in updates and updates["calling_hours"]:
         from backend.models.campaign import CallingHours
         try:
             updates["calling_hours"] = CallingHours(**updates["calling_hours"]).model_dump()
         except (ValueError, TypeError) as exc:
             raise HTTPException(status_code=422, detail=f"Invalid calling_hours: {exc}")
+
     if updates:
         await svc.repo.update_by_id(campaign_id, updates)
     updated = await svc.get_campaign(campaign_id, org_id)
     return _campaign_response(updated)
+
+
+@router.delete("/{campaign_id}")
+async def delete_campaign(
+    campaign_id: str,
+    user: CurrentUser = Depends(get_current_user),
+):
+    org_id = _require_org(user)
+    svc = CampaignService(get_db())
+    try:
+        deleted = await svc.delete_campaign(campaign_id, org_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        return {"deleted": True, "campaign_id": campaign_id}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{campaign_id}/preflight")

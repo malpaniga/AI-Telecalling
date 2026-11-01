@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -36,7 +36,17 @@ import {
 
 export default function CampaignDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editMaxConcurrent, setEditMaxConcurrent] = useState("1");
+  const [editStartTime, setEditStartTime] = useState("09:00");
+  const [editEndTime, setEditEndTime] = useState("19:00");
+  const [editMaxAttempts, setEditMaxAttempts] = useState("3");
+  const [editRetryInterval, setEditRetryInterval] = useState("60");
   const [stats, setStats] = useState<CampaignStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
@@ -68,6 +78,67 @@ export default function CampaignDetailPage() {
       setLeadsLoading(false);
     }
   }, [id]);
+
+  function openEditModal() {
+    if (!campaign) return;
+    const ch = campaign.calling_hours;
+    const rp = campaign.retry_policy;
+    setEditName(campaign.name);
+    setEditDescription(campaign.description || "");
+    setEditMaxConcurrent(String(campaign.max_concurrent_calls || 1));
+    setEditStartTime(ch?.start_time || "09:00");
+    setEditEndTime(ch?.end_time || "19:00");
+    setEditMaxAttempts(String(rp?.max_attempts || "3"));
+    setEditRetryInterval(String(rp?.retry_delay_minutes || "60"));
+    setShowEditModal(true);
+  }
+
+  async function handleUpdateCampaign(e: React.FormEvent) {
+    e.preventDefault();
+    if (!campaign) return;
+    setSavingEdit(true);
+    try {
+      await api.campaigns.update(campaign.id, {
+        name: editName.trim(),
+        description: editDescription.trim(),
+        max_concurrent_calls: parseInt(editMaxConcurrent) || 1,
+        calling_hours: {
+          start_time: editStartTime,
+          end_time: editEndTime,
+          days_of_week: [1, 2, 3, 4, 5, 6, 7],
+        },
+        retry_policy: {
+          max_attempts: parseInt(editMaxAttempts) || 3,
+          retry_delay_minutes: parseInt(editRetryInterval) || 60,
+        },
+      });
+      toast.success("Campaign updated successfully!");
+      setShowEditModal(false);
+      await load();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update campaign");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+  async function handleDeleteCampaign() {
+    if (!campaign) return;
+    if (campaign.status === "running") {
+      toast.error("Cannot delete a running campaign. Please pause or cancel it first.");
+      return;
+    }
+    if (!confirm(`Are you sure you want to delete campaign "${campaign.name}"?\nThis will unenroll all leads and delete this campaign permanently.`)) {
+      return;
+    }
+    try {
+      await api.campaigns.delete(campaign.id);
+      toast.success(`Campaign "${campaign.name}" deleted.`);
+      router.push("/campaigns");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete campaign");
+    }
+  }
 
   const load = useCallback(async (silent = false) => {
     if (!id) return;
@@ -212,6 +283,24 @@ export default function CampaignDetailPage() {
           {["draft", "running", "paused"].includes(campaign.status) && (
             <Button size="sm" variant="danger" loading={acting} onClick={() => action(() => api.campaigns.cancel(campaign.id), "cancelled")}>
               <StopCircle className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={openEditModal}
+            className="gap-1"
+          >
+            <Edit2 className="h-3.5 w-3.5" /> Edit Campaign
+          </Button>
+          {campaign.status !== "running" && (
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={handleDeleteCampaign}
+              className="gap-1"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete
             </Button>
           )}
         </div>
@@ -569,6 +658,93 @@ export default function CampaignDetailPage() {
           setPreflightFailure(null);
         }}
       />
+      {/* Edit Campaign Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title={`Edit Campaign: ${campaign.name}`}
+        size="lg"
+      >
+        <form onSubmit={handleUpdateCampaign} className="flex flex-col gap-4">
+          <Input
+            label="Campaign Name *"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            required
+          />
+
+          <Input
+            label="Description"
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+            placeholder="Campaign goals or details..."
+          />
+
+          <Input
+            label="Max Concurrent Calls"
+            type="number"
+            min="1"
+            max="50"
+            value={editMaxConcurrent}
+            onChange={(e) => setEditMaxConcurrent(e.target.value)}
+          />
+
+          <div className="p-3.5 rounded-lg border border-border bg-surface-subtle space-y-3">
+            <div className="flex items-center gap-1.5 font-semibold text-xs text-text-primary">
+              <Clock className="h-3.5 w-3.5 text-accent" />
+              Allowed Calling Hours
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Start Time"
+                type="time"
+                value={editStartTime}
+                onChange={(e) => setEditStartTime(e.target.value)}
+              />
+              <Input
+                label="End Time"
+                type="time"
+                value={editEndTime}
+                onChange={(e) => setEditEndTime(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-lg border border-border bg-surface-subtle space-y-3">
+            <div className="flex items-center gap-1.5 font-semibold text-xs text-text-primary">
+              <Clock className="h-3.5 w-3.5 text-accent" />
+              Lead Retry Policy
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Max Attempts per Lead"
+                type="number"
+                min="1"
+                max="10"
+                value={editMaxAttempts}
+                onChange={(e) => setEditMaxAttempts(e.target.value)}
+              />
+              <Input
+                label="Retry Delay (Minutes)"
+                type="number"
+                min="5"
+                max="1440"
+                value={editRetryInterval}
+                onChange={(e) => setEditRetryInterval(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <Button type="button" variant="secondary" onClick={() => setShowEditModal(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={savingEdit}>
+              Save Changes
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </AppShell>
   );
 }

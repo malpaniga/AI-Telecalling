@@ -320,6 +320,7 @@ export interface CallingHoursConfig {
   start_time: string;
   end_time: string;
   days_of_week: number[];
+  timezone?: string;
 }
 
 export interface RetryPolicyConfig {
@@ -1072,6 +1073,8 @@ export const api = {
       apiRequest<Campaign>("POST", `/api/v1/campaigns/${id}/resume`),
     cancel: (id: string) =>
       apiRequest<Campaign>("POST", `/api/v1/campaigns/${id}/cancel`),
+    delete: (id: string) =>
+      apiRequest<{ deleted: boolean; campaign_id: string }>("DELETE", `/api/v1/campaigns/${id}`),
     stats: (id: string) =>
       apiRequest<CampaignStats>("GET", `/api/v1/campaigns/${id}/stats`),
     preflight: (id: string) =>
