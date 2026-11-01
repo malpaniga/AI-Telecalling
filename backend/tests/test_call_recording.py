@@ -76,6 +76,51 @@ class TestCallAudioRecorder:
             url = recorder.save_wav()
             assert url is None
 
+    def test_recorder_barge_in_truncates_unplayed_agent_audio(self, tmp_path):
+        with patch("backend.telephony.recording.RECORDINGS_DIR", tmp_path):
+            call_id = "barge-in-test"
+            recorder = CallAudioRecorder(call_id=call_id, sample_rate=16000)
+            t0 = 1000.0
+            with patch("time.monotonic", return_value=t0):
+                recorder.start()
+
+                # Simulate TTS pre-generating 10s of audio (320,000 bytes) at t0
+                agent_pcm = b"\x02\x00" * (16000 * 10)
+                recorder.record_agent_pcm(agent_pcm, sample_rate=16000)
+                assert len(recorder.agent_track) == 320000
+
+            # Caller interrupts after 2.0s of real time
+            t_interrupt = t0 + 2.0
+            with patch("time.monotonic", return_value=t_interrupt):
+                recorder.handle_interrupt()
+                # Should be truncated to 2.0s (64,000 bytes)
+                assert len(recorder.agent_track) == 64000
+
+    def test_recorder_save_wav_caps_to_actual_call_duration(self, tmp_path):
+        with patch("backend.telephony.recording.RECORDINGS_DIR", tmp_path):
+            call_id = "duration-cap-test"
+            recorder = CallAudioRecorder(call_id=call_id, sample_rate=16000)
+            t0 = 2000.0
+            with patch("time.monotonic", return_value=t0):
+                recorder.start()
+                # Feed 30s of pre-synthesized audio
+                agent_pcm = b"\x02\x00" * (16000 * 30)
+                recorder.record_agent_pcm(agent_pcm, sample_rate=16000)
+
+            # Call ends after 5.0s
+            t_end = t0 + 5.0
+            with patch("time.monotonic", return_value=t_end):
+                url = recorder.save_wav()
+                assert url == f"/api/v1/calls/{call_id}/recording"
+
+            wav_path = tmp_path / f"{call_id}.wav"
+            assert wav_path.exists()
+            with wave.open(str(wav_path), "rb") as wf:
+                dur = wf.getnframes() / float(wf.getframerate())
+                # Must be capped around 5.0s (with max 0.5s tolerance), not 30s!
+                assert dur <= 5.6
+                assert dur >= 4.9
+
 
 class TestCallRecordingPersistenceAndService:
     def setup_method(self):

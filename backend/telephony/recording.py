@@ -76,6 +76,8 @@ class CallAudioRecorder:
         self.start_time: Optional[float] = None
         self.caller_track = bytearray()
         self.agent_track = bytearray()
+        self._agent_resample_state = None
+        self._caller_resample_state = None
         self.active = False
 
     def start(self) -> None:
@@ -87,6 +89,31 @@ class CallAudioRecorder:
         except Exception:
             pass
 
+    def handle_interrupt(self) -> None:
+        """Truncate unplayed agent audio at the moment of caller barge-in.
+
+        TTS synthesizes ahead of real time and streams whole chunks to the
+        carrier buffer. When the caller interrupts, the carrier flushes its
+        playback queue (clearAudio). That unplayed audio was never heard by
+        the caller, so we truncate the agent track to the actual elapsed playback time.
+        """
+        if not self.active or self.start_time is None:
+            return
+        now = time.monotonic()
+        elapsed = max(0.0, now - self.start_time)
+        played_cutoff = int(elapsed * self.bytes_per_second)
+        played_cutoff = (played_cutoff // 2) * 2  # 16-bit PCM alignment
+        self._agent_resample_state = None
+
+        if len(self.agent_track) > played_cutoff:
+            log.info(
+                "recorder barge-in: truncating agent track from %.2fs to %.2fs (trimmed %.2fs unplayed speech)",
+                len(self.agent_track) / self.bytes_per_second,
+                played_cutoff / self.bytes_per_second,
+                (len(self.agent_track) - played_cutoff) / self.bytes_per_second,
+            )
+            self.agent_track = self.agent_track[:played_cutoff]
+
     def record_caller_pcm(self, pcm16: bytes, sample_rate: int = 16000) -> None:
         """Feed a chunk of caller PCM audio."""
         if not self.active or not pcm16 or self.start_time is None:
@@ -95,7 +122,9 @@ class CallAudioRecorder:
         # Resample to target rate if needed
         if sample_rate != self.sample_rate:
             try:
-                pcm16, _ = audioop.ratecv(pcm16, 2, 1, sample_rate, self.sample_rate, None)
+                pcm16, self._caller_resample_state = audioop.ratecv(
+                    pcm16, 2, 1, sample_rate, self.sample_rate, self._caller_resample_state
+                )
             except Exception as e:
                 log.debug("failed resampling caller audio: %s", e)
 
@@ -119,7 +148,9 @@ class CallAudioRecorder:
 
         if sample_rate != self.sample_rate:
             try:
-                pcm16, _ = audioop.ratecv(pcm16, 2, 1, sample_rate, self.sample_rate, None)
+                pcm16, self._agent_resample_state = audioop.ratecv(
+                    pcm16, 2, 1, sample_rate, self.sample_rate, self._agent_resample_state
+                )
             except Exception as e:
                 log.debug("failed resampling agent audio: %s", e)
 
@@ -135,11 +166,32 @@ class CallAudioRecorder:
 
         self.agent_track.extend(pcm16)
 
-    def save_wav(self) -> Optional[str]:
+    def save_wav(self, max_duration_s: Optional[float] = None) -> Optional[str]:
         """Mix timeline tracks into a 16 kHz 16-bit mono WAV file."""
         if not self.active or self.start_time is None:
             return None
         self.active = False
+
+        now = time.monotonic()
+        actual_duration_s = max(0.0, now - self.start_time)
+        if max_duration_s is not None and max_duration_s > 0:
+            actual_duration_s = min(actual_duration_s, max_duration_s)
+
+        # In real phone calls (>= 1.0s elapsed), clamp tracks so unplayed queued
+        # audio or trailing buffers cannot inflate the recording beyond the actual call.
+        if actual_duration_s >= 1.0:
+            max_allowed_bytes = int((actual_duration_s + 0.5) * self.bytes_per_second)
+            max_allowed_bytes = (max_allowed_bytes // 2) * 2
+            if len(self.agent_track) > max_allowed_bytes:
+                log.info(
+                    "call %s finalized: trimming agent track from %.2fs to max call duration %.2fs",
+                    self.call_id,
+                    len(self.agent_track) / self.bytes_per_second,
+                    max_allowed_bytes / self.bytes_per_second,
+                )
+                self.agent_track = self.agent_track[:max_allowed_bytes]
+            if len(self.caller_track) > max_allowed_bytes:
+                self.caller_track = self.caller_track[:max_allowed_bytes]
 
         caller_len = len(self.caller_track)
         agent_len = len(self.agent_track)

@@ -315,20 +315,33 @@ class CallSession:
         log.info("call language=%s (%s)", self.language, self.language_name)
         self._in_greeting = True
         greeting_start = time.monotonic()
-        greeting_duration = await self._say(greeting)
-        elapsed = time.monotonic() - greeting_start
-        remaining = max(0.0, greeting_duration - elapsed)
-        self._greeting_end_time = time.monotonic() + remaining + 0.3
-
-        await self._persist_turn("agent", greeting, GREETING_STAGE)
-        await self._save_session()
-        await self.t.notify({
-            "type": "state",
-            "stage": self.state["stage"],
-            "slots": self.state["slots"],
-            "output_variables": self.state.get("output_variables", {}),
-        })
-        await self.t.notify({"type": "ready"})
+        try:
+            greeting_duration = await self._say(greeting)
+            elapsed = time.monotonic() - greeting_start
+            remaining = max(0.0, greeting_duration - elapsed)
+            self._greeting_end_time = time.monotonic() + remaining + 0.3
+            if remaining > 0:
+                await asyncio.sleep(remaining)
+            await self._persist_turn("agent", greeting, GREETING_STAGE)
+        except asyncio.CancelledError:
+            log.info("greeting cancelled (barge-in)")
+            if self.recorder:
+                try:
+                    self.recorder.handle_interrupt()
+                except Exception:
+                    pass
+            await self._persist_turn("agent", greeting + " …(interrupted)", GREETING_STAGE)
+            raise
+        finally:
+            self._in_greeting = False
+            await self._save_session()
+            await self.t.notify({
+                "type": "state",
+                "stage": self.state["stage"],
+                "slots": self.state["slots"],
+                "output_variables": self.state.get("output_variables", {}),
+            })
+            await self.t.notify({"type": "ready"})
 
     async def handle_interrupt(self) -> None:
         """Handle explicit caller interrupt event (barge-in)."""
@@ -339,6 +352,11 @@ class CallSession:
             self.responder.cancel()
         if self._filler_task is not None:
             self._filler_task.cancel()
+        if self.recorder:
+            try:
+                self.recorder.handle_interrupt()
+            except Exception:
+                pass
         try:
             await self.t.clear()
         finally:
@@ -360,8 +378,21 @@ class CallSession:
                 log.info("VAD detected UTTERANCE: %d bytes (%.2f s)", len(payload) if payload else 0, (len(payload) / 32000.0) if payload else 0)
                 if not self._call_ending and payload:
                     self._in_greeting = False
+                    if self.recorder:
+                        try:
+                            self.recorder.handle_interrupt()
+                        except Exception:
+                            pass
                     await self._cancel_responder()
                     self.responder = asyncio.create_task(self._handle_utterance(payload))
+
+    async def push_audio(self, pcm: bytes) -> None:
+        """Compatibility alias for Plivo / WebSocket audio push."""
+        await self.feed_pcm16(pcm)
+
+    async def handle_barge_in(self) -> None:
+        """Compatibility alias for Plivo clearAudio / barge-in."""
+        await self.handle_interrupt()
 
     async def _handle_utterance(self, audio_pcm: bytes) -> None:
         if self._call_ending:
