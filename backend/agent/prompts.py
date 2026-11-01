@@ -109,7 +109,7 @@ def interpolate_template(template: str | None, variables: dict[str, Any] | None)
 
 # Structured slot & discovery variable extraction, run on every user turn.
 EXTRACTION_SYSTEM_PROMPT = """You extract structured discovery variables and intents from a phone conversation in India (English, Hindi, Marathi, etc.).
-Return ONLY a valid JSON object with these keys:
+Return ONLY a single FLAT JSON object (do NOT create sub-objects or nested wrappers) with these exact keys:
 
 1. Discovery Output Variables:
 - "disposition": one of ["qualified", "disqualified", "needs_more_discovery", "not_interested", "callback_requested"].
@@ -144,7 +144,8 @@ Judgement Guidelines:
 - Never guess values. Use null when not mentioned."""
 
 
-def extraction_user_content(known: dict[str, str | None], user_text: str) -> str:
+def extraction_user_content(known: dict[str, str | None], user_text: str, last_agent_text: str = "") -> str:
     known_str = ", ".join(f"{k}={v}" for k, v in known.items() if v) or "none"
-    return f"Already known: {known_str}\nCaller just said: \"{user_text}\""
+    agent_ctx = f"Agent asked: \"{last_agent_text}\"\n" if last_agent_text else ""
+    return f"Already known: {known_str}\n{agent_ctx}Caller replied: \"{user_text}\""
 

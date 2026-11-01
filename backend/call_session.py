@@ -581,6 +581,47 @@ class CallSession:
                 pass
         self.responder = None
 
+    async def _evaluate_call_transcript(self, messages: list[dict]) -> dict:
+        """Run post-call LLM evaluation to generate summary, outcome, and qualification."""
+        if not messages or not getattr(self, "engine", None) or not getattr(self.engine, "llm", None):
+            return {}
+
+        lines = []
+        for m in messages:
+            role = "AGENT" if m.get("role") == "assistant" else "CALLER"
+            content = (m.get("content") or "").strip()
+            if content:
+                lines.append(f"{role}: {content}")
+
+        if not lines:
+            return {}
+        transcript = "\n".join(lines[-20:])
+
+        prompt = (
+            "You are an expert sales analyst reviewing an AI phone call conversation in India.\n"
+            "Analyze this call transcript and produce a valid JSON evaluation.\n\n"
+            f"Transcript:\n{transcript}\n\n"
+            "Return ONLY a single valid JSON object with:\n"
+            "- \"summary\": A concise 2-3 sentence summary in the language of the call (or English) capturing caller intent, key details mentioned, and agreed next steps.\n"
+            "- \"outcome\": One of [\"qualified\", \"appointment_set\", \"callback\", \"not_interested\", \"contacted\"].\n"
+            "  * Use \"qualified\" or \"appointment_set\" if caller expressed interest, shared requirements, agreed to appointment/visit, or requested details.\n"
+            "  * Use \"callback\" if caller asked to call back later.\n"
+            "  * Use \"not_interested\" if caller refused or hung up.\n"
+            "- \"score\": Integer from 0 to 100 representing lead quality (80-100 for appointment/highly interested, 50-70 for exploratory, 0-30 for cold/rejection).\n"
+            "- \"qualification\": A dictionary of key attributes mentioned (e.g. monthly_bill, requirement, appointment_time, preference, locality). Only include keys with actual values.\n"
+            "- \"disposition\": One of [\"qualified\", \"appointment_set\", \"callback\", \"not_interested\"].\n"
+        )
+
+        try:
+            eval_data = await self.engine.llm.complete_json(
+                "You are a sales evaluation AI that returns only valid JSON.",
+                prompt,
+            )
+            return eval_data or {}
+        except Exception as e:
+            log.warning("call evaluation exception: %s", e)
+            return {}
+
     async def finalize(self) -> None:
         await self._cancel_responder()
         saved_recording_url = None
@@ -604,12 +645,40 @@ class CallSession:
                     org_id = call_doc.get("organization_id", "demo")
                     from backend.agent.scoring import call_outcome, score_lead
                     slots = self.state.get("slots", {})
+                    output_vars = self.state.get("output_variables", {})
                     flags = self.state.get("flags", {})
                     stage = self.state.get("stage", "")
-                    lead_score = score_lead(slots, flags)
-                    outcome = call_outcome(flags, stage)
-                    if outcome == "callback" and not flags.get("callback"):
-                        outcome = "contacted"
+
+                    lead_score = score_lead(slots, flags, output_variables=output_vars)
+                    outcome = call_outcome(flags, stage, output_variables=output_vars)
+                    summary = None
+
+                    # Merge meaningful output variables into qualification
+                    qualification = {k: v for k, v in slots.items() if v is not None}
+                    for k, v in output_vars.items():
+                        if v is not None and k != "disposition":
+                            qualification[k] = v
+
+                    # Run post-call evaluation on the transcript if turns took place
+                    messages = self.state.get("messages", [])
+                    user_turns = [m for m in messages if m.get("role") == "user"]
+                    if user_turns:
+                        try:
+                            eval_res = await self._evaluate_call_transcript(messages)
+                            if eval_res:
+                                if eval_res.get("summary"):
+                                    summary = eval_res["summary"]
+                                if eval_res.get("outcome"):
+                                    outcome = eval_res["outcome"]
+                                if eval_res.get("score") is not None:
+                                    lead_score = int(eval_res["score"])
+                                if eval_res.get("qualification") and isinstance(eval_res["qualification"], dict):
+                                    eval_qual = {k: v for k, v in eval_res["qualification"].items() if v is not None}
+                                    if eval_qual:
+                                        qualification = eval_qual
+                        except Exception as eval_exc:
+                            log.warning("post-call evaluation error: %s", eval_exc)
+
                     from backend.core.redis import get_redis
                     try:
                         r = get_redis()
@@ -625,7 +694,8 @@ class CallSession:
                         avg_latency_ms=avg_latency,
                         turn_count=len(self.latencies),
                         score=lead_score,
-                        qualification=slots,
+                        qualification=qualification,
+                        summary=summary,
                         recording_url=saved_recording_url,
                     )
                     if saved_recording_url:
@@ -641,6 +711,6 @@ class CallSession:
                     )
 
                 await self.store.delete(str(self.call_id))
-                log.info("call %s finalized (score=%d)", self.call_id, score)
+                log.info("call %s finalized (score=%d outcome=%s)", self.call_id, score, outcome if 'outcome' in locals() else 'unknown')
             except Exception as exc:  # noqa: BLE001
                 log.warning("failed to finalize call: %s", exc)

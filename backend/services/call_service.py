@@ -408,7 +408,7 @@ class CallService:
                     effective_outcome = outcome or status
                     next_attempt_at = None
                     if status == "completed" or outcome in ("qualified", "appointment_set", "booked", "contacted", "not_interested"):
-                        new_cl_status = "qualified" if outcome == "qualified" else ("not_interested" if outcome == "not_interested" else "contacted")
+                        new_cl_status = "qualified" if outcome in ("qualified", "appointment_set", "booked") else ("not_interested" if outcome == "not_interested" else "contacted")
                     elif effective_outcome in retry_on and attempts < max_attempts:
                         new_cl_status = "callback"
                         next_attempt_at = utcnow() + timedelta(minutes=retry_delay)

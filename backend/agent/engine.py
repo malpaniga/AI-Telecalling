@@ -148,10 +148,24 @@ class ConversationEngine:
         if state.get("output_variables"):
             known_context.update({k: v for k, v in state["output_variables"].items() if v})
 
+        last_agent_text = ""
+        for m in reversed(state.get("messages", [])):
+            if m.get("role") == "assistant" and m.get("content"):
+                last_agent_text = m["content"]
+                break
+
         data = await self.llm.complete_json(
             EXTRACTION_SYSTEM_PROMPT,
-            extraction_user_content(known_context, state["last_user"]),
+            extraction_user_content(known_context, state["last_user"], last_agent_text=last_agent_text),
         )
+
+        # Unpack any nested dictionaries if returned by LLM
+        for k, v in list(data.items()):
+            if isinstance(v, dict):
+                for sub_k, sub_v in v.items():
+                    if sub_k not in data or data[sub_k] is None:
+                        data[sub_k] = sub_v
+
         # Merge slots: only overwrite when the extraction found a real value.
         slots = dict(state["slots"])
         for key in SLOT_KEYS:
@@ -166,11 +180,19 @@ class ConversationEngine:
             if value:
                 output_vars[key] = str(value)
 
+        wants_to_book = bool(data.get("wants_to_book"))
+        if not wants_to_book and output_vars.get("chosen_next_step"):
+            next_step_lower = str(output_vars["chosen_next_step"]).lower()
+            if any(term in next_step_lower for term in ("visit", "survey", "appointment", "demo", "meeting")):
+                wants_to_book = True
+
+        interested = bool(data.get("interested")) or wants_to_book or output_vars.get("disposition") == "qualified"
+
         flags = {
             "raised_objection": bool(data.get("raised_objection")),
-            "wants_to_book": bool(data.get("wants_to_book")),
+            "wants_to_book": wants_to_book,
             "wants_to_end": bool(data.get("wants_to_end")),
-            "interested": bool(data.get("interested")),
+            "interested": interested,
         }
         log.info("understand: slots=%s output_vars=%s flags=%s", slots, output_vars, flags)
         return {"slots": slots, "output_variables": output_vars, "flags": flags}

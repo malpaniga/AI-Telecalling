@@ -172,16 +172,18 @@ export default function CallDetailPage() {
               <p className="text-sm text-text-muted">No summary available</p>
             )}
 
-            {call.qualification && Object.keys(call.qualification).length > 0 && (
+            {call.qualification && Object.entries(call.qualification).filter(([_, v]) => v !== null && v !== undefined && v !== "null" && v !== "None" && v !== "").length > 0 && (
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-3">Qualification</p>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  {Object.entries(call.qualification).map(([k, v]) => (
-                    <div key={k} className="flex justify-between">
-                      <span className="text-text-secondary capitalize">{k.replace(/_/g, " ")}</span>
-                      <span className="font-medium text-text-primary">{String(v)}</span>
-                    </div>
-                  ))}
+                  {Object.entries(call.qualification)
+                    .filter(([_, v]) => v !== null && v !== undefined && v !== "null" && v !== "None" && v !== "")
+                    .map(([k, v]) => (
+                      <div key={k} className="flex justify-between">
+                        <span className="text-text-secondary capitalize">{k.replace(/_/g, " ")}</span>
+                        <span className="font-medium text-text-primary">{String(v)}</span>
+                      </div>
+                    ))}
                 </div>
               </div>
             )}

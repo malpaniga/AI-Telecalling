@@ -49,8 +49,8 @@ class CloudCallLLM:
                 [{"role": "user", "content": user_content}],
                 system_prompt=system_prompt,
                 temperature=0,
-                max_tokens=150,
-                max_output_tokens=150,
+                max_tokens=600,
+                max_output_tokens=600,
             )
             return _parse_json(raw)
         except Exception:  # call engine treats extraction as non-critical
@@ -90,16 +90,32 @@ def build_cloud_call_components(
     return CloudCallComponents(stt=stt, llm=CloudCallLLM(llm), tts=CloudCallTTS(tts))
 
 
+def _flatten_extracted_dict(d: dict) -> dict:
+    if not isinstance(d, dict):
+        return {}
+    flat = dict(d)
+    for k in list(flat.keys()):
+        val = flat[k]
+        if isinstance(val, dict):
+            for sub_k, sub_val in val.items():
+                if sub_k not in flat or flat[sub_k] is None:
+                    flat[sub_k] = sub_val
+    return flat
+
+
 def _parse_json(raw: str) -> dict:
+    parsed: dict = {}
     try:
         value = json.loads(raw)
-        return value if isinstance(value, dict) else {}
+        if isinstance(value, dict):
+            parsed = value
     except (TypeError, ValueError):
         match = _JSON_BLOCK.search(raw or "")
-        if not match:
-            return {}
-        try:
-            value = json.loads(match.group(0))
-            return value if isinstance(value, dict) else {}
-        except ValueError:
-            return {}
+        if match:
+            try:
+                value = json.loads(match.group(0))
+                if isinstance(value, dict):
+                    parsed = value
+            except ValueError:
+                pass
+    return _flatten_extracted_dict(parsed)
