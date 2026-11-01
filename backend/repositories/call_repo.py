@@ -79,6 +79,7 @@ class CallRepository(BaseRepository):
         credits_consumed: int = 0,
         summary: Optional[str] = None,
         error_message: Optional[str] = None,
+        recording_url: Optional[str] = None,
     ) -> bool:
         """Finalize a call. Tenant-safe (org check on update)."""
         updates: dict = {
@@ -102,10 +103,21 @@ class CallRepository(BaseRepository):
             updates["summary"] = summary
         if error_message:
             updates["error_message"] = error_message
+        if recording_url:
+            updates["recording_url"] = recording_url
 
         result = await self.col.update_one(
             {"_id": call_id, "organization_id": organization_id},
             {"$set": {**updates, "updated_at": utcnow()}},
+        )
+        return result.modified_count > 0
+
+    async def set_recording_url(
+        self, call_id: str, recording_url: str
+    ) -> bool:
+        result = await self.col.update_one(
+            {"_id": call_id},
+            {"$set": {"recording_url": recording_url, "updated_at": utcnow()}},
         )
         return result.modified_count > 0
 

@@ -13,10 +13,11 @@ the original repo and wired in main.py.
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
 
-from backend.core.auth import CurrentUser, get_current_user
+from backend.core.auth import CurrentUser, get_current_user, get_optional_user
 from backend.core.db import get_db
 from backend.services.call_service import CallService
 
@@ -48,6 +49,7 @@ class FinalizeCallRequest(BaseModel):
     qualification: Optional[dict] = None
     summary: Optional[str] = None
     error_message: Optional[str] = None
+    recording_url: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -78,6 +80,7 @@ def _call_response(call) -> dict:
         "qualification": call.qualification,
         "credits_reserved": call.credits_reserved,
         "credits_consumed": call.credits_consumed,
+        "recording_url": getattr(call, "recording_url", None),
         "summary": call.summary,
         "started_at": call.started_at.isoformat() if call.started_at else None,
         "connected_at": call.connected_at.isoformat() if call.connected_at else None,
@@ -134,6 +137,7 @@ async def finalize_call(
             qualification=body.qualification,
             summary=body.summary,
             error_message=body.error_message,
+            recording_url=body.recording_url,
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -271,3 +275,58 @@ async def hangup_call(
     )
 
     return {"status": "hangup_signaled", "call_id": call_id}
+
+@router.get("/{call_id}/recording")
+async def get_call_recording(
+    call_id: str,
+    download: bool = Query(False),
+    token: Optional[str] = Query(None),
+    user: Optional[CurrentUser] = Depends(get_optional_user),
+):
+    """Serve call audio recording for inline playback and download."""
+    org_id = None
+    if user and user.org_id:
+        org_id = user.org_id
+    elif token:
+        try:
+            from backend.core.auth import decode_access_token
+            payload = decode_access_token(token)
+            org_id = payload.get("org")
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid recording access token")
+
+    db = get_db()
+    call_doc = await db.calls.find_one({"_id": call_id})
+    if not call_doc:
+        raise HTTPException(status_code=404, detail="Call not found")
+
+    if org_id and call_doc.get("organization_id") and call_doc.get("organization_id") != org_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    from backend.telephony.recording import get_recording_path
+    local_path = get_recording_path(call_id)
+    if local_path and local_path.exists():
+        media_type = "audio/wav"
+        if local_path.suffix == ".mp3":
+            media_type = "audio/mpeg"
+        elif local_path.suffix == ".ogg":
+            media_type = "audio/ogg"
+
+        filename = f"call_{call_id}{local_path.suffix}"
+        headers = {"Accept-Ranges": "bytes"}
+        if download:
+            headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        return FileResponse(
+            path=str(local_path),
+            media_type=media_type,
+            filename=filename if download else None,
+            headers=headers,
+        )
+
+    # Fallback to remote recording_url if hosted externally (Twilio / S3 / Plivo)
+    remote_url = call_doc.get("recording_url")
+    if remote_url and remote_url.startswith("http"):
+        return RedirectResponse(url=remote_url, status_code=307)
+
+    raise HTTPException(status_code=404, detail="Recording not available for this call")

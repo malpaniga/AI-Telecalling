@@ -138,6 +138,7 @@ class CallSession:
         self.latencies: list[int] = []
         self.call_id = call_id
         self.lead_id = None
+        self.recorder = CallAudioRecorder(call_id=str(call_id)) if call_id else None
 
         self.barge_in_sensitivity = 70 if barge_in_sensitivity is None else barge_in_sensitivity
         # Dynamic VAD tuning to reject fan noise, breathing, and acoustic bleed:
@@ -187,6 +188,8 @@ class CallSession:
                     if chunk:
                         duration = len(chunk) / (2.0 * max(sr, 8000))
                         total_duration += duration
+                        if self.recorder and chunk:
+                            self.recorder.record_agent_pcm(chunk, sample_rate=sr)
                         await self.t.play(chunk, sr)
                         if on_audio is not None:
                             on_audio()
@@ -194,6 +197,8 @@ class CallSession:
                 pcm, sr = await self.tts.synthesize(text, self.language, **synth_kwargs)
                 if pcm:
                     total_duration = len(pcm) / (2.0 * max(sr, 8000))
+                    if self.recorder and pcm:
+                        self.recorder.record_agent_pcm(pcm, sample_rate=sr)
                     await self.t.play(pcm, sr)
                     if on_audio is not None:
                         on_audio()
@@ -275,6 +280,10 @@ class CallSession:
 
         # Transports await start() before reading microphone frames. Own the
         # greeting as a responder so synthesis cannot block input or barge-in.
+        if self.recorder is None and self.call_id:
+            self.recorder = CallAudioRecorder(call_id=str(self.call_id))
+        if self.recorder:
+            self.recorder.start()
         self._in_greeting = True
         self.responder = asyncio.create_task(self._run_greeting())
         await self.t.notify({"type": "ready"})
@@ -318,6 +327,8 @@ class CallSession:
         """Feed a chunk of caller audio; drives VAD, barge-in, and responses."""
         if self._call_ending:
             return
+        if self.recorder and pcm:
+            self.recorder.record_caller_pcm(pcm, sample_rate=16000)
         for event, payload in self.endpointer.process(pcm):
             if event == SPEECH_START:
                 await self.handle_interrupt()
@@ -517,6 +528,12 @@ class CallSession:
 
     async def finalize(self) -> None:
         await self._cancel_responder()
+        saved_recording_url = None
+        if self.recorder:
+            try:
+                saved_recording_url = self.recorder.save_wav()
+            except Exception as e:
+                log.warning("failed saving call audio recording: %s", e)
         if self.call_id is not None:
             avg_latency = int(mean(self.latencies)) if self.latencies else None
             try:
@@ -554,7 +571,13 @@ class CallSession:
                         turn_count=len(self.latencies),
                         score=lead_score,
                         qualification=slots,
+                        recording_url=saved_recording_url,
                     )
+                    if saved_recording_url:
+                        await db["calls"].update_one(
+                            {"_id": str(self.call_id)},
+                            {"$set": {"recording_url": saved_recording_url}},
+                        )
                     score = lead_score
                 elif self.lead_id is not None:
                     # Legacy fallback only for demo calls without a db call document

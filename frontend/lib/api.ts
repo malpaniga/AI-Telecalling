@@ -406,6 +406,7 @@ export interface Call {
   qualification: Record<string, unknown> | null;
   credits_reserved: number;
   credits_consumed: number;
+  recording_url?: string | null;
   summary: string | null;
   started_at: string | null;
   connected_at: string | null;
@@ -1134,6 +1135,14 @@ export const api = {
       );
     },
     get: (id: string) => apiRequest<Call>("GET", `/api/v1/calls/${id}`),
+    getRecordingUrl: (callId: string, download = false) => {
+      const token = getAccessToken();
+      const params = new URLSearchParams();
+      if (token) params.set("token", token);
+      if (download) params.set("download", "true");
+      const qs = params.toString();
+      return `${BASE_URL}/api/v1/calls/${callId}/recording${qs ? `?${qs}` : ""}`;
+    },
     initiate: (body: {
       to_number: string;
       from_number: string;

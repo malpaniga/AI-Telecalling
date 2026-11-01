@@ -61,6 +61,7 @@ services:
       - APP_HOST=0.0.0.0
     volumes:
       - ./models:/app/models
+      - ./data/recordings:/app/data/recordings
     depends_on:
       redis:
         condition: service_healthy
@@ -83,6 +84,7 @@ services:
       - DEMO_MODE=false
     volumes:
       - ./models:/app/models
+      - ./data/recordings:/app/data/recordings
     depends_on:
       redis:
         condition: service_healthy

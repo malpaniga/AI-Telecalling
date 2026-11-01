@@ -62,3 +62,7 @@ app.tar.gz
 
 # Superpowers
 .superpowers/
+
+# Call Recordings
+data/recordings/
+*.wav

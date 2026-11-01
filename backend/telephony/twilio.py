@@ -233,6 +233,13 @@ async def ws_twilio(ws: WebSocket):
                     voice_id=voice_id,
                     call_id=call_id,
                 )
+                # Mark call connected in DB
+                if call_id and db is not None:
+                    try:
+                        from backend.repositories.call_repo import CallRepository
+                        await CallRepository(db).mark_connected(call_id)
+                    except Exception as e:
+                        log.warning("failed to mark_connected on twilio call: %s", e)
                 await session.start()  # greet once the stream is live
                 started = True
             elif event == "media":
@@ -286,10 +293,40 @@ async def place_outbound_call(
     if call_id:
         query_params += f"&call_id={quote(call_id)}"
 
+    callback_url = f"{settings.public_base_url.rstrip('/')}/twiml/recording?call_id={quote(call_id)}" if call_id else None
     call = client.calls.create(
         to=to,
         from_=settings.twilio_phone_number,
         url=f"{settings.public_base_url.rstrip('/')}/twiml/voice?{query_params}",
+        record=True,
+        recording_status_callback=callback_url,
     )
     log.info("placed outbound call sid=%s to=%s lang=%s agent=%s", call.sid, to, lang, agent_id)
     return JSONResponse({"status": "calling", "call_sid": call.sid, "to": to, "lang": lang, "agent_id": agent_id})
+
+
+@router.post("/twiml/recording", include_in_schema=False)
+async def twilio_recording_callback(request: Request) -> Response:
+    """Twilio delivers recording URL and duration upon recording completion."""
+    try:
+        form = await request.form()
+        call_id = request.query_params.get("call_id")
+        recording_url = form.get("RecordingUrl")
+        duration = form.get("RecordingDuration")
+        log.info("Twilio recording callback call_id=%s url=%s duration=%s", call_id, recording_url, duration)
+        if call_id and recording_url:
+            from backend.core.db import get_db
+            db = get_db()
+            if db is not None:
+                rec_mp3 = f"{recording_url}.mp3"
+                upd = {"recording_url": rec_mp3}
+                if duration:
+                    try:
+                        upd["duration_s"] = int(duration)
+                    except Exception:
+                        pass
+                await db.calls.update_one({"_id": call_id}, {"$set": upd})
+                log.info("updated call %s with twilio recording %s", call_id, rec_mp3)
+    except Exception as exc:
+        log.warning("Twilio recording callback error: %s", exc)
+    return Response(content="<Response/>", media_type="application/xml")

@@ -3,14 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Download, Volume2, ExternalLink, Clock, FileAudio } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { api, Call } from "@/lib/api";
-import { formatDateTime, formatDuration } from "@/lib/utils";
+import { formatDateTime, formatDuration, formatDurationSec } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 export default function CallDetailPage() {
@@ -36,6 +36,10 @@ export default function CallDetailPage() {
 
   if (!call) return null;
 
+  const hasRecording = Boolean(call.recording_url);
+  const recordingPlayUrl = api.calls.getRecordingUrl(call.id, false);
+  const recordingDownloadUrl = api.calls.getRecordingUrl(call.id, true);
+
   return (
     <AppShell
       title="Call Detail"
@@ -49,6 +53,86 @@ export default function CallDetailPage() {
         </Link>
       </div>
 
+      {/* Recording Player Banner */}
+      <Card className="mb-6 border-accent/20 bg-gradient-to-r from-surface to-surface-subtle">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/60">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-accent/10 text-accent">
+              <Volume2 className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary">Call Audio Recording</h3>
+              <p className="text-xs text-text-muted">Full conversation audio (Caller + AI Agent)</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono bg-surface-subtle border border-border text-text-secondary">
+              <Clock className="h-3 w-3 text-accent" />
+              <span>{formatDuration(call.duration_s)}</span>
+            </div>
+            {hasRecording && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                Ready
+              </span>
+            )}
+          </div>
+        </CardHeader>
+        <CardBody className="pt-4 space-y-4">
+          {hasRecording ? (
+            <div className="space-y-3">
+              <div className="p-2 rounded-xl bg-surface border border-border">
+                <audio
+                  controls
+                  preload="metadata"
+                  className="w-full h-10 outline-none"
+                  src={recordingPlayUrl}
+                >
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <div className="flex items-center gap-2 text-xs text-text-muted">
+                  <FileAudio className="h-3.5 w-3.5 text-text-secondary" />
+                  <span>Audio Format: 16 kHz Mono WAV</span>
+                  <span>•</span>
+                  <span>Length: {formatDuration(call.duration_s)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={recordingPlayUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Open in Tab
+                  </a>
+                  <a
+                    href={recordingDownloadUrl}
+                    download={`call_${call.id}.wav`}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-accent text-white hover:bg-accent/90 transition-colors shadow-sm"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download Recording
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 text-center text-text-muted space-y-1.5">
+              <Volume2 className="h-8 w-8 text-text-muted/40" />
+              <p className="text-sm font-medium text-text-secondary">No audio recording available</p>
+              <p className="text-xs max-w-md">
+                {call.status === "completed"
+                  ? "This call either had no audio streamed or ended before media was established."
+                  : `Call status is '${call.status}'. Recordings are saved once calls conclude.`}
+              </p>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Meta */}
         <Card>
@@ -61,10 +145,17 @@ export default function CallDetailPage() {
             <Row label="Outcome">
               {call.outcome ? <StatusBadge status={call.outcome} /> : <span className="text-text-muted">—</span>}
             </Row>
-            <Row label="Duration" value={formatDuration(call.duration_s)} />
+            <Row label="Duration" value={formatDurationSec(call.duration_s)} />
             <Row label="Score" value={call.score > 0 ? String(call.score) : "—"} />
             <Row label="Credits" value={String(call.credits_consumed)} />
             <Row label="Latency" value={call.avg_latency_ms ? `${call.avg_latency_ms}ms` : "—"} />
+            <Row label="Recording">
+              {hasRecording ? (
+                <span className="text-emerald-500 font-semibold text-xs">Available</span>
+              ) : (
+                <span className="text-text-muted text-xs">—</span>
+              )}
+            </Row>
             <Row label="Started" value={formatDateTime(call.started_at)} />
             {call.connected_at && <Row label="Connected" value={formatDateTime(call.connected_at)} />}
             {call.ended_at && <Row label="Ended" value={formatDateTime(call.ended_at)} />}
@@ -73,7 +164,7 @@ export default function CallDetailPage() {
 
         {/* Summary + Qualification */}
         <Card className="lg:col-span-2">
-          <CardHeader><h3 className="text-sm font-medium text-text-primary">Summary</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-medium text-text-primary">Summary & Notes</h3></CardHeader>
           <CardBody>
             {call.summary ? (
               <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed">{call.summary}</p>

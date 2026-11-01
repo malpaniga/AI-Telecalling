@@ -38,11 +38,19 @@ export function formatRelative(iso: string | null | undefined): string {
 }
 
 export function formatDuration(seconds: number | null | undefined): string {
-  if (seconds == null) return "—";
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  if (m === 0) return `${s}s`;
-  return `${m}m ${s}s`;
+  if (seconds == null || isNaN(seconds)) return "—";
+  const total = Math.max(0, Math.floor(seconds));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}m ${s.toString().padStart(2, "0")}s`;
+}
+
+export function formatDurationSec(seconds: number | null | undefined): string {
+  if (seconds == null || isNaN(seconds)) return "—";
+  const total = Math.max(0, Math.floor(seconds));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}m ${s.toString().padStart(2, "0")}s (${total}s)`;
 }
 
 // ---------------------------------------------------------------------------

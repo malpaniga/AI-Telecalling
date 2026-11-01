@@ -25,7 +25,7 @@ COPY backend/ backend/
 COPY .env.example .env.example
 
 # Create models directory (populated via Fly Volume)
-RUN mkdir -p /app/models/silero /app/models/piper
+RUN mkdir -p /app/models/silero /app/models/piper /app/data/recordings
 
 # Non-root user
 RUN chown -R appuser:appuser /app

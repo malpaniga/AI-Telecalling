@@ -541,3 +541,27 @@ async def ws_vobiz(ws: WebSocket):
                     )
             except Exception as e:
                 log.warning("Failed finalizing/settling Vobiz call %s via CallService: %s", call_id, e)
+
+
+@router.post("/vobiz/recording", include_in_schema=False)
+async def vobiz_recording_callback(request: Request) -> Response:
+    """Vobiz / Plivo delivers recording callback."""
+    try:
+        form = await request.form()
+        call_id = request.query_params.get("call_id") or form.get("call_id")
+        rec_url = form.get("RecordUrl") or form.get("recording_url")
+        duration = form.get("RecordingDuration") or form.get("duration")
+        log.info("Vobiz recording callback: call_id=%s rec_url=%s duration=%s", call_id, rec_url, duration)
+        if call_id and rec_url:
+            db = get_db()
+            if db is not None:
+                upd = {"recording_url": rec_url}
+                if duration:
+                    try:
+                        upd["duration_s"] = int(duration)
+                    except Exception:
+                        pass
+                await db.calls.update_one({"_id": call_id}, {"$set": upd})
+    except Exception as exc:
+        log.warning("Vobiz recording callback error: %s", exc)
+    return Response(content="<Response/>", media_type="application/xml")

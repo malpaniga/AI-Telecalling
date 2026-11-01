@@ -277,6 +277,7 @@ class CallService:
         qualification: Optional[dict] = None,
         summary: Optional[str] = None,
         error_message: Optional[str] = None,
+        recording_url: Optional[str] = None,
     ) -> dict:
         """
         Finalize a call after it ends.
@@ -345,6 +346,7 @@ class CallService:
             credits_consumed=actual_credits,
             summary=summary,
             error_message=error_message,
+            recording_url=recording_url,
         )
 
         # Mark as finalized by CallService

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Phone, Search } from "lucide-react";
+import { Phone, Search, Volume2, Download } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
@@ -60,6 +60,7 @@ export default function CallsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h2 className="text-lg font-semibold text-text-primary">Call History</h2>
+          <p className="text-xs text-text-muted mt-0.5">Review full-duplex conversations, recordings, and duration metrics</p>
         </div>
         <Select
           value={statusFilter}
@@ -80,7 +81,7 @@ export default function CallsPage() {
           />
         ) : (
           <>
-            <SimpleTable headers={["To", "From", "Status", "Outcome", "Duration", "Score", "Credits", "Date", ""]}>
+            <SimpleTable headers={["To", "From", "Status", "Outcome", "Duration", "Recording", "Score", "Credits", "Date", ""]}>
               {calls.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-mono text-xs">{c.to_number}</TableCell>
@@ -89,7 +90,33 @@ export default function CallsPage() {
                   <TableCell>
                     {c.outcome ? <StatusBadge status={c.outcome} /> : <span className="text-text-muted">—</span>}
                   </TableCell>
-                  <TableCell className="text-text-secondary">{formatDuration(c.duration_s)}</TableCell>
+                  <TableCell className="text-text-secondary font-mono text-xs whitespace-nowrap">
+                    {formatDuration(c.duration_s)}
+                  </TableCell>
+                  <TableCell>
+                    {c.recording_url ? (
+                      <div className="flex items-center gap-1.5">
+                        <Link
+                          href={`/calls/${c.id}`}
+                          title="Listen to recording"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                        >
+                          <Volume2 className="h-3 w-3" />
+                          <span>Play</span>
+                        </Link>
+                        <a
+                          href={api.calls.getRecordingUrl(c.id, true)}
+                          download={`call_${c.id}.wav`}
+                          title="Download recording (.wav)"
+                          className="p-1 rounded text-text-muted hover:text-accent hover:bg-surface-subtle transition-colors"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </a>
+                      </div>
+                    ) : (
+                      <span className="text-text-muted text-xs">—</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-text-secondary">{c.score || "—"}</TableCell>
                   <TableCell className="text-xs text-text-muted">{c.credits_consumed}</TableCell>
                   <TableCell className="text-xs text-text-muted whitespace-nowrap">{formatDateTime(c.started_at)}</TableCell>
