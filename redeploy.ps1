@@ -85,7 +85,7 @@ Write-Host "  [OK] Upload complete." -ForegroundColor Green
 
 # 4. Extract and rebuild containers on server
 Write-Host "`n[4/4] Rebuilding Docker containers on server..." -ForegroundColor Yellow
-$remoteCommands = "mkdir -p ~/saas && tar -xzf ~/app.tar.gz -C ~/saas && rm -f ~/app.tar.gz && cd ~/saas && docker compose -f docker-compose.prod.yml up -d --build"
+$remoteCommands = "mkdir -p ~/saas && tar -xzf ~/app.tar.gz -C ~/saas && rm -f ~/app.tar.gz && cd ~/saas && mkdir -p ~/saas/data/recordings && sudo chmod -R 777 ~/saas/data/recordings 2>/dev/null || chmod -R 777 ~/saas/data/recordings 2>/dev/null && docker compose -f docker-compose.prod.yml up -d --build && (sudo chmod -R 777 ~/saas/data/recordings 2>/dev/null || true)"
 ssh -i "$KeyPath" "${User}@${Server}" "$remoteCommands"
 
 Write-Host "`n[OK] All containers updated!" -ForegroundColor Green

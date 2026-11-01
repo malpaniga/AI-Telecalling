@@ -62,6 +62,16 @@ def _require_org(user: CurrentUser) -> str:
 
 
 def _call_response(call) -> dict:
+    rec_url = getattr(call, "recording_url", None)
+    if not rec_url and hasattr(call, "id") and call.id:
+        try:
+            from backend.telephony.recording import get_recording_path
+            p = get_recording_path(str(call.id))
+            if p and p.exists():
+                rec_url = f"/api/v1/calls/{call.id}/recording"
+        except Exception:
+            pass
+
     return {
         "id": call.id,
         "organization_id": call.organization_id,
@@ -80,7 +90,7 @@ def _call_response(call) -> dict:
         "qualification": call.qualification,
         "credits_reserved": call.credits_reserved,
         "credits_consumed": call.credits_consumed,
-        "recording_url": getattr(call, "recording_url", None),
+        "recording_url": rec_url,
         "summary": call.summary,
         "started_at": call.started_at.isoformat() if call.started_at else None,
         "connected_at": call.connected_at.isoformat() if call.connected_at else None,

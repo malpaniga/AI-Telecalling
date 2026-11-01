@@ -273,7 +273,10 @@ class CallSession:
             except Exception as exc:  # noqa: BLE001
                 log.warning("failed to create call record (continuing unpersisted): %s", exc)
         else:
-            db = repo.get_db()
+            try:
+                db = repo.get_db()
+            except Exception:
+                db = None
             if db is not None and self.lead_id is None:
                 try:
                     call_doc = await db["calls"].find_one({"_id": str(self.call_id)})

@@ -7,6 +7,7 @@ aligns them onto a unified conversation timeline, and mixes them into a standard
 
 import logging
 import os
+import tempfile
 import time
 import wave
 from pathlib import Path
@@ -19,11 +20,34 @@ except ImportError:
 
 log = logging.getLogger("telephony.recording")
 
-# Standard recording directory
+# Standard recording directory and fallback paths
 RECORDINGS_DIR = Path("data/recordings")
 
 
+def get_candidate_dirs() -> list[Path]:
+    """Return ordered list of directories to attempt reading/writing recordings."""
+    dirs: list[Path] = [RECORDINGS_DIR]
+    fallbacks = [
+        Path("/tmp/recordings"),
+        Path(tempfile.gettempdir()) / "telecalling_recordings",
+    ]
+    for fb in fallbacks:
+        if fb not in dirs:
+            dirs.append(fb)
+    return dirs
+
+
 def get_recordings_dir() -> Path:
+    for candidate in get_candidate_dirs():
+        try:
+            candidate.mkdir(parents=True, exist_ok=True)
+            # Test write permission
+            test_file = candidate / f".write_test_{os.getpid()}"
+            test_file.touch()
+            test_file.unlink()
+            return candidate
+        except (PermissionError, OSError):
+            continue
     RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
     return RECORDINGS_DIR
 
@@ -32,11 +56,11 @@ def get_recording_path(call_id: str) -> Optional[Path]:
     """Return Path to local recording if it exists on disk."""
     if not call_id:
         return None
-    rec_dir = get_recordings_dir()
-    for ext in (".wav", ".mp3", ".ogg"):
-        p = rec_dir / f"{call_id}{ext}"
-        if p.exists() and p.stat().st_size > 44:  # > WAV header size
-            return p
+    for d in get_candidate_dirs():
+        for ext in (".wav", ".mp3", ".ogg"):
+            p = d / f"{call_id}{ext}"
+            if p.exists() and p.stat().st_size > 44:  # > WAV header size
+                return p
     return None
 
 
@@ -58,7 +82,10 @@ class CallAudioRecorder:
         """Begin recording timeline."""
         self.start_time = time.monotonic()
         self.active = True
-        get_recordings_dir()
+        try:
+            get_recordings_dir()
+        except Exception:
+            pass
 
     def record_caller_pcm(self, pcm16: bytes, sample_rate: int = 16000) -> None:
         """Feed a chunk of caller PCM audio."""
@@ -136,25 +163,32 @@ class CallAudioRecorder:
             log.warning("audioop.add mix failed: %s; falling back to non-empty track", e)
             mixed = bytes(self.caller_track) if caller_len > 0 else bytes(self.agent_track)
 
-        rec_dir = get_recordings_dir()
-        file_path = rec_dir / f"{self.call_id}.wav"
+        # Attempt saving in candidate directories
+        for target_dir in get_candidate_dirs():
+            try:
+                target_dir.mkdir(parents=True, exist_ok=True)
+                file_path = target_dir / f"{self.call_id}.wav"
+                with wave.open(str(file_path), "wb") as wf:
+                    wf.setnchannels(1)  # Mono
+                    wf.setsampwidth(self.bytes_per_sample)  # 16-bit
+                    wf.setframerate(self.sample_rate)  # 16 kHz
+                    wf.writeframes(mixed)
 
-        try:
-            with wave.open(str(file_path), "wb") as wf:
-                wf.setnchannels(1)  # Mono
-                wf.setsampwidth(self.bytes_per_sample)  # 16-bit
-                wf.setframerate(self.sample_rate)  # 16 kHz
-                wf.writeframes(mixed)
+                duration_s = max_len / self.bytes_per_second
+                log.info(
+                    "saved call recording for %s -> %s (%.1fs, %d bytes)",
+                    self.call_id,
+                    file_path,
+                    duration_s,
+                    len(mixed),
+                )
+                return f"/api/v1/calls/{self.call_id}/recording"
+            except (PermissionError, OSError) as pe:
+                log.warning("could not write recording to %s: %s; trying next directory", target_dir, pe)
+                continue
+            except Exception as exc:
+                log.error("failed saving WAV for call %s: %s", self.call_id, exc)
+                return None
 
-            duration_s = max_len / self.bytes_per_second
-            log.info(
-                "saved call recording for %s -> %s (%.1fs, %d bytes)",
-                self.call_id,
-                file_path,
-                duration_s,
-                len(mixed),
-            )
-            return f"/api/v1/calls/{self.call_id}/recording"
-        except Exception as exc:
-            log.error("failed saving WAV for call %s: %s", self.call_id, exc)
-            return None
+        log.error("all candidate recording directories failed for call %s", self.call_id)
+        return None
