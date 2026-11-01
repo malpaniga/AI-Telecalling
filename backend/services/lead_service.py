@@ -141,7 +141,11 @@ def _apply_mapping(
 
             if target:
                 norm_target = target.strip().lower().replace(" ", "_")
-                if norm_target in STANDARD_FIELDS:
+                if norm_target in ("tags", "tag", "lead_tags"):
+                    parsed_tags = [t.strip() for t in str_val.replace(";", ",").split(",") if t.strip()]
+                    record["tags"] = parsed_tags
+                    record.setdefault("_custom", {})["tags"] = str_val
+                elif norm_target in STANDARD_FIELDS:
                     record[norm_target] = str_val
                     record.setdefault("_custom", {})[norm_target] = str_val
                     if norm_target == "name":
@@ -361,7 +365,7 @@ class LeadService:
                 "score": 0,
                 "qualification": {},
                 "custom_fields": row.get("_custom", {}),
-                "tags": tags or [],
+                "tags": list(dict.fromkeys((tags or []) + (row.get("tags") or []))),
                 "source": source,
                 "attempts": 0,
                 "import_batch_id": batch_id,

@@ -34,6 +34,7 @@ const MAPPING_OPTIONS = [
   { value: "city", label: "🏙️ City ({city})" },
   { value: "address", label: "📍 Address ({address})" },
   { value: "company", label: "🏢 Company ({company})" },
+  { value: "tags", label: "🏷️ Lead Tags ({tags})" },
   { value: "__custom__", label: "✨ Custom AI Variable..." },
   { value: "__skip__", label: "🚫 Skip this column" },
 ];
@@ -109,6 +110,8 @@ export default function LeadsImportPage() {
           initialMapping[h] = "address";
         } else if (["company", "organization", "org"].some((k) => norm.includes(k))) {
           initialMapping[h] = "company";
+        } else if (["tag", "tags", "label", "labels", "category"].some((k) => norm.includes(k))) {
+          initialMapping[h] = "tags";
         } else {
           // Default to custom variable using snake_case header name
           const slug = h.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");

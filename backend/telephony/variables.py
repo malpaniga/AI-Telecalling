@@ -2,7 +2,7 @@
 
 Hierarchically merges:
 1. Agent default input_variables
-2. Master Lead attributes (name, phone, email, and custom_fields)
+2. Master Lead attributes (name, phone, email, tags, and custom_fields)
 3. Campaign-scoped overrides (CampaignLead.custom_fields)
 """
 
@@ -25,7 +25,7 @@ async def resolve_call_variables(
             if v is not None:
                 runtime_vars[k] = str(v)
 
-    if not db or not call_id:
+    if db is None or not call_id:
         return runtime_vars
 
     try:
@@ -35,6 +35,16 @@ async def resolve_call_variables(
 
         lead_id = call_doc.get("lead_id")
         campaign_id = call_doc.get("campaign_id")
+
+        # 0. Campaign metadata
+        if campaign_id:
+            try:
+                camp_doc = await db.campaigns.find_one({"_id": campaign_id})
+                if camp_doc and camp_doc.get("name"):
+                    runtime_vars["campaign_name"] = camp_doc["name"]
+                    runtime_vars["campaign"] = camp_doc["name"]
+            except Exception:
+                pass
 
         # 1. If agent version has default variables and not provided
         if not default_variables:
@@ -64,17 +74,33 @@ async def resolve_call_variables(
                 name = lead_doc.get("name")
                 phone = lead_doc.get("phone")
                 email = lead_doc.get("email")
+                tags = lead_doc.get("tags")
 
                 if name:
                     runtime_vars["name"] = name
                     runtime_vars["user_name"] = name
                     runtime_vars["customer_name"] = name
                     runtime_vars["lead_name"] = name
+                    runtime_vars["userName"] = name
+                    runtime_vars["fullName"] = name
                 if phone:
                     runtime_vars["phone"] = phone
                     runtime_vars["phone_number"] = phone
+                    runtime_vars["mobile"] = phone
                 if email:
                     runtime_vars["email"] = email
+                if tags:
+                    if isinstance(tags, list):
+                        runtime_vars["tags"] = ", ".join(str(t) for t in tags)
+                        if tags:
+                            runtime_vars["tag"] = str(tags[0])
+                        for t in tags:
+                            if ":" in str(t):
+                                tag_k, tag_v = str(t).split(":", 1)
+                                runtime_vars[tag_k.strip().lower().replace(" ", "_")] = tag_v.strip()
+                    else:
+                        runtime_vars["tags"] = str(tags)
+                        runtime_vars["tag"] = str(tags)
 
                 for k, v in (lead_doc.get("custom_fields") or {}).items():
                     if v is not None:

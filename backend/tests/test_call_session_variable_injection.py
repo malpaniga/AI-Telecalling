@@ -75,3 +75,34 @@ class TestCallSessionVariableInjection:
 
         assert interpolated_greeting == "Hello Aarav Sharma! We have an offer of 50,000 in Delhi."
         assert interpolated_prompt == "You are assisting Aarav Sharma located at Delhi."
+
+    def test_resolve_call_variables_no_truth_value_testing(self):
+        """Verify that PyMongo database objects that raise on bool(db) work cleanly."""
+        class StrictDbWrapper:
+            def __init__(self, inner):
+                self._inner = inner
+            def __bool__(self):
+                raise NotImplementedError("Database objects do not implement truth value testing or bool()")
+            def __getattr__(self, name):
+                return getattr(self._inner, name)
+
+        async def _test():
+            await self.db.leads.insert_one({
+                "_id": "lead_strict",
+                "name": "Govind Sir",
+                "phone": "+917249333373",
+                "tags": ["VIP", "city:Washim"],
+            })
+            await self.db.calls.insert_one({
+                "_id": "call_strict",
+                "lead_id": "lead_strict",
+            })
+            strict_db = StrictDbWrapper(self.db)
+            vars = await resolve_call_variables(strict_db, "call_strict")
+            assert vars["name"] == "Govind Sir"
+            assert vars["user_name"] == "Govind Sir"
+            assert vars["phone"] == "+917249333373"
+            assert vars["tags"] == "VIP, city:Washim"
+            assert vars["city"] == "Washim"
+
+        run(_test())

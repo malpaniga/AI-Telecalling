@@ -198,7 +198,13 @@ async def ws_twilio(ws: WebSocket):
                                     system_prompt = cfg.get("system_prompt")
                                     language = cfg.get("primary_language", language)
                                     voice_id = cfg.get("voice_id")
-                                    variables = cfg.get("input_variables") or {}
+                                    from backend.telephony.variables import resolve_call_variables
+                                    variables = await resolve_call_variables(
+                                        db,
+                                        call_id=call_id,
+                                        agent_id=agent_id,
+                                        default_variables=cfg.get("input_variables") or {},
+                                    )
                                     strictness = cfg.get("knowledge_strictness", "flexible")
 
                                     # Ground with Knowledge Base if associated
@@ -225,6 +231,7 @@ async def ws_twilio(ws: WebSocket):
                     system_prompt=system_prompt,
                     variables=variables,
                     voice_id=voice_id,
+                    call_id=call_id,
                 )
                 await session.start()  # greet once the stream is live
                 started = True

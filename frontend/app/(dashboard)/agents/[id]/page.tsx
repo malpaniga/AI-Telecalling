@@ -1479,7 +1479,7 @@ export default function SarvamAgentStudioPage() {
                 {/* Interactive Variable Chips */}
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] font-semibold text-text-muted mr-1">Insert chip:</span>
-                  {Object.keys(inputVariables).map((k) => (
+                  {Array.from(new Set(["user_name", "name", "phone", "tags", "city", ...Object.keys(inputVariables)])).map((k) => (
                     <button
                       key={k}
                       type="button"
@@ -1716,6 +1716,65 @@ export default function SarvamAgentStudioPage() {
 
           {activeTab === "variables" && (
             <div className="space-y-6">
+              {/* Mapped Lead & Dynamic Call Variables Card */}
+              <div className="p-5 rounded-2xl border border-border bg-card shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-text-primary flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-accent" />
+                      Dynamic Lead & Call Variables
+                    </h3>
+                    <p className="text-xs text-text-muted">
+                      These variables are automatically resolved from your enrolled leads, contact lists, and campaigns during live calls.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="divide-y divide-border/50 border border-border/60 rounded-xl overflow-hidden text-xs">
+                  <div className="grid grid-cols-12 bg-surface-subtle p-3 font-semibold text-text-secondary">
+                    <div className="col-span-4">Variable Token</div>
+                    <div className="col-span-5">Data Source / Field</div>
+                    <div className="col-span-3">Example Spoken Value</div>
+                  </div>
+
+                  <div className="grid grid-cols-12 p-3 bg-card items-center gap-2">
+                    <div className="col-span-4 font-mono font-bold text-accent">&#123;user_name&#125; <span className="text-text-muted font-normal">or</span> &#123;name&#125;</div>
+                    <div className="col-span-5 text-text-secondary">Lead or Contact Full Name (from CSV/Contacts)</div>
+                    <div className="col-span-3 font-mono text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded w-fit">&quot;Rahul Sharma&quot;</div>
+                  </div>
+
+                  <div className="grid grid-cols-12 p-3 bg-card items-center gap-2">
+                    <div className="col-span-4 font-mono font-bold text-accent">&#123;phone&#125;</div>
+                    <div className="col-span-5 text-text-secondary">Contact&apos;s Dialed Phone Number</div>
+                    <div className="col-span-3 font-mono text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded w-fit">&quot;+919876543210&quot;</div>
+                  </div>
+
+                  <div className="grid grid-cols-12 p-3 bg-card items-center gap-2">
+                    <div className="col-span-4 font-mono font-bold text-accent">&#123;tags&#125;</div>
+                    <div className="col-span-5 text-text-secondary">Lead&apos;s assigned tags or segment labels</div>
+                    <div className="col-span-3 font-mono text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded w-fit">&quot;VIP, diwali-offer&quot;</div>
+                  </div>
+
+                  <div className="grid grid-cols-12 p-3 bg-card items-center gap-2">
+                    <div className="col-span-4 font-mono font-bold text-accent">&#123;city&#125;</div>
+                    <div className="col-span-5 text-text-secondary">City column mapped during file import or lead creation</div>
+                    <div className="col-span-3 font-mono text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded w-fit">&quot;Mumbai&quot;</div>
+                  </div>
+
+                  <div className="grid grid-cols-12 p-3 bg-card items-center gap-2">
+                    <div className="col-span-4 font-mono font-bold text-accent">&#123;campaign_name&#125;</div>
+                    <div className="col-span-5 text-text-secondary">Title of the outbound campaign placing the call</div>
+                    <div className="col-span-3 font-mono text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded w-fit">&quot;Diwali Flash Sale&quot;</div>
+                  </div>
+
+                  <div className="grid grid-cols-12 p-3 bg-card items-center gap-2">
+                    <div className="col-span-4 font-mono font-bold text-accent">&#123;custom_variable&#125;</div>
+                    <div className="col-span-5 text-text-secondary">Any custom column mapped in CSV/Excel (e.g. balance, due_date)</div>
+                    <div className="col-span-3 font-mono text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded w-fit">&quot;₹4,500&quot;</div>
+                  </div>
+                </div>
+              </div>
+
               {/* Input Variables Card */}
               <div className="p-5 rounded-2xl border border-border bg-card shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
