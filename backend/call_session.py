@@ -32,6 +32,7 @@ from backend.languages import resolve as resolve_language
 from backend.logging_setup import set_trace_id
 from backend.memory import repository as repo
 from backend.memory.session import SessionStore
+from backend.telephony.recording import CallAudioRecorder
 
 log = logging.getLogger("call")
 
@@ -138,7 +139,12 @@ class CallSession:
         self.latencies: list[int] = []
         self.call_id = call_id
         self.lead_id = None
-        self.recorder = CallAudioRecorder(call_id=str(call_id)) if call_id else None
+        self.recorder = None
+        if call_id:
+            try:
+                self.recorder = CallAudioRecorder(call_id=str(call_id))
+            except Exception as e:
+                log.warning("failed to init CallAudioRecorder for call %s: %s", call_id, e)
 
         self.barge_in_sensitivity = 70 if barge_in_sensitivity is None else barge_in_sensitivity
         # Dynamic VAD tuning to reject fan noise, breathing, and acoustic bleed:
@@ -189,7 +195,10 @@ class CallSession:
                         duration = len(chunk) / (2.0 * max(sr, 8000))
                         total_duration += duration
                         if self.recorder and chunk:
-                            self.recorder.record_agent_pcm(chunk, sample_rate=sr)
+                            try:
+                                self.recorder.record_agent_pcm(chunk, sample_rate=sr)
+                            except Exception:
+                                pass
                         await self.t.play(chunk, sr)
                         if on_audio is not None:
                             on_audio()
@@ -198,7 +207,10 @@ class CallSession:
                 if pcm:
                     total_duration = len(pcm) / (2.0 * max(sr, 8000))
                     if self.recorder and pcm:
-                        self.recorder.record_agent_pcm(pcm, sample_rate=sr)
+                        try:
+                            self.recorder.record_agent_pcm(pcm, sample_rate=sr)
+                        except Exception:
+                            pass
                     await self.t.play(pcm, sr)
                     if on_audio is not None:
                         on_audio()
@@ -281,9 +293,15 @@ class CallSession:
         # Transports await start() before reading microphone frames. Own the
         # greeting as a responder so synthesis cannot block input or barge-in.
         if self.recorder is None and self.call_id:
-            self.recorder = CallAudioRecorder(call_id=str(self.call_id))
+            try:
+                self.recorder = CallAudioRecorder(call_id=str(self.call_id))
+            except Exception:
+                pass
         if self.recorder:
-            self.recorder.start()
+            try:
+                self.recorder.start()
+            except Exception as e:
+                log.warning("failed starting CallAudioRecorder: %s", e)
         self._in_greeting = True
         self.responder = asyncio.create_task(self._run_greeting())
         await self.t.notify({"type": "ready"})
@@ -328,7 +346,10 @@ class CallSession:
         if self._call_ending:
             return
         if self.recorder and pcm:
-            self.recorder.record_caller_pcm(pcm, sample_rate=16000)
+            try:
+                self.recorder.record_caller_pcm(pcm, sample_rate=16000)
+            except Exception:
+                pass
         for event, payload in self.endpointer.process(pcm):
             if event == SPEECH_START:
                 await self.handle_interrupt()
