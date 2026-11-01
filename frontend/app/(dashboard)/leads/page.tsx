@@ -100,7 +100,8 @@ export default function LeadsPage() {
     setImporting(true);
     try {
       const result = await api.leads.import(file);
-      toast.success(`Imported ${result.imported} leads (${result.skipped} skipped)`);
+      const skipped = result.skipped ?? (result.skipped_duplicate + result.skipped_dnc);
+      toast.success(`Imported ${result.imported} leads (${skipped} skipped)`);
       setShowImport(false);
       await load();
     } catch (e: unknown) {

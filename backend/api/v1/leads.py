@@ -222,6 +222,47 @@ async def import_leads(
     return result
 
 
+@router.post("/preview")
+async def preview_leads_file(
+    file: UploadFile = File(...),
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Preview uploaded CSV, XLSX, or JSON file headers and sample rows."""
+    _require_org(user)
+    content = await file.read()
+    filename = file.filename or ""
+
+    if filename.endswith(".csv"):
+        fmt = "csv"
+    elif filename.endswith((".xlsx", ".xls")):
+        fmt = "xlsx"
+    elif filename.endswith(".json"):
+        fmt = "json"
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file format. Use .csv, .xlsx, or .json",
+        )
+
+    from backend.services.lead_service import _parse_csv, _parse_xlsx, _parse_json
+    try:
+        if fmt == "csv":
+            headers, rows = _parse_csv(content)
+        elif fmt == "xlsx":
+            headers, rows = _parse_xlsx(content)
+        elif fmt == "json":
+            headers, dicts = _parse_json(content)
+            rows = [[d.get(h, "") for h in headers] for d in dicts]
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Failed to parse file: {exc}")
+
+    return {
+        "headers": headers,
+        "sample_rows": rows[:3],
+        "total_rows": len(rows),
+    }
+
+
 @router.get("/{lead_id}")
 async def get_lead(
     lead_id: str,

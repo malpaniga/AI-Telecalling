@@ -365,6 +365,28 @@ export interface CampaignStats {
   outcomes: Record<string, number>;
 }
 
+export interface CampaignLead {
+  id: string;
+  lead_id: string;
+  campaign_id: string;
+  phone: string;
+  name?: string | null;
+  email?: string | null;
+  status: string;
+  attempts: number;
+  max_attempts: number;
+  last_called_at?: string | null;
+  next_attempt_at?: string | null;
+  disposition?: string | null;
+  custom_fields: Record<string, any>;
+  created_at?: string;
+}
+
+export interface CampaignLeadListResponse {
+  items: CampaignLead[];
+  total: number;
+}
+
 export interface Call {
   id: string;
   organization_id: string;
@@ -955,14 +977,38 @@ export const api = {
       apiRequest<Lead>("PATCH", `/api/v1/leads/${id}`, body),
     delete: (id: string) =>
       apiRequest<void>("DELETE", `/api/v1/leads/${id}`),
-    import: (file: File, opts?: { campaign_id?: string; tags?: string }) => {
+    import: (
+      file: File,
+      opts?: {
+        campaign_id?: string;
+        tags?: string;
+        column_mapping?: Record<string, string>;
+      }
+    ) => {
       const fd = new FormData();
       fd.append("file", file);
       if (opts?.campaign_id) fd.append("campaign_id", opts.campaign_id);
       if (opts?.tags) fd.append("tags", opts.tags);
-      return apiRequest<{ imported: number; skipped: number; errors: number }>(
-        "POST", "/api/v1/leads/import", undefined, { formData: fd }
-      );
+      if (opts?.column_mapping)
+        fd.append("column_mapping", JSON.stringify(opts.column_mapping));
+      return apiRequest<{
+        imported: number;
+        skipped_duplicate: number;
+        skipped_dnc: number;
+        skipped_invalid: number;
+        total_rows: number;
+        errors: any[];
+        skipped?: number;
+      }>("POST", "/api/v1/leads/import", undefined, { formData: fd });
+    },
+    preview: (file: File) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      return apiRequest<{
+        headers: string[];
+        sample_rows: any[][];
+        total_rows: number;
+      }>("POST", "/api/v1/leads/preview", undefined, { formData: fd });
     },
     dnc: {
       list: (params?: { limit?: number; skip?: number }) => {
@@ -1031,6 +1077,37 @@ export const api = {
     preflight: (id: string) =>
       apiRequest<Record<string, unknown>>(
         "GET", `/api/v1/campaigns/${id}/preflight`
+      ),
+    leads: (
+      id: string,
+      params?: { status?: string; limit?: number; skip?: number }
+    ) => {
+      const q = new URLSearchParams();
+      if (params?.status) q.set("status", params.status);
+      if (params?.limit != null) q.set("limit", String(params.limit));
+      if (params?.skip != null) q.set("skip", String(params.skip));
+      return apiRequest<CampaignLeadListResponse>(
+        "GET",
+        `/api/v1/campaigns/${id}/leads${q.toString() ? "?" + q : ""}`
+      );
+    },
+    enrollLeads: (
+      id: string,
+      body: {
+        lead_ids?: string[];
+        tags?: string[];
+        all_contacts?: boolean;
+      }
+    ) =>
+      apiRequest<{ enrolled: number; skipped: number }>(
+        "POST",
+        `/api/v1/campaigns/${id}/leads`,
+        body
+      ),
+    removeLead: (campaignId: string, leadId: string) =>
+      apiRequest<{ removed: boolean }>(
+        "DELETE",
+        `/api/v1/campaigns/${campaignId}/leads/${leadId}`
       ),
   },
 

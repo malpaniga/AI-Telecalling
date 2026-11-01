@@ -14,6 +14,9 @@ import {
   Clock,
   Edit2,
   AlertTriangle,
+  Upload,
+  UserPlus,
+  Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AppShell } from "@/components/layout/app-shell";
@@ -22,7 +25,9 @@ import { MetricCard } from "@/components/ui/metric-card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
-import { api, Campaign, CampaignStats } from "@/lib/api";
+import { Modal } from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
+import { api, Campaign, CampaignStats, CampaignLead } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
 import {
   CallingHoursModal,
@@ -41,6 +46,29 @@ export default function CampaignDetailPage() {
     isCallingHours: boolean;
   } | null>(null);
 
+  // Campaign Leads state
+  const [campaignLeads, setCampaignLeads] = useState<CampaignLead[]>([]);
+  const [leadsTotal, setLeadsTotal] = useState(0);
+  const [leadsLoading, setLeadsLoading] = useState(false);
+  const [addContactsModalOpen, setAddContactsModalOpen] = useState(false);
+  const [addMode, setAddMode] = useState<"all" | "tags">("all");
+  const [tagsInput, setTagsInput] = useState("");
+  const [enrolling, setEnrolling] = useState(false);
+
+  const loadLeads = useCallback(async () => {
+    if (!id) return;
+    setLeadsLoading(true);
+    try {
+      const res = await api.campaigns.leads(id, { limit: 50 });
+      setCampaignLeads(res.items);
+      setLeadsTotal(res.total);
+    } catch {
+      // ignore
+    } finally {
+      setLeadsLoading(false);
+    }
+  }, [id]);
+
   const load = useCallback(async (silent = false) => {
     if (!id) return;
     if (!silent) setLoading(true);
@@ -51,6 +79,7 @@ export default function CampaignDetailPage() {
       ]);
       setCampaign(c);
       setStats(s);
+      loadLeads();
     } catch (e: unknown) {
       if (!silent) {
         toast.error(e instanceof Error ? e.message : "Failed to load campaign");
@@ -58,7 +87,7 @@ export default function CampaignDetailPage() {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [id]);
+  }, [id, loadLeads]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -105,6 +134,38 @@ export default function CampaignDetailPage() {
       toast.error(msg);
     } finally {
       setActing(false);
+    }
+  }
+
+  async function handleEnrollContacts(e: React.FormEvent) {
+    e.preventDefault();
+    if (!campaign) return;
+    setEnrolling(true);
+    try {
+      const payload =
+        addMode === "all"
+          ? { all_contacts: true }
+          : { tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean) };
+      const res = await api.campaigns.enrollLeads(campaign.id, payload);
+      toast.success(`Enrolled ${res.enrolled} contacts (${res.skipped} already enrolled)`);
+      setAddContactsModalOpen(false);
+      setTagsInput("");
+      await Promise.all([load(true), loadLeads()]);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to enroll contacts");
+    } finally {
+      setEnrolling(false);
+    }
+  }
+
+  async function handleRemoveLead(leadId: string) {
+    if (!campaign || !confirm("Remove this lead from this campaign?")) return;
+    try {
+      await api.campaigns.removeLead(campaign.id, leadId);
+      toast.success("Lead removed from campaign");
+      await Promise.all([load(true), loadLeads()]);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to remove lead");
     }
   }
 
@@ -327,6 +388,175 @@ export default function CampaignDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Enrolled Leads Section */}
+      <div className="mt-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+                <Users className="h-4 w-4 text-accent" />
+                Enrolled Leads ({leadsTotal})
+              </h3>
+              <p className="text-xs text-text-muted mt-0.5">
+                Contacts enrolled in this campaign with dedicated campaign statuses and variables
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setAddContactsModalOpen(true)}
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                Add from Contacts
+              </Button>
+              <Link href={`/leads/import?campaign_id=${campaign.id}`}>
+                <Button size="sm" className="gap-1.5">
+                  <Upload className="h-3.5 w-3.5" />
+                  Import File
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardBody>
+            {leadsLoading ? (
+              <div className="flex justify-center py-8">
+                <Spinner size="md" />
+              </div>
+            ) : campaignLeads.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-xs text-text-muted">
+                      <th className="pb-2 font-medium">Name</th>
+                      <th className="pb-2 font-medium">Phone</th>
+                      <th className="pb-2 font-medium">Campaign Status</th>
+                      <th className="pb-2 font-medium">Attempts</th>
+                      <th className="pb-2 font-medium">Last Called</th>
+                      <th className="pb-2 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {campaignLeads.map((cl) => (
+                      <tr key={cl.id} className="text-text-primary hover:bg-surface-subtle transition-colors">
+                        <td className="py-2.5 font-medium">{cl.name || <span className="text-text-muted italic">Unknown</span>}</td>
+                        <td className="py-2.5 font-mono text-xs">{cl.phone}</td>
+                        <td className="py-2.5"><StatusBadge status={cl.status} /></td>
+                        <td className="py-2.5 text-xs text-text-secondary">{cl.attempts} / {cl.max_attempts}</td>
+                        <td className="py-2.5 text-xs text-text-secondary">
+                          {cl.last_called_at ? formatDateTime(cl.last_called_at) : "Never"}
+                        </td>
+                        <td className="py-2.5 text-right">
+                          {["new", "callback"].includes(cl.status) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-text-muted hover:text-danger cursor-pointer"
+                              onClick={() => handleRemoveLead(cl.lead_id)}
+                              title="Remove from campaign"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-10">
+                <Users className="h-8 w-8 text-text-muted mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-medium text-text-primary">No leads enrolled yet</p>
+                <p className="text-xs text-text-muted mt-1 max-w-sm mx-auto">
+                  Import a contact list or add existing contacts to this campaign before starting.
+                </p>
+                <div className="flex justify-center gap-2 mt-4">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => setAddContactsModalOpen(true)}
+                  >
+                    <UserPlus className="h-3.5 w-3.5" /> Add from Contacts
+                  </Button>
+                  <Link href={`/leads/import?campaign_id=${campaign.id}`}>
+                    <Button size="sm" className="gap-1.5">
+                      <Upload className="h-3.5 w-3.5" /> Import File
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Enroll Contacts Modal */}
+      <Modal
+        isOpen={addContactsModalOpen}
+        onClose={() => setAddContactsModalOpen(false)}
+        title="Add Existing Contacts to Campaign"
+      >
+        <form onSubmit={handleEnrollContacts} className="space-y-4">
+          <p className="text-xs text-text-muted">
+            Contacts added to this campaign will receive independent campaign statuses. Calling them here will not affect other campaigns.
+          </p>
+
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
+              <input
+                type="radio"
+                name="addMode"
+                value="all"
+                checked={addMode === "all"}
+                onChange={() => setAddMode("all")}
+                className="text-accent"
+              />
+              <span>Enroll all organization contacts</span>
+            </label>
+
+            <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
+              <input
+                type="radio"
+                name="addMode"
+                value="tags"
+                checked={addMode === "tags"}
+                onChange={() => setAddMode("tags")}
+                className="text-accent"
+              />
+              <span>Filter by contact tags</span>
+            </label>
+          </div>
+
+          {addMode === "tags" && (
+            <div className="pt-2">
+              <Input
+                label="Tags (comma-separated)"
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                placeholder="e.g. vip, warm-leads"
+                required
+              />
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-border">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setAddContactsModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={enrolling}>
+              Enroll Contacts
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       <CallingHoursModal
         isOpen={editCallingHoursOpen}
