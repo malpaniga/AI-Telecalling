@@ -676,6 +676,34 @@ class TestCampaignHTTP:
         assert all(c["status"] == "running" for c in running)
         assert all(c["status"] == "draft" for c in draft)
 
+    def test_create_campaign_with_custom_qualification_schema(self):
+        custom_schema = [
+            {"key": "monthly_bill", "label": "Monthly electricity bill", "required": True},
+            {"key": "roof_type", "label": "Rooftop space / shade", "required": True},
+        ]
+        r = self.client.post("/api/v1/campaigns",
+                             json=self._create_body(name="Solar Campaign", qualification_schema=custom_schema),
+                             headers=self._auth(self.token_a))
+        assert r.status_code == 201, r.text
+        data = r.json()
+        assert "qualification_schema" in data
+        assert len(data["qualification_schema"]) == 2
+        assert data["qualification_schema"][0]["key"] == "monthly_bill"
+
+    def test_patch_campaign_qualification_schema(self):
+        r = self.client.post("/api/v1/campaigns",
+                             json=self._create_body(name="Patch Schema Campaign"),
+                             headers=self._auth(self.token_a))
+        cid = r.json()["id"]
+        updated_schema = [
+            {"key": "vehicle_model", "label": "Vehicle Model", "required": True},
+        ]
+        patch_res = self.client.patch(f"/api/v1/campaigns/{cid}",
+                                      json={"qualification_schema": updated_schema},
+                                      headers=self._auth(self.token_a))
+        assert patch_res.status_code == 200
+        assert patch_res.json()["qualification_schema"] == updated_schema
+
 
 # ---------------------------------------------------------------------------
 # Main

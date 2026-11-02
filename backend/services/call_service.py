@@ -95,6 +95,28 @@ class CallService:
         except ValueError as exc:
             raise ValueError(f"Cannot start call: {exc}") from exc
 
+        # Resolve dynamic qualification schema from campaign or agent
+        call_qualification_schema = []
+        if campaign_id:
+            try:
+                camp_doc = await self.db.campaigns.find_one({"_id": campaign_id})
+                if camp_doc:
+                    call_qualification_schema = camp_doc.get("qualification_schema") or []
+            except Exception as e:
+                log.warning("could not get campaign qualification schema: %s", e)
+        if not call_qualification_schema and agent_id:
+            try:
+                from backend.services.agent_service import DEFAULT_TEMPLATES
+                agent_doc = await self.db.agents.find_one({"_id": agent_id})
+                if agent_doc:
+                    tmpl_slug = agent_doc.get("template_slug")
+                    for dt in DEFAULT_TEMPLATES:
+                        if dt.get("slug") == tmpl_slug:
+                            call_qualification_schema = dt.get("slot_definitions", [])
+                            break
+            except Exception as e:
+                log.warning("could not get agent qualification schema: %s", e)
+
         # Create call record
         call = await self.call_repo.create(
             call_id=call_id,
@@ -107,6 +129,7 @@ class CallService:
             agent_version=agent_version,
             provider=provider,
             credits_reserved=reserve_credits,
+            qualification_schema=call_qualification_schema,
         )
 
         # Dispatch call via Vobiz telephony provider if configured

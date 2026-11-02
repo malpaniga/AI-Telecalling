@@ -312,6 +312,33 @@ class AgentService:
         """Returns agent only if it belongs to this org (tenant isolation)."""
         return await self.agents.get_for_org(agent_id, organization_id)
 
+    async def get_qualification_schema(
+        self, agent_id: str, organization_id: str
+    ) -> list[dict[str, Any]]:
+        """Resolve dynamic qualification criteria for an agent."""
+        agent = await self.get_agent(agent_id, organization_id)
+        if agent is None:
+            return []
+
+        if agent.active_version_id:
+            ver = await self.versions.get_by_id(agent.active_version_id)
+            if ver and ver.configuration:
+                if ver.configuration.get("qualification_schema"):
+                    return ver.configuration["qualification_schema"]
+                if ver.configuration.get("slot_definitions"):
+                    return ver.configuration["slot_definitions"]
+
+        if agent.template_slug:
+            tmpl = await self.templates.find_by_slug(agent.template_slug)
+            if tmpl and getattr(tmpl, "slot_definitions", None):
+                return tmpl.slot_definitions
+
+            for dt in DEFAULT_TEMPLATES:
+                if dt.get("slug") == agent.template_slug:
+                    return dt.get("slot_definitions", [])
+
+        return []
+
     async def create_version(
         self,
         agent_id: str,

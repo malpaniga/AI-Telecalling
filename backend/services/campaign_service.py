@@ -113,6 +113,46 @@ class CampaignService:
 
     # ---- Campaign lifecycle ----
 
+    async def get_agent_qualification_schema(
+        self, agent_id: str, organization_id: Optional[str] = None
+    ) -> list[dict[str, Any]]:
+        """Resolve qualification criteria schema for an agent."""
+        if not agent_id or self.db is None:
+            return []
+        try:
+            from backend.services.agent_service import DEFAULT_TEMPLATES
+            agent_doc = await self.db["agents"].find_one({"_id": agent_id})
+            if not agent_doc:
+                return []
+
+            active_vid = agent_doc.get("active_version_id")
+            ver_doc = None
+            if active_vid:
+                ver_doc = await self.db["agent_versions"].find_one({"_id": active_vid})
+            if not ver_doc:
+                ver_doc = await self.db["agent_versions"].find_one(
+                    {"agent_id": agent_id}, sort=[("version", -1)]
+                )
+            if ver_doc:
+                cfg = ver_doc.get("configuration") or {}
+                if cfg.get("qualification_schema"):
+                    return cfg["qualification_schema"]
+                if cfg.get("slot_definitions"):
+                    return cfg["slot_definitions"]
+
+            tmpl_slug = agent_doc.get("template_slug")
+            if tmpl_slug:
+                tmpl_doc = await self.db["business_templates"].find_one({"slug": tmpl_slug})
+                if tmpl_doc and tmpl_doc.get("slot_definitions"):
+                    return tmpl_doc["slot_definitions"]
+
+                for dt in DEFAULT_TEMPLATES:
+                    if dt.get("slug") == tmpl_slug:
+                        return dt.get("slot_definitions", [])
+        except Exception as exc:
+            log.warning("error getting qualification schema for agent %s: %s", agent_id, exc)
+        return []
+
     async def create_campaign(
         self,
         organization_id: str,
@@ -131,7 +171,13 @@ class CampaignService:
         retry_policy: Optional[dict] = None,
         scheduled_at: Optional[datetime] = None,
         created_by: Optional[str] = None,
+        qualification_schema: Optional[list[dict[str, Any]]] = None,
     ) -> Campaign:
+        if qualification_schema is None or len(qualification_schema) == 0:
+            qualification_schema = await self.get_agent_qualification_schema(
+                agent_id, organization_id
+            )
+
         return await self.repo.create(
             organization_id=organization_id,
             name=name,
@@ -145,6 +191,7 @@ class CampaignService:
             timezone=timezone,
             description=description,
             lead_filter=lead_filter,
+            qualification_schema=qualification_schema,
             calling_hours=calling_hours,
             retry_policy=retry_policy,
             scheduled_at=scheduled_at,

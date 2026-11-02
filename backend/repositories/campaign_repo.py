@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 from pymongo import ASCENDING, DESCENDING
 
@@ -35,6 +35,7 @@ class CampaignRepository(BaseRepository):
         retry_policy: Optional[dict] = None,
         scheduled_at: Optional[datetime] = None,
         created_by: Optional[str] = None,
+        qualification_schema: Optional[list[dict[str, Any]]] = None,
     ) -> Campaign:
         campaign = Campaign(
             _id=new_id(),
@@ -50,6 +51,7 @@ class CampaignRepository(BaseRepository):
             max_concurrent_calls=max_concurrent_calls,
             timezone=timezone,
             lead_filter=lead_filter or {},
+            qualification_schema=qualification_schema or [],
             calling_hours=CallingHours(**(calling_hours or {})),
             retry_policy=RetryPolicy(**(retry_policy or {})),
             scheduled_at=scheduled_at,

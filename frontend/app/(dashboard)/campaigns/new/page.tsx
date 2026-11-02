@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, CheckCheck, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { api, Agent, PhoneNumber } from "@/lib/api";
+import { api, Agent, PhoneNumber, QualificationSlot } from "@/lib/api";
 
 const TIMEZONE_OPTIONS = [
   { value: "Asia/Kolkata", label: "IST (Asia/Kolkata)" },
@@ -51,7 +51,79 @@ export default function NewCampaignPage() {
 
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]);
 
+  // Dynamic qualification schema according to selected AI agent
+  const [qualificationSlots, setQualificationSlots] = useState<QualificationSlot[]>([]);
+  const [loadingSchema, setLoadingSchema] = useState(false);
+  const [newSlotKey, setNewSlotKey] = useState("");
+  const [newSlotLabel, setNewSlotLabel] = useState("");
+  const [newSlotRequired, setNewSlotRequired] = useState(true);
+  const [showAddSlot, setShowAddSlot] = useState(false);
+
   const selectedAgent = agents.find((a) => a.id === form.agent_id);
+
+  // Auto-populate dynamic qualification criteria when selected agent changes
+  useEffect(() => {
+    if (!form.agent_id) return;
+    const ag = agents.find((a) => a.id === form.agent_id);
+    if (!ag) return;
+
+    if (ag.qualification_schema && ag.qualification_schema.length > 0) {
+      setQualificationSlots(ag.qualification_schema);
+    } else if (ag.slot_definitions && ag.slot_definitions.length > 0) {
+      setQualificationSlots(ag.slot_definitions);
+    }
+
+    setLoadingSchema(true);
+    api.agents
+      .qualificationSchema(ag.id)
+      .then((res) => {
+        if (res.qualification_schema && res.qualification_schema.length > 0) {
+          setQualificationSlots(res.qualification_schema);
+        } else if (res.slot_definitions && res.slot_definitions.length > 0) {
+          setQualificationSlots(res.slot_definitions);
+        }
+      })
+      .catch(() => {
+        // preserve current slots
+      })
+      .finally(() => setLoadingSchema(false));
+  }, [form.agent_id, agents]);
+
+  function handleAddSlot() {
+    const key = newSlotKey.trim().toLowerCase().replace(/\s+/g, "_");
+    if (!key) {
+      toast.error("Attribute key is required");
+      return;
+    }
+    if (qualificationSlots.some((s) => s.key === key)) {
+      toast.error("An attribute with this key already exists");
+      return;
+    }
+    const label =
+      newSlotLabel.trim() ||
+      key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    setQualificationSlots((prev) => [
+      ...prev,
+      { key, label, required: newSlotRequired },
+    ]);
+    setNewSlotKey("");
+    setNewSlotLabel("");
+    setNewSlotRequired(true);
+    setShowAddSlot(false);
+    toast.success(`Added criteria: ${label}`);
+  }
+
+  function handleRemoveSlot(keyToRemove: string) {
+    setQualificationSlots((prev) => prev.filter((s) => s.key !== keyToRemove));
+  }
+
+  function handleToggleRequired(keyToToggle: string) {
+    setQualificationSlots((prev) =>
+      prev.map((s) =>
+        s.key === keyToToggle ? { ...s, required: !s.required } : s
+      )
+    );
+  }
 
   useEffect(() => {
     Promise.all([api.agents.list(), api.phoneNumbers.myNumbers()])
@@ -130,6 +202,7 @@ export default function NewCampaignPage() {
           max_attempts: parseInt(form.max_attempts) || 3,
           retry_delay_minutes: parseInt(form.retry_delay_minutes) || 60,
         },
+        qualification_schema: qualificationSlots,
         scheduled_at: form.scheduled_at || undefined,
       });
       toast.success("Campaign created");
@@ -246,6 +319,142 @@ export default function NewCampaignPage() {
                   label: p.number,
                 }))}
               />
+            )}
+          </CardBody>
+        </Card>
+
+        {/* Dynamic Qualification Criteria Card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+                <CheckCheck className="h-4 w-4 text-accent" />
+                Dynamic Qualification Schema
+              </h3>
+              <p className="text-xs text-text-muted mt-0.5">
+                Target attributes qualified by{" "}
+                <span className="font-semibold text-text-primary">
+                  {selectedAgent?.name || "selected AI agent"}
+                </span>{" "}
+                during live calls.
+              </p>
+            </div>
+            {!showAddSlot && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowAddSlot(true)}
+                className="text-xs gap-1"
+              >
+                <Plus className="h-3.5 w-3.5" /> Add Attribute
+              </Button>
+            )}
+          </CardHeader>
+          <CardBody className="space-y-3">
+            {loadingSchema ? (
+              <div className="flex items-center gap-2 text-xs text-text-muted py-2">
+                <Spinner size="sm" /> Loading criteria for {selectedAgent?.name}...
+              </div>
+            ) : qualificationSlots.length === 0 ? (
+              <p className="text-xs text-text-muted italic py-1">
+                No custom qualification attributes configured. Leads will be evaluated on general interest and booking intent.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                {qualificationSlots.map((slot) => (
+                  <div
+                    key={slot.key}
+                    className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-surface-subtle text-xs"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-center gap-1.5 font-medium text-text-primary truncate">
+                        <span>{slot.label}</span>
+                        {slot.required ? (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                            Required
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] text-text-muted bg-surface-hover">
+                            Optional
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] font-mono text-text-muted">
+                        key: {slot.key}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleRequired(slot.key)}
+                        title={slot.required ? "Mark as optional" : "Mark as required"}
+                        className="px-2 py-1 text-[11px] font-medium rounded hover:bg-surface-hover text-text-secondary border border-border"
+                      >
+                        {slot.required ? "Make Optional" : "Make Required"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSlot(slot.key)}
+                        className="p-1 text-text-muted hover:text-red-500 rounded"
+                        title="Remove attribute"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {showAddSlot && (
+              <div className="p-3 rounded-lg border border-accent/30 bg-accent/5 space-y-3 mt-2">
+                <p className="text-xs font-semibold text-text-primary">Add Custom Qualification Field</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Input
+                    label="Field Key (e.g. roof_area, monthly_bill)"
+                    value={newSlotKey}
+                    onChange={(e) => setNewSlotKey(e.target.value)}
+                    placeholder="field_key"
+                  />
+                  <Input
+                    label="Display Label"
+                    value={newSlotLabel}
+                    onChange={(e) => setNewSlotLabel(e.target.value)}
+                    placeholder="e.g. Monthly Electricity Bill"
+                  />
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <label className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newSlotRequired}
+                      onChange={(e) => setNewSlotRequired(e.target.checked)}
+                      className="rounded border-border text-accent focus:ring-accent"
+                    />
+                    Required attribute for qualification
+                  </label>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAddSlot(false)}
+                      className="text-xs"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAddSlot}
+                      className="text-xs"
+                    >
+                      Add Field
+                    </Button>
+                  </div>
+                </div>
+              </div>
             )}
           </CardBody>
         </Card>

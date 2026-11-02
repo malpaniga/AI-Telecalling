@@ -117,6 +117,7 @@ class CallSession:
         barge_in_sensitivity: int | None = None,
         voice_id: str | None = None,
         call_id: str | None = None,
+        qualification_schema: list[dict[str, Any]] | None = None,
     ):
         self.t = transport
         self.voice_id = voice_id
@@ -127,6 +128,7 @@ class CallSession:
         self.direction = direction
         self.agent_name = agent_name
         self.variables = variables or {}
+        self.qualification_schema = qualification_schema or []
         raw_greeting = custom_greeting or greeting
         self.custom_greeting = interpolate_template(raw_greeting, self.variables) if raw_greeting else None
         self.system_prompt = interpolate_template(system_prompt, self.variables) if system_prompt else None
@@ -597,9 +599,32 @@ class CallSession:
             return {}
         transcript = "\n".join(lines[-20:])
 
+        schema_guide = ""
+        if self.qualification_schema:
+            lines_schema = []
+            for s in self.qualification_schema:
+                if isinstance(s, dict) and s.get("key"):
+                    k = s["key"]
+                    lbl = s.get("label") or k
+                    req = "required" if s.get("required", True) else "optional"
+                    lines_schema.append(f"  * \"{k}\": {lbl} ({req})")
+            if lines_schema:
+                schema_guide = (
+                    "Target Campaign Qualification Schema:\n"
+                    + "\n".join(lines_schema)
+                    + "\n\n"
+                )
+
+        target_example_keys = (
+            ", ".join(s["key"] for s in self.qualification_schema if isinstance(s, dict) and "key" in s)
+            if self.qualification_schema
+            else "monthly_bill, requirement, appointment_time, preference"
+        )
+
         prompt = (
             "You are an expert sales analyst reviewing an AI phone call conversation in India.\n"
             "Analyze this call transcript and produce a valid JSON evaluation.\n\n"
+            f"{schema_guide}"
             f"Transcript:\n{transcript}\n\n"
             "Return ONLY a single valid JSON object with:\n"
             "- \"summary\": A concise 2-3 sentence summary in the language of the call (or English) capturing caller intent, key details mentioned, and agreed next steps.\n"
@@ -608,7 +633,7 @@ class CallSession:
             "  * Use \"callback\" if caller asked to call back later.\n"
             "  * Use \"not_interested\" if caller refused or hung up.\n"
             "- \"score\": Integer from 0 to 100 representing lead quality (80-100 for appointment/highly interested, 50-70 for exploratory, 0-30 for cold/rejection).\n"
-            "- \"qualification\": A dictionary of key attributes mentioned (e.g. monthly_bill, requirement, appointment_time, preference, locality). Only include keys with actual values.\n"
+            f"- \"qualification\": A dictionary containing the target qualification keys ({target_example_keys}) with actual values stated by the caller. Only include keys with actual values.\n"
             "- \"disposition\": One of [\"qualified\", \"appointment_set\", \"callback\", \"not_interested\"].\n"
         )
 
@@ -643,13 +668,25 @@ class CallSession:
                 score = 0
                 if db is not None and call_doc:
                     org_id = call_doc.get("organization_id", "demo")
+                    if not self.qualification_schema and call_doc.get("qualification_schema"):
+                        self.qualification_schema = call_doc["qualification_schema"]
+                    if not self.qualification_schema and call_doc.get("campaign_id"):
+                        try:
+                            camp_doc = await db["campaigns"].find_one({"_id": str(call_doc["campaign_id"])})
+                            if camp_doc and camp_doc.get("qualification_schema"):
+                                self.qualification_schema = camp_doc["qualification_schema"]
+                        except Exception:
+                            pass
+
                     from backend.agent.scoring import call_outcome, score_lead
                     slots = self.state.get("slots", {})
                     output_vars = self.state.get("output_variables", {})
                     flags = self.state.get("flags", {})
                     stage = self.state.get("stage", "")
 
-                    lead_score = score_lead(slots, flags, output_variables=output_vars)
+                    lead_score = score_lead(
+                        slots, flags, output_variables=output_vars, qualification_schema=self.qualification_schema
+                    )
                     outcome = call_outcome(flags, stage, output_variables=output_vars)
                     summary = None
 

@@ -392,12 +392,15 @@ async def ws_vobiz(ws: WebSocket):
                 barge_in_sensitivity = 70
                 direction = "outbound"
 
+                qualification_schema = []
                 # Lookup call record for direction and agent if available
                 if call_id and db is not None:
                     try:
                         call_doc = await db.calls.find_one({"_id": call_id})
                         if call_doc:
                             direction = call_doc.get("direction", "outbound")
+                            if call_doc.get("qualification_schema"):
+                                qualification_schema = call_doc.get("qualification_schema")
                             if not agent_id:
                                 agent_id = call_doc.get("agent_id")
                     except Exception as e:
@@ -467,6 +470,7 @@ async def ws_vobiz(ws: WebSocket):
                         voice_id=voice_id,
                         barge_in_sensitivity=barge_in_sensitivity,
                         call_id=call_id,
+                        qualification_schema=qualification_schema,
                     )
                     await session.start()
                     if call_id:

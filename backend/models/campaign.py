@@ -113,6 +113,9 @@ class Campaign(TimestampedModel):
     lead_filter: dict[str, Any] = Field(default_factory=dict)  # MongoDB query fragment
     campaign_id_filter: Optional[str] = None  # limit to leads tagged with this campaign
 
+    # Qualification criteria (dynamic slots to discover and qualify)
+    qualification_schema: list[dict[str, Any]] = Field(default_factory=list)
+
     # Concurrency / pace
     max_concurrent_calls: int = 1
     calls_per_minute: int = 10          # rate limiting

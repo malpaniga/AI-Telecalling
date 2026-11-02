@@ -20,7 +20,9 @@ from pydantic import BaseModel
 
 from backend.core.auth import CurrentUser, get_current_user
 from backend.core.db import get_db
-from backend.services.agent_service import AgentService
+from backend.services.agent_service import DEFAULT_TEMPLATES, AgentService
+
+_TEMPLATE_SLOTS = {t["slug"]: t.get("slot_definitions", []) for t in DEFAULT_TEMPLATES}
 
 log = logging.getLogger("api.agents")
 router = APIRouter(prefix="/agents", tags=["agents"])
@@ -60,7 +62,8 @@ class ImportAgentRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-def _agent_response(agent) -> dict:
+def _agent_response(agent, schema: Optional[list] = None) -> dict:
+    resolved_schema = schema if schema is not None else _TEMPLATE_SLOTS.get(agent.template_slug, [])
     return {
         "id": agent.id,
         "organization_id": agent.organization_id,
@@ -72,6 +75,8 @@ def _agent_response(agent) -> dict:
         "active_version": agent.active_version,
         "active_version_id": agent.active_version_id,
         "is_active": agent.is_active,
+        "qualification_schema": resolved_schema,
+        "slot_definitions": resolved_schema,
         "created_at": agent.created_at.isoformat(),
     }
 
@@ -362,7 +367,28 @@ async def get_agent(
     agent = await svc.get_agent(agent_id, org_id)
     if agent is None:
         raise HTTPException(status_code=404, detail="Agent not found")
-    return _agent_response(agent)
+    schema = await svc.get_qualification_schema(agent_id, org_id)
+    return _agent_response(agent, schema=schema)
+
+
+@router.get("/{agent_id}/qualification-schema")
+async def get_agent_qualification_schema(
+    agent_id: str,
+    user: CurrentUser = Depends(get_current_user),
+):
+    org_id = _require_org(user)
+    db = get_db()
+    svc = AgentService(db)
+    agent = await svc.get_agent(agent_id, org_id)
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    schema = await svc.get_qualification_schema(agent_id, org_id)
+    return {
+        "agent_id": agent_id,
+        "template_slug": agent.template_slug,
+        "qualification_schema": schema,
+        "slot_definitions": schema,
+    }
 
 
 @router.delete("/{agent_id}")

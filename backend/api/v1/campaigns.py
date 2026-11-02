@@ -44,6 +44,7 @@ class CreateCampaignRequest(BaseModel):
     calling_hours: Optional[dict[str, Any]] = None
     retry_policy: Optional[dict[str, Any]] = None
     scheduled_at: Optional[datetime] = None
+    qualification_schema: Optional[list[dict[str, Any]]] = None
 
     @field_validator("max_concurrent_calls")
     @classmethod
@@ -70,6 +71,7 @@ class UpdateCampaignRequest(BaseModel):
     agent_id: Optional[str] = None
     calling_number_id: Optional[str] = None
     calling_number: Optional[str] = None
+    qualification_schema: Optional[list[dict[str, Any]]] = None
 
 
 # ---------------------------------------------------------------------------
@@ -112,6 +114,7 @@ def _campaign_response(c) -> dict:
         "calling_hours": calling_hours_data,
         "retry_policy": retry_policy_data,
         "status": c.status,
+        "qualification_schema": getattr(c, "qualification_schema", []) or [],
         "total_leads": c.total_leads,
         "leads_dialed": c.leads_dialed,
         "leads_connected": c.leads_connected,
@@ -152,6 +155,7 @@ async def create_campaign(
         retry_policy=body.retry_policy,
         scheduled_at=body.scheduled_at,
         created_by=user.user_id,
+        qualification_schema=body.qualification_schema,
     )
     return _campaign_response(campaign)
 
@@ -179,6 +183,10 @@ async def get_campaign(
     campaign = await svc.get_campaign(campaign_id, org_id)
     if campaign is None:
         raise HTTPException(status_code=404, detail="Campaign not found")
+    if not getattr(campaign, "qualification_schema", None):
+        schema = await svc.get_agent_qualification_schema(campaign.agent_id, org_id)
+        if schema:
+            campaign.qualification_schema = schema
     return _campaign_response(campaign)
 
 

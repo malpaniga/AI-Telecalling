@@ -17,6 +17,9 @@ import {
   Upload,
   UserPlus,
   Trash2,
+  CheckCheck,
+  Bot,
+  Plus,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AppShell } from "@/components/layout/app-shell";
@@ -27,7 +30,7 @@ import { StatusBadge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { api, Campaign, CampaignStats, CampaignLead } from "@/lib/api";
+import { api, Campaign, CampaignStats, CampaignLead, Agent, QualificationSlot } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
 import {
   CallingHoursModal,
@@ -64,6 +67,75 @@ export default function CampaignDetailPage() {
   const [addMode, setAddMode] = useState<"all" | "tags">("all");
   const [tagsInput, setTagsInput] = useState("");
   const [enrolling, setEnrolling] = useState(false);
+
+  // Dynamic Agent & Qualification Criteria state
+  const [agent, setAgent] = useState<Agent | null>(null);
+  const [editCriteriaModalOpen, setEditCriteriaModalOpen] = useState(false);
+  const [criteriaSlots, setCriteriaSlots] = useState<QualificationSlot[]>([]);
+  const [newCritKey, setNewCritKey] = useState("");
+  const [newCritLabel, setNewCritLabel] = useState("");
+  const [newCritRequired, setNewCritRequired] = useState(true);
+  const [savingCriteria, setSavingCriteria] = useState(false);
+
+  function openEditCriteriaModal() {
+    if (!campaign) return;
+    setCriteriaSlots(campaign.qualification_schema || []);
+    setNewCritKey("");
+    setNewCritLabel("");
+    setNewCritRequired(true);
+    setEditCriteriaModalOpen(true);
+  }
+
+  async function handleSaveCriteria() {
+    if (!campaign) return;
+    setSavingCriteria(true);
+    try {
+      await api.campaigns.update(campaign.id, {
+        qualification_schema: criteriaSlots,
+      });
+      toast.success("Qualification schema updated!");
+      setEditCriteriaModalOpen(false);
+      await load(true);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update criteria");
+    } finally {
+      setSavingCriteria(false);
+    }
+  }
+
+  function handleAddCriteriaSlot() {
+    const key = newCritKey.trim().toLowerCase().replace(/\s+/g, "_");
+    if (!key) {
+      toast.error("Field key is required");
+      return;
+    }
+    if (criteriaSlots.some((s) => s.key === key)) {
+      toast.error("Attribute with this key already exists");
+      return;
+    }
+    const label =
+      newCritLabel.trim() ||
+      key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    setCriteriaSlots((prev) => [
+      ...prev,
+      { key, label, required: newCritRequired },
+    ]);
+    setNewCritKey("");
+    setNewCritLabel("");
+    setNewCritRequired(true);
+  }
+
+  function handleRemoveCriteriaSlot(keyToRemove: string) {
+    setCriteriaSlots((prev) => prev.filter((s) => s.key !== keyToRemove));
+  }
+
+  function handleToggleCriteriaRequired(keyToToggle: string) {
+    setCriteriaSlots((prev) =>
+      prev.map((s) =>
+        s.key === keyToToggle ? { ...s, required: !s.required } : s
+      )
+    );
+  }
 
   const loadLeads = useCallback(async () => {
     if (!id) return;
@@ -150,6 +222,9 @@ export default function CampaignDetailPage() {
       ]);
       setCampaign(c);
       setStats(s);
+      if (c.agent_id) {
+        api.agents.get(c.agent_id).then(setAgent).catch(() => null);
+      }
       loadLeads();
     } catch (e: unknown) {
       if (!silent) {
@@ -423,6 +498,83 @@ export default function CampaignDetailPage() {
               {campaign.scheduled_at && (
                 <Row label="Scheduled Start" value={formatDateTime(campaign.scheduled_at)} />
               )}
+            </CardBody>
+          </Card>
+
+          {/* AI Agent & Dynamic Qualification Schema */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <h3 className="text-sm font-medium text-text-primary flex items-center gap-1.5">
+                <CheckCheck className="h-4 w-4 text-accent" /> AI Agent &amp; Qualification
+              </h3>
+              {campaign.status === "draft" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={openEditCriteriaModal}
+                  className="h-7 text-xs gap-1 text-accent hover:text-accent-hover cursor-pointer"
+                >
+                  <Edit2 className="h-3 w-3" /> Edit
+                </Button>
+              )}
+            </CardHeader>
+            <CardBody className="space-y-3 text-sm">
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
+                    <Bot className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <Link
+                      href={`/agents/${campaign.agent_id}`}
+                      className="font-medium text-text-primary hover:text-accent hover:underline flex items-center gap-1"
+                    >
+                      {agent?.name || "AI Agent"} (v{campaign.agent_version})
+                    </Link>
+                    <span className="text-xs text-text-muted capitalize">
+                      Template: {agent?.template_slug || "general"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-xs font-semibold text-text-muted uppercase tracking-wide block mb-2">
+                  Target Qualification Schema
+                </span>
+                {(!campaign.qualification_schema || campaign.qualification_schema.length === 0) ? (
+                  <p className="text-xs text-text-muted italic">
+                    No custom qualification fields set. General call evaluation will apply.
+                  </p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {campaign.qualification_schema.map((slot) => (
+                      <div
+                        key={slot.key}
+                        className="flex items-center justify-between p-2 rounded-lg bg-surface-subtle border border-border text-xs"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <span className="font-medium text-text-primary block truncate">
+                            {slot.label}
+                          </span>
+                          <span className="text-[10px] font-mono text-text-muted">
+                            {slot.key}
+                          </span>
+                        </div>
+                        {slot.required ? (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0">
+                            Required
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] text-text-muted bg-surface-hover shrink-0">
+                            Optional
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </CardBody>
           </Card>
         </div>
@@ -744,6 +896,98 @@ export default function CampaignDetailPage() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Edit Qualification Criteria Modal */}
+      <Modal
+        isOpen={editCriteriaModalOpen}
+        onClose={() => setEditCriteriaModalOpen(false)}
+        title="Edit Qualification Criteria Schema"
+        size="lg"
+      >
+        <div className="flex flex-col gap-4 text-sm">
+          <p className="text-xs text-text-muted">
+            Configure the qualification fields and criteria for this campaign. The AI agent will discover and qualify prospects on these criteria.
+          </p>
+
+          <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+            {criteriaSlots.length === 0 ? (
+              <p className="text-xs text-text-muted italic py-2">
+                No criteria fields set. Add a field below.
+              </p>
+            ) : (
+              criteriaSlots.map((slot) => (
+                <div
+                  key={slot.key}
+                  className="flex items-center justify-between p-2 rounded-lg border border-border bg-surface-subtle text-xs"
+                >
+                  <div className="min-w-0 pr-2">
+                    <span className="font-medium text-text-primary block truncate">{slot.label}</span>
+                    <span className="text-[10px] font-mono text-text-muted">key: {slot.key}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleCriteriaRequired(slot.key)}
+                      className="px-2 py-0.5 text-[10px] font-medium rounded border border-border hover:bg-surface-hover"
+                    >
+                      {slot.required ? "Required" : "Optional"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCriteriaSlot(slot.key)}
+                      className="p-1 text-text-muted hover:text-red-500 rounded"
+                      title="Remove field"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="p-3 rounded-lg border border-border bg-surface-subtle space-y-2.5">
+            <p className="text-xs font-semibold text-text-primary">Add Qualification Field</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                label="Key (e.g. monthly_bill)"
+                value={newCritKey}
+                onChange={(e) => setNewCritKey(e.target.value)}
+                placeholder="attribute_key"
+              />
+              <Input
+                label="Display Label"
+                value={newCritLabel}
+                onChange={(e) => setNewCritLabel(e.target.value)}
+                placeholder="e.g. Monthly Electricity Bill"
+              />
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newCritRequired}
+                  onChange={(e) => setNewCritRequired(e.target.checked)}
+                  className="rounded border-border text-accent focus:ring-accent"
+                />
+                Required for qualification
+              </label>
+              <Button type="button" size="sm" onClick={handleAddCriteriaSlot} className="text-xs gap-1">
+                <Plus className="h-3.5 w-3.5" /> Add Field
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <Button variant="secondary" size="sm" onClick={() => setEditCriteriaModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" loading={savingCriteria} onClick={handleSaveCriteria}>
+              Save Criteria
+            </Button>
+          </div>
+        </div>
       </Modal>
     </AppShell>
   );

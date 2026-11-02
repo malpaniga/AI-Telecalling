@@ -6,6 +6,7 @@ wanting to end / not being interested. Sprint 6 can replace this with a learned
 model once we have labelled outcomes.
 """
 
+from typing import Any
 from backend.agent.state import SLOT_KEYS
 
 # 15 points per slot -> 60 for a fully qualified lead.
@@ -19,11 +20,27 @@ def score_lead(
     slots: dict[str, str | None],
     flags: dict[str, bool],
     output_variables: dict[str, str | None] | None = None,
+    qualification_schema: list[dict[str, Any]] | None = None,
 ) -> int:
-    score = _SLOT_POINTS * sum(1 for k in SLOT_KEYS if slots.get(k))
+    target_keys = (
+        [s["key"] for s in qualification_schema if isinstance(s, dict) and s.get("key")]
+        if qualification_schema
+        else SLOT_KEYS
+    )
+
     ov = output_variables or {}
-    discovery_filled = sum(1 for k, v in ov.items() if v and k != "disposition")
-    score += min(40, discovery_filled * 15)
+    if target_keys:
+        pts_per_slot = 60 // len(target_keys)
+        filled_count = sum(
+            1 for k in target_keys
+            if (slots.get(k) or ov.get(k))
+        )
+        score = filled_count * pts_per_slot
+    else:
+        score = 0
+
+    discovery_filled = sum(1 for k, v in ov.items() if v and k != "disposition" and k not in target_keys)
+    score += min(30, discovery_filled * 10)
 
     if ov.get("disposition") in ("qualified", "appointment_set"):
         score += 30

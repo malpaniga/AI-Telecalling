@@ -179,9 +179,11 @@ export default function CallDetailPage() {
                   {Object.entries(call.qualification)
                     .filter(([_, v]) => v !== null && v !== undefined && v !== "null" && v !== "None" && v !== "")
                     .map(([k, v]) => (
-                      <div key={k} className="flex justify-between">
-                        <span className="text-text-secondary capitalize">{k.replace(/_/g, " ")}</span>
-                        <span className="font-medium text-text-primary">{String(v)}</span>
+                      <div key={k} className="flex justify-between items-center py-1 border-b border-border/40 last:border-b-0">
+                        <span className="text-text-secondary capitalize font-medium">{k.replace(/_/g, " ")}</span>
+                        <span className="font-semibold text-text-primary text-right">
+                          {v === true || v === "true" ? "Yes" : v === false || v === "false" ? "No" : String(v)}
+                        </span>
                       </div>
                     ))}
                 </div>

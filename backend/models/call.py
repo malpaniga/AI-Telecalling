@@ -83,6 +83,7 @@ class Call(TimestampedModel):
     # Qualification result
     score: int = 0
     qualification: dict[str, Any] = Field(default_factory=dict)
+    qualification_schema: list[dict[str, Any]] = Field(default_factory=list)
 
     # Credits
     credits_reserved: int = 0

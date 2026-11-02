@@ -215,6 +215,14 @@ export interface ManualSubscriptionRequest {
   updated_at: string;
 }
 
+export interface QualificationSlot {
+  key: string;
+  label: string;
+  required?: boolean;
+  type?: string;
+  description?: string;
+}
+
 export interface Agent {
   id: string;
   organization_id: string;
@@ -226,6 +234,8 @@ export interface Agent {
   active_version: number | null;
   active_version_id: string | null;
   is_active: boolean;
+  slot_definitions?: QualificationSlot[];
+  qualification_schema?: QualificationSlot[];
   created_at: string;
 }
 
@@ -343,6 +353,7 @@ export interface Campaign {
   max_concurrent_calls: number;
   timezone: string;
   status: string;
+  qualification_schema?: QualificationSlot[];
   calling_hours?: CallingHoursConfig;
   retry_policy?: RetryPolicyConfig;
   total_leads: number;
@@ -915,6 +926,13 @@ export const api = {
       ),
     export: (id: string) =>
       apiRequest<AgentExportPackage>("GET", `/api/v1/agents/${id}/export`),
+    qualificationSchema: (agentId: string) =>
+      apiRequest<{
+        agent_id: string;
+        template_slug: string;
+        qualification_schema: QualificationSlot[];
+        slot_definitions: QualificationSlot[];
+      }>("GET", `/api/v1/agents/${agentId}/qualification-schema`),
     import: (body: ImportAgentRequest) =>
       apiRequest<Agent>("POST", "/api/v1/agents/import", body),
     versions: {
@@ -1057,6 +1075,7 @@ export const api = {
       timezone?: string;
       description?: string;
       lead_filter?: Record<string, unknown>;
+      qualification_schema?: QualificationSlot[];
       calling_hours?: Record<string, unknown>;
       retry_policy?: Record<string, unknown>;
       scheduled_at?: string;
