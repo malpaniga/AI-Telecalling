@@ -70,6 +70,17 @@ _HALLUCINATION_PHRASES = {
     "you", "the", ".", "..", "...", "uh", "um", "hmm",
 }
 
+# Automated telecom announcements (e.g. carrier recording disclaimers)
+_CALL_RECORDING_PHRASES = {
+    "this call is now being recorded",
+    "this call is being recorded",
+    "call is now being recorded",
+    "call is being recorded",
+    "call recording has started",
+    "recording started",
+    "this call will be recorded",
+}
+
 # Conversational fillers played concurrently with LLM to mask response latency
 _FILLERS: dict[str, list[str]] = {
     "mr-IN": ["हं...", "बरोबर...", "अच्छा..."],
@@ -79,11 +90,15 @@ _FILLERS: dict[str, list[str]] = {
 
 
 def _looks_like_noise(text: str) -> bool:
-    """True if the transcript is almost certainly a hallucination or noise blip."""
+    """True if the transcript is almost certainly a hallucination, noise blip, or carrier disclaimer."""
     t = text.strip().lower().rstrip(".!?,")
     if not any(c.isalnum() for c in t):
         return True
-    return t in _HALLUCINATION_PHRASES
+    if t in _HALLUCINATION_PHRASES:
+        return True
+    if any(phrase in t for phrase in _CALL_RECORDING_PHRASES):
+        return True
+    return False
 
 
 class Transport(Protocol):
@@ -167,6 +182,7 @@ class CallSession:
         self._filler_task: asyncio.Task | None = None
         self._last_user_text = ""
         self._in_greeting = False
+        self._greeting_completed = False
         self._is_speaking = False
         self._call_ending = False
 
@@ -313,9 +329,9 @@ class CallSession:
 
     async def _run_greeting(self) -> None:
         greeting = await self._greeting_text()
-        self.state["messages"].append({"role": "assistant", "content": greeting})
         log.info("call language=%s (%s)", self.language, self.language_name)
         self._in_greeting = True
+        self._greeting_completed = False
         greeting_start = time.monotonic()
         try:
             greeting_duration = await self._say(greeting)
@@ -324,9 +340,14 @@ class CallSession:
             self._greeting_end_time = time.monotonic() + remaining + 0.3
             if remaining > 0:
                 await asyncio.sleep(remaining)
+            self._greeting_completed = True
+            self.state["messages"].append({"role": "assistant", "content": greeting})
             await self._persist_turn("agent", greeting, GREETING_STAGE)
         except asyncio.CancelledError:
             log.info("greeting cancelled (barge-in)")
+            self._greeting_completed = False
+            if self.state.get("messages") and self.state["messages"][-1].get("content") == greeting:
+                self.state["messages"].pop()
             if self.recorder:
                 try:
                     self.recorder.handle_interrupt()

@@ -242,7 +242,8 @@ class ConversationEngine:
                 f"2. Vary your opening acknowledgments naturally (never repeat the exact same acknowledgment twice in a row).\n"
                 f"3. Answer the caller's latest question first, then ask at most one question. Do not repeat details they already provided.\n"
                 f"4. Treat a refusal in context: declining an offer is not necessarily ending the call. Respect explicit requests to stop or end the call immediately.\n"
-                f"5. After an interruption, respond to the caller's latest words rather than restarting your script. Use natural spoken phrasing, without markdown or forced filler words.\n"
+                f"5. After an interruption, respond to the caller's latest words rather than blindly repeating. "
+                f"However, if the opening greeting or call purpose was interrupted before being fully heard, or if the caller asks who is speaking or says a greeting (e.g. 'who\\'s this?', 'कोण आहे?', 'hello', 'बोलिए', 'हा बोला'), always state who you are and the core purpose of the call clearly before proceeding.\n"
             )
             if language_name and language_name != "English":
                 voice_guidelines += (
