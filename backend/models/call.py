@@ -35,7 +35,7 @@ from pydantic import Field
 from backend.models.base import TimestampedModel
 
 CALL_STATUSES = {
-    "initiating", "ringing", "connected",
+    "initiating", "ringing", "connected", "talking", "in_progress",
     "completed", "no_answer", "busy", "failed", "cancelled",
 }
 

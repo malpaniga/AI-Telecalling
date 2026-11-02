@@ -54,6 +54,12 @@ class VobizTelephonyProvider(TelephonyProvider):
             "answer_url": answer_url,
             "answer_method": "POST",
         }
+        if kwargs.get("ring_url"):
+            payload["ring_url"] = kwargs["ring_url"]
+            payload["ring_method"] = kwargs.get("ring_method", "POST")
+        if kwargs.get("hangup_url"):
+            payload["hangup_url"] = kwargs["hangup_url"]
+            payload["hangup_method"] = kwargs.get("hangup_method", "POST")
 
         client = await self._get_client()
         try:

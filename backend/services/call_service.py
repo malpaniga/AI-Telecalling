@@ -161,6 +161,8 @@ class CallService:
                     log.warning("could not resolve agent language: %s", e)
 
             answer_url = f"{base_public}/vobiz/voice?call_id={call.id}&agent_id={agent_id or ''}&lang={call_lang}"
+            ring_url = f"{base_public}/vobiz/ring?call_id={call.id}"
+            hangup_url = f"{base_public}/vobiz/hangup?call_id={call.id}"
             metadata = phone_doc.provider_metadata or {}
             auth_id = metadata.get("vobiz_auth_id")
             auth_token = metadata.get("vobiz_auth_token")
@@ -176,6 +178,8 @@ class CallService:
                     auth_id=auth_id,
                     auth_token=auth_token,
                     url=answer_url,
+                    ring_url=ring_url,
+                    hangup_url=hangup_url,
                 )
                 await self.call_repo.update_by_id(call.id, {
                     "provider": "vobiz",
@@ -231,6 +235,8 @@ class CallService:
                     log.warning("could not resolve agent language: %s", e)
 
             answer_url = f"{base_public}/plivo/voice?call_id={call.id}&agent_id={agent_id or ''}&lang={call_lang}"
+            ring_url = f"{base_public}/plivo/ring?call_id={call.id}"
+            hangup_url = f"{base_public}/plivo/hangup?call_id={call.id}"
             metadata = phone_doc.provider_metadata or {}
             auth_id = metadata.get("plivo_auth_id") or metadata.get("auth_id")
             auth_token = metadata.get("plivo_auth_token") or metadata.get("auth_token")
@@ -246,6 +252,8 @@ class CallService:
                     auth_id=auth_id,
                     auth_token=auth_token,
                     url=answer_url,
+                    ring_url=ring_url,
+                    hangup_url=hangup_url,
                 )
                 await self.call_repo.update_by_id(call.id, {
                     "provider": "plivo",
@@ -293,6 +301,7 @@ class CallService:
         organization_id: str,
         status: str = "completed",
         outcome: Optional[str] = None,
+        duration_s: Optional[int] = None,
         actual_credits: int = 0,
         avg_latency_ms: Optional[int] = None,
         turn_count: int = 0,
@@ -327,22 +336,25 @@ class CallService:
             }
 
         # Calculate duration
-        duration_s = None
-        if call.started_at:
-            now = utcnow()
-            started = call.started_at
-            # Handle mongomock returning naive datetimes
-            if started.tzinfo is None:
-                from datetime import timezone as _tz
-                started = started.replace(tzinfo=_tz.utc)
-            ref = call.connected_at or started
-            if ref.tzinfo is None:
-                from datetime import timezone as _tz
-                ref = ref.replace(tzinfo=_tz.utc)
-            duration_s = max(0, int((now - ref).total_seconds()))
+        if duration_s is None:
+            if status in ("no_answer", "busy", "failed", "cancelled") and not call.connected_at:
+                duration_s = 0
+            elif call.connected_at or call.started_at:
+                now = utcnow()
+                ref = call.connected_at or call.started_at
+                # Handle mongomock returning naive datetimes
+                if ref.tzinfo is None:
+                    from datetime import timezone as _tz
+                    ref = ref.replace(tzinfo=_tz.utc)
+                duration_s = max(0, int((now - ref).total_seconds()))
+            else:
+                duration_s = 0
 
-        # Settle credits
-        actual_credits = actual_credits or (max(0, (duration_s + 59) // 60) if duration_s else 0)
+        # Settle credits (unconnected/unanswered calls cost 0 credits)
+        if status in ("no_answer", "busy", "failed", "cancelled") and not call.connected_at:
+            actual_credits = 0
+        else:
+            actual_credits = actual_credits or (max(0, (duration_s + 59) // 60) if duration_s else 0)
         try:
             from backend.services.credit_service import CreditService
             credit_svc = CreditService(self.db, redis=self._get_redis())

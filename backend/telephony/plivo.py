@@ -208,6 +208,13 @@ async def plivo_voice(request: Request) -> Response:
                         content='<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n  <Hangup/>\n</Response>',
                         media_type="application/xml",
                     )
+                from backend.repositories.call_repo import CallRepository
+                await CallRepository(db).mark_connected(call_id, status="talking")
+                try:
+                    from backend.telephony.broadcaster import call_broadcaster
+                    await call_broadcaster.broadcast(call_id, {"type": "status", "status": "talking", "call_id": call_id})
+                except Exception:
+                    pass
             except Exception:
                 pass
         return Response(
@@ -481,3 +488,128 @@ async def ws_plivo(ws: WebSocket):
                     )
             except Exception as exc:
                 log.warning("Failed finalizing plivo call %s via CallService: %s", call_id, exc)
+
+
+@router.api_route("/plivo/ring", methods=["GET", "POST"], include_in_schema=False)
+async def plivo_ring(request: Request) -> Response:
+    """Plivo calls this when the destination starts ringing."""
+    call_id = request.query_params.get("call_id")
+    if request.method == "POST":
+        try:
+            form = await request.form()
+            call_id = call_id or form.get("call_id")
+        except Exception:
+            pass
+
+    log.info("Plivo ring webhook received: call_id=%s", call_id)
+    if call_id:
+        db = get_db()
+        if db is not None:
+            try:
+                from backend.repositories.call_repo import CallRepository
+                call_repo = CallRepository(db)
+                c_doc = await call_repo.find_by_id(call_id)
+                if c_doc and c_doc.status == "initiating":
+                    await call_repo.mark_ringing(call_id)
+                    from backend.telephony.broadcaster import call_broadcaster
+                    await call_broadcaster.broadcast(call_id, {
+                        "type": "status",
+                        "status": "ringing",
+                        "call_id": call_id,
+                    })
+            except Exception as e:
+                log.warning("Failed marking call %s ringing: %s", call_id, e)
+
+    return Response(content='<?xml version="1.0" encoding="UTF-8"?>\n<Response/>', media_type="application/xml")
+
+
+@router.api_route("/plivo/hangup", methods=["GET", "POST"], include_in_schema=False)
+async def plivo_hangup(request: Request) -> Response:
+    """Plivo calls this when an outbound call ends, disconnects, or fails to connect."""
+    call_id = request.query_params.get("call_id")
+    form_data = {}
+    if request.method == "POST":
+        try:
+            form = await request.form()
+            form_data = dict(form)
+            call_id = call_id or form_data.get("call_id")
+        except Exception:
+            pass
+
+    call_status = str(form_data.get("CallStatus") or request.query_params.get("CallStatus") or "").lower()
+    hangup_cause = str(form_data.get("HangupCause") or request.query_params.get("HangupCause") or "").upper()
+    duration_raw = form_data.get("Duration") or request.query_params.get("Duration")
+    call_uuid = form_data.get("CallUUID") or request.query_params.get("CallUUID")
+
+    log.info(
+        "Plivo hangup callback: call_id=%s call_status=%s hangup_cause=%s duration=%s uuid=%s",
+        call_id, call_status, hangup_cause, duration_raw, call_uuid,
+    )
+
+    if not call_id:
+        return Response(content='<?xml version="1.0" encoding="UTF-8"?>\n<Response/>', media_type="application/xml")
+
+    db = get_db()
+    if db is not None:
+        try:
+            from backend.repositories.call_repo import CallRepository
+            from backend.services.call_service import CallService
+            from backend.core.redis import get_redis
+
+            call_repo = CallRepository(db)
+            c_doc = await call_repo.find_by_id(call_id)
+            if c_doc:
+                # If already completed normally by CallSession, acknowledge without altering
+                if c_doc.status == "completed":
+                    log.info("Call %s already marked completed; hangup callback acknowledged", call_id)
+                    return Response(content='<?xml version="1.0" encoding="UTF-8"?>\n<Response/>', media_type="application/xml")
+
+                # Map telephony status
+                if call_status in ("busy",) or "BUSY" in hangup_cause:
+                    terminal_status = "busy"
+                    outcome = "no_answer"
+                elif call_status in ("failed", "rejected") or "REJECTED" in hangup_cause or "CANCEL" in hangup_cause:
+                    terminal_status = "failed"
+                    outcome = "failed"
+                elif call_status in ("completed",) and c_doc.connected_at:
+                    terminal_status = "completed"
+                    outcome = "contacted"
+                else:
+                    terminal_status = "no_answer"
+                    outcome = "no_answer"
+
+                duration_s = 0
+                if c_doc.connected_at and duration_raw:
+                    try:
+                        duration_s = max(0, int(duration_raw))
+                    except Exception:
+                        duration_s = 0
+
+                try:
+                    r = get_redis()
+                except Exception:
+                    r = None
+
+                call_svc = CallService(db, redis=r)
+                await call_svc.finalize_call(
+                    call_id=call_id,
+                    organization_id=c_doc.organization_id,
+                    status=terminal_status,
+                    outcome=outcome,
+                    duration_s=duration_s,
+                )
+
+                try:
+                    from backend.telephony.broadcaster import call_broadcaster
+                    await call_broadcaster.broadcast(call_id, {
+                        "type": "hangup",
+                        "status": terminal_status,
+                        "reason": hangup_cause or call_status,
+                        "call_id": call_id,
+                    })
+                except Exception:
+                    pass
+        except Exception as exc:
+            log.warning("Error processing Plivo hangup callback for call %s: %s", call_id, exc)
+
+    return Response(content='<?xml version="1.0" encoding="UTF-8"?>\n<Response/>', media_type="application/xml")

@@ -20,10 +20,11 @@ const STATUS_OPTIONS = [
   { value: "", label: "All Statuses" },
   { value: "initiating", label: "Initiating" },
   { value: "ringing", label: "Ringing" },
-  { value: "connected", label: "Connected" },
+  { value: "talking", label: "Talking" },
   { value: "completed", label: "Completed" },
+  { value: "no_answer", label: "Not Answered" },
+  { value: "busy", label: "Busy" },
   { value: "failed", label: "Failed" },
-  { value: "no_answer", label: "No Answer" },
 ];
 
 export default function CallsPage() {
@@ -33,8 +34,8 @@ export default function CallsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [total, setTotal] = useState(0);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const data = await api.calls.list({
         call_status: statusFilter || undefined,
@@ -46,14 +47,30 @@ export default function CallsPage() {
       if (data.length === PAGE_SIZE) setTotal((page - 1) * PAGE_SIZE + PAGE_SIZE + 1);
       else setTotal((page - 1) * PAGE_SIZE + data.length);
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load calls");
+      if (!silent) {
+        toast.error(e instanceof Error ? e.message : "Failed to load calls");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [statusFilter, page]);
 
   useEffect(() => { setPage(1); }, [statusFilter]);
   useEffect(() => { load(); }, [load]);
+
+  // Live auto-refresh when any call is active in the list
+  useEffect(() => {
+    const hasActiveCall = calls.some((c) =>
+      ["initiating", "ringing", "talking", "connected"].includes(c.status?.toLowerCase() || "")
+    );
+    if (!hasActiveCall) return;
+
+    const interval = setInterval(() => {
+      load(true);
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [calls, load]);
 
   return (
     <AppShell title="Calls">

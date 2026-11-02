@@ -58,6 +58,7 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   running: "success",
   active: "success",
   connected: "success",
+  talking: "success",
   qualified: "success",
   completed: "success",
   paid: "success",
@@ -67,11 +68,14 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   booked: "success",
   approved: "success",
 
+  // Live in-flight states
+  initiating: "info",
+  ringing: "warning",
+  in_progress: "info",
+
   // Default / neutral states
   draft: "default",
   new: "default",
-  initiating: "default",
-  ringing: "default",
   scheduled: "default",
   pending: "default",
   trialing: "info",
@@ -88,6 +92,7 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   cancelled: "danger",
   failed: "danger",
   no_answer: "danger",
+  not_answered: "danger",
   not_interested: "danger",
   busy: "danger",
   suspended: "danger",
@@ -107,12 +112,35 @@ export function StatusBadge({
   status?: string | null;
   className?: string;
 }) {
+  const normalizedStatus = status?.toLowerCase() || "";
   const variant = statusVariant(status);
-  const label = (status ?? "unknown")
+
+  let label = (status ?? "unknown")
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  if (normalizedStatus === "no_answer" || normalizedStatus === "not_answered") {
+    label = "Not Answered";
+  } else if (normalizedStatus === "connected" || normalizedStatus === "talking") {
+    label = "Talking";
+  } else if (normalizedStatus === "initiating") {
+    label = "Initiating";
+  } else if (normalizedStatus === "ringing") {
+    label = "Ringing";
+  } else if (normalizedStatus === "in_progress") {
+    label = "In Progress";
+  }
+
+  const isLive = ["initiating", "ringing", "talking", "connected", "running"].includes(normalizedStatus);
+
   return (
     <Badge variant={variant} className={className}>
+      {isLive && (
+        <span className="relative flex h-1.5 w-1.5 mr-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-current" />
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current" />
+        </span>
+      )}
       {label}
     </Badge>
   );

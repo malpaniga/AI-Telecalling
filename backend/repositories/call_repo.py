@@ -60,9 +60,14 @@ class CallRepository(BaseRepository):
             "status": "ringing",
         })
 
-    async def mark_connected(self, call_id: str) -> bool:
+    async def mark_ringing(self, call_id: str) -> bool:
         return await self.update_by_id(call_id, {
-            "status": "connected",
+            "status": "ringing",
+        })
+
+    async def mark_connected(self, call_id: str, status: str = "talking") -> bool:
+        return await self.update_by_id(call_id, {
+            "status": status,
             "connected_at": utcnow(),
         })
 
@@ -146,7 +151,12 @@ class CallRepository(BaseRepository):
         if lead_id:
             query["lead_id"] = lead_id
         if status:
-            query["status"] = status
+            if status in ("connected", "talking"):
+                query["status"] = {"$in": ["connected", "talking"]}
+            elif status in ("no_answer", "not_answered"):
+                query["status"] = {"$in": ["no_answer", "not_answered"]}
+            else:
+                query["status"] = status
         return await self.find_many(
             query,
             sort=[("started_at", DESCENDING)],
@@ -157,11 +167,11 @@ class CallRepository(BaseRepository):
     async def count_active_for_org(self, organization_id: str) -> int:
         return await self.count({
             "organization_id": organization_id,
-            "status": {"$in": ["initiating", "ringing", "connected"]},
+            "status": {"$in": ["initiating", "ringing", "connected", "talking"]},
         })
 
     async def count_active_for_campaign(self, campaign_id: str) -> int:
         return await self.count({
             "campaign_id": campaign_id,
-            "status": {"$in": ["initiating", "ringing", "connected"]},
+            "status": {"$in": ["initiating", "ringing", "connected", "talking"]},
         })
