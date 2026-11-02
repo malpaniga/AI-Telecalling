@@ -18,7 +18,7 @@ import random
 import time
 from collections.abc import Callable
 from statistics import mean
-from typing import Protocol
+from typing import Any, Protocol
 
 from backend.agent.engine import ConversationEngine
 from backend.agent.prompts import interpolate_template

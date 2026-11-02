@@ -24,7 +24,7 @@ Concurrency guarantee:
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Any, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 

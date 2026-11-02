@@ -321,7 +321,7 @@ class AgentService:
             return []
 
         if agent.active_version_id:
-            ver = await self.versions.get_by_id(agent.active_version_id)
+            ver = await self.versions.find_by_id(agent.active_version_id)
             if ver and ver.configuration:
                 if ver.configuration.get("qualification_schema"):
                     return ver.configuration["qualification_schema"]
