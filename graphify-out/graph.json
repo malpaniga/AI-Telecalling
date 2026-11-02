@@ -56,32 +56,6 @@
       "norm_label": "orgupdaterequest"
     },
     {
-      "label": "UserInviteRequest",
-      "file_type": "code",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L21",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_users_userinviterequest",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "userinviterequest"
-    },
-    {
-      "label": "UserUpdateRequest",
-      "file_type": "code",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L31",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_users_userupdaterequest",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "userupdaterequest"
-    },
-    {
       "label": "OrgContext",
       "file_type": "code",
       "source_file": "backend/core/rbac.py",
@@ -810,6 +784,19 @@
       "norm_label": "campaignrepository"
     },
     {
+      "label": "TestCampaignCRUD",
+      "file_type": "code",
+      "source_file": "backend/tests/test_campaign_crud.py",
+      "source_location": "L20",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_campaign_crud_testcampaigncrud",
+      "community": 114,
+      "community_name": "CampaignRepository",
+      "norm_label": "testcampaigncrud"
+    },
+    {
       "label": "TestCampaignRepository",
       "file_type": "code",
       "source_file": "backend/tests/test_m13_campaigns.py",
@@ -1016,6 +1003,19 @@
       "community": 121,
       "community_name": "TimestampedModel",
       "norm_label": "organizationpublic"
+    },
+    {
+      "label": "OrganizationSettings",
+      "file_type": "code",
+      "source_file": "backend/models/organization.py",
+      "source_location": "L14",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_models_organization_organizationsettings",
+      "community": 121,
+      "community_name": "TimestampedModel",
+      "norm_label": "organizationsettings"
     },
     {
       "label": "ToolConfig",
@@ -1746,69 +1746,56 @@
       "norm_label": "testbillinghttp"
     },
     {
-      "label": "LoginRequest",
+      "label": "AddNumberRequest",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L63",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L36",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_loginrequest",
+      "id": "backend_api_v1_phone_numbers_addnumberrequest",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "loginrequest"
+      "norm_label": "addnumberrequest"
     },
     {
-      "label": "MeResponse",
+      "label": "AssignRequest",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L98",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L50",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_meresponse",
+      "id": "backend_api_v1_phone_numbers_assignrequest",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "meresponse"
+      "norm_label": "assignrequest"
     },
     {
-      "label": "RefreshRequest",
+      "label": "ReleaseRequest",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L73",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L57",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_refreshrequest",
+      "id": "backend_api_v1_phone_numbers_releaserequest",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "refreshrequest"
+      "norm_label": "releaserequest"
     },
     {
-      "label": "SignupRequest",
+      "label": "SuspendRequest",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L38",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L61",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_signuprequest",
+      "id": "backend_api_v1_phone_numbers_suspendrequest",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "signuprequest"
-    },
-    {
-      "label": "TokenResponse",
-      "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L89",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_tokenresponse",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "tokenresponse"
+      "norm_label": "suspendrequest"
     },
     {
       "label": "OverrideRateRequest",
@@ -1835,6 +1822,32 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": "syncratesrequest"
+    },
+    {
+      "label": "UserInviteRequest",
+      "file_type": "code",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L21",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_users_userinviterequest",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "userinviterequest"
+    },
+    {
+      "label": "UserUpdateRequest",
+      "file_type": "code",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L31",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_users_userupdaterequest",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "userupdaterequest"
     },
     {
       "label": "CreateProfile",
@@ -1887,6 +1900,19 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": "permissionerror"
+    },
+    {
+      "label": "PhoneNumberService",
+      "file_type": "code",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L89",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_phonenumberservice",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "phonenumberservice"
     },
     {
       "label": "TestProviderOpsService",
@@ -5451,32 +5477,6 @@
       "norm_label": "testtranscriptshttp"
     },
     {
-      "label": "OrganizationSettings",
-      "file_type": "code",
-      "source_file": "backend/models/organization.py",
-      "source_location": "L14",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "backend_models_organization_organizationsettings",
-      "community": 312,
-      "community_name": "OrganizationSettings",
-      "norm_label": "organizationsettings"
-    },
-    {
-      "label": "TestCampaignCRUD",
-      "file_type": "code",
-      "source_file": "backend/tests/test_campaign_crud.py",
-      "source_location": "L20",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_campaign_crud_testcampaigncrud",
-      "community": 313,
-      "community_name": "test_campaign_crud.py",
-      "norm_label": "testcampaigncrud"
-    },
-    {
       "label": "TestCreditCheckAPI",
       "file_type": "code",
       "source_file": "backend/tests/test_m6_credit_reservation.py",
@@ -6517,69 +6517,69 @@
       "norm_label": "usageservice"
     },
     {
-      "label": "AddNumberRequest",
+      "label": "LoginRequest",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L36",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L63",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_addnumberrequest",
+      "id": "backend_api_v1_auth_loginrequest",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "addnumberrequest"
+      "community_name": "v1/auth.py",
+      "norm_label": "loginrequest"
     },
     {
-      "label": "AssignRequest",
+      "label": "MeResponse",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L50",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L98",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_assignrequest",
+      "id": "backend_api_v1_auth_meresponse",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "assignrequest"
+      "community_name": "v1/auth.py",
+      "norm_label": "meresponse"
     },
     {
-      "label": "ReleaseRequest",
+      "label": "RefreshRequest",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L57",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L73",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_releaserequest",
+      "id": "backend_api_v1_auth_refreshrequest",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "releaserequest"
+      "community_name": "v1/auth.py",
+      "norm_label": "refreshrequest"
     },
     {
-      "label": "SuspendRequest",
+      "label": "SignupRequest",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L61",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L38",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_suspendrequest",
+      "id": "backend_api_v1_auth_signuprequest",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "suspendrequest"
+      "community_name": "v1/auth.py",
+      "norm_label": "signuprequest"
     },
     {
-      "label": "PhoneNumberService",
+      "label": "TokenResponse",
       "file_type": "code",
-      "source_file": "backend/services/phone_number_service.py",
+      "source_file": "backend/api/v1/auth.py",
       "source_location": "L89",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "backend_services_phone_number_service_phonenumberservice",
+      "id": "backend_api_v1_auth_tokenresponse",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "phonenumberservice"
+      "community_name": "v1/auth.py",
+      "norm_label": "tokenresponse"
     },
     {
       "label": "GroqSTTProvider",
@@ -7989,78 +7989,6 @@
       "community": 1,
       "community_name": "AuditLogRepository",
       "norm_label": "update_organization()"
-    },
-    {
-      "label": "deactivate_user()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L189",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_users_deactivate_user",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "deactivate_user()"
-    },
-    {
-      "label": "get_user()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L115",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_users_get_user",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "get_user()"
-    },
-    {
-      "label": "invite_user()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L55",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_users_invite_user",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "invite_user()"
-    },
-    {
-      "label": "list_org_users()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L103",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_users_list_org_users",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "list_org_users()"
-    },
-    {
-      "label": "_to_public()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L38",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_users_to_public",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "_to_public()"
-    },
-    {
-      "label": "update_user()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L140",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_users_update_user",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "update_user()"
     },
     {
       "label": ".__init__()",
@@ -10871,16 +10799,52 @@
       "norm_label": ".__init__()"
     },
     {
-      "label": "_mongomock_available()",
+      "label": "run()",
       "file_type": "code",
-      "source_file": "backend/tests/test_m13_campaigns.py",
-      "source_location": "L40",
+      "source_file": "backend/tests/test_campaign_crud.py",
+      "source_location": "L12",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_tests_test_m13_campaigns_mongomock_available",
+      "id": "backend_tests_test_campaign_crud_run",
       "community": 114,
       "community_name": "CampaignRepository",
-      "norm_label": "_mongomock_available()"
+      "norm_label": "run()"
+    },
+    {
+      "label": ".setup_method()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_campaign_crud.py",
+      "source_location": "L21",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_campaign_crud_testcampaigncrud_setup_method",
+      "community": 114,
+      "community_name": "CampaignRepository",
+      "norm_label": ".setup_method()"
+    },
+    {
+      "label": ".test_campaign_create_read_update_delete()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_campaign_crud.py",
+      "source_location": "L27",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_campaign_crud_testcampaigncrud_test_campaign_create_read_update_delete",
+      "community": 114,
+      "community_name": "CampaignRepository",
+      "norm_label": ".test_campaign_create_read_update_delete()"
+    },
+    {
+      "label": ".test_delete_running_campaign_prevented()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_campaign_crud.py",
+      "source_location": "L85",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_campaign_crud_testcampaigncrud_test_delete_running_campaign_prevented",
+      "community": 114,
+      "community_name": "CampaignRepository",
+      "norm_label": ".test_delete_running_campaign_prevented()"
     },
     {
       "label": ".test_create_and_find()",
@@ -11879,6 +11843,18 @@
       "norm_label": ".test_multi_organization_assignment_and_listing()"
     },
     {
+      "label": ".create()",
+      "file_type": "code",
+      "source_file": "backend/repositories/organization_repo.py",
+      "source_location": "L27",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_repositories_organization_repo_organizationrepository_create",
+      "community": 121,
+      "community_name": "TimestampedModel",
+      "norm_label": ".create()"
+    },
+    {
       "label": ".create_version()",
       "file_type": "code",
       "source_file": "backend/repositories/voice_profile_repo.py",
@@ -11949,6 +11925,42 @@
       "community": 121,
       "community_name": "TimestampedModel",
       "norm_label": "_seed_voice_profile()"
+    },
+    {
+      "label": ".test_organization_to_mongo()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m1_mongodb.py",
+      "source_location": "L67",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m1_mongodb_testmodels_test_organization_to_mongo",
+      "community": 121,
+      "community_name": "TimestampedModel",
+      "norm_label": ".test_organization_to_mongo()"
+    },
+    {
+      "label": "test_calling_packs_minute_denominations()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_simplified_models.py",
+      "source_location": "L11",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_simplified_models_test_calling_packs_minute_denominations",
+      "community": 121,
+      "community_name": "TimestampedModel",
+      "norm_label": "test_calling_packs_minute_denominations()"
+    },
+    {
+      "label": "test_organization_settings_defaults()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_simplified_models.py",
+      "source_location": "L5",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_simplified_models_test_organization_settings_defaults",
+      "community": 121,
+      "community_name": "TimestampedModel",
+      "norm_label": "test_organization_settings_defaults()"
     },
     {
       "label": "run()",
@@ -14267,136 +14279,124 @@
       "norm_label": ".test_webhook_signature_valid()"
     },
     {
-      "label": "change_password()",
+      "label": "add_number_to_inventory()",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L301",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L134",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_change_password",
+      "id": "backend_api_v1_phone_numbers_add_number_to_inventory",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "change_password()"
+      "norm_label": "add_number_to_inventory()"
     },
     {
-      "label": ".password_strength()",
+      "label": "admin_list_numbers()",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L83",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L121",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_changepasswordrequest_password_strength",
+      "id": "backend_api_v1_phone_numbers_admin_list_numbers",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": ".password_strength()"
+      "norm_label": "admin_list_numbers()"
     },
     {
-      "label": "login()",
+      "label": "assign_number()",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L199",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L148",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_login",
+      "id": "backend_api_v1_phone_numbers_assign_number",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "login()"
+      "norm_label": "assign_number()"
     },
     {
-      "label": ".lowercase()",
+      "label": "get_my_number()",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L94",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_phone_numbers_get_my_number",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "get_my_number()"
+    },
+    {
+      "label": "inventory_stats()",
+      "file_type": "code",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L113",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_phone_numbers_inventory_stats",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "inventory_stats()"
+    },
+    {
+      "label": "list_available_numbers()",
+      "file_type": "code",
+      "source_file": "backend/api/v1/phone_numbers.py",
       "source_location": "L69",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_loginrequest_lowercase",
+      "id": "backend_api_v1_phone_numbers_list_available_numbers",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": ".lowercase()"
+      "norm_label": "list_available_numbers()"
     },
     {
-      "label": "logout()",
+      "label": "list_my_numbers()",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L238",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L84",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_logout",
+      "id": "backend_api_v1_phone_numbers_list_my_numbers",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "logout()"
+      "norm_label": "list_my_numbers()"
     },
     {
-      "label": "me()",
+      "label": "reactivate_number()",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L279",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L215",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_me",
+      "id": "backend_api_v1_phone_numbers_reactivate_number",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "me()"
+      "norm_label": "reactivate_number()"
     },
     {
-      "label": "refresh_token()",
+      "label": "release_number()",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L255",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L175",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_refresh_token",
+      "id": "backend_api_v1_phone_numbers_release_number",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "refresh_token()"
+      "norm_label": "release_number()"
     },
     {
-      "label": "signup()",
+      "label": "suspend_number()",
       "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L139",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L195",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_auth_signup",
+      "id": "backend_api_v1_phone_numbers_suspend_number",
       "community": 14,
       "community_name": "FastAPI",
-      "norm_label": "signup()"
-    },
-    {
-      "label": ".lowercase_email()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L59",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_signuprequest_lowercase_email",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": ".lowercase_email()"
-    },
-    {
-      "label": ".password_strength()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L52",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_signuprequest_password_strength",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": ".password_strength()"
-    },
-    {
-      "label": "_token_response()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L112",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_token_response",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "_token_response()"
+      "norm_label": "suspend_number()"
     },
     {
       "label": "override_rate()",
@@ -14421,6 +14421,78 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": "trigger_daily_sync()"
+    },
+    {
+      "label": "deactivate_user()",
+      "file_type": "code",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L189",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_users_deactivate_user",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "deactivate_user()"
+    },
+    {
+      "label": "get_user()",
+      "file_type": "code",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L115",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_users_get_user",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "get_user()"
+    },
+    {
+      "label": "invite_user()",
+      "file_type": "code",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L55",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_users_invite_user",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "invite_user()"
+    },
+    {
+      "label": "list_org_users()",
+      "file_type": "code",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L103",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_users_list_org_users",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "list_org_users()"
+    },
+    {
+      "label": "_to_public()",
+      "file_type": "code",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L38",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_users_to_public",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "_to_public()"
+    },
+    {
+      "label": "update_user()",
+      "file_type": "code",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L140",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_api_v1_users_update_user",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "update_user()"
     },
     {
       "label": "create_profile()",
@@ -14591,18 +14663,6 @@
       "norm_label": ".__init__()"
     },
     {
-      "label": "decode_refresh_token()",
-      "file_type": "code",
-      "source_file": "backend/core/auth.py",
-      "source_location": "L138",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_core_auth_decode_refresh_token",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "decode_refresh_token()"
-    },
-    {
       "label": "_decode_token()",
       "file_type": "code",
       "source_file": "backend/core/auth.py",
@@ -14639,18 +14699,6 @@
       "norm_label": "get_optional_user()"
     },
     {
-      "label": "is_refresh_token_revoked()",
-      "file_type": "code",
-      "source_file": "backend/core/auth.py",
-      "source_location": "L210",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_core_auth_is_refresh_token_revoked",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "is_refresh_token_revoked()"
-    },
-    {
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "backend/core/auth.py",
@@ -14661,18 +14709,6 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": ".__init__()"
-    },
-    {
-      "label": "revoke_refresh_token()",
-      "file_type": "code",
-      "source_file": "backend/core/auth.py",
-      "source_location": "L200",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_core_auth_revoke_refresh_token",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "revoke_refresh_token()"
     },
     {
       "label": "require_org_access()",
@@ -14721,6 +14757,54 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": "require_self_or_role()"
+    },
+    {
+      "label": ".get_inventory_stats()",
+      "file_type": "code",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L325",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_phonenumberservice_get_inventory_stats",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": ".get_inventory_stats()"
+    },
+    {
+      "label": ".reactivate_number()",
+      "file_type": "code",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L277",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_phonenumberservice_reactivate_number",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": ".reactivate_number()"
+    },
+    {
+      "label": ".release_from_org()",
+      "file_type": "code",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L229",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_phonenumberservice_release_from_org",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": ".release_from_org()"
+    },
+    {
+      "label": ".suspend_number()",
+      "file_type": "code",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L256",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_phonenumberservice_suspend_number",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": ".suspend_number()"
     },
     {
       "label": "_get_mock_db()",
@@ -26479,7 +26563,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m13_campaigns_get_mock_db",
       "community": 259,
-      "community_name": "_make_redis",
+      "community_name": "test_m13_campaigns.py",
       "norm_label": "_get_mock_db()"
     },
     {
@@ -26491,8 +26575,20 @@
       "_origin": "ast",
       "id": "backend_tests_test_m13_campaigns_make_redis",
       "community": 259,
-      "community_name": "_make_redis",
+      "community_name": "test_m13_campaigns.py",
       "norm_label": "_make_redis()"
+    },
+    {
+      "label": "_mongomock_available()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m13_campaigns.py",
+      "source_location": "L40",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_tests_test_m13_campaigns_mongomock_available",
+      "community": 259,
+      "community_name": "test_m13_campaigns.py",
+      "norm_label": "_mongomock_available()"
     },
     {
       "label": ".setup_method()",
@@ -26503,7 +26599,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m13_campaigns_testcampaignhttp_setup_method",
       "community": 259,
-      "community_name": "_make_redis",
+      "community_name": "test_m13_campaigns.py",
       "norm_label": ".setup_method()"
     },
     {
@@ -26515,7 +26611,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m13_campaigns_testcampaignrepository_setup_method",
       "community": 259,
-      "community_name": "_make_redis",
+      "community_name": "test_m13_campaigns.py",
       "norm_label": ".setup_method()"
     },
     {
@@ -26527,7 +26623,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m13_campaigns_testcampaignstatemachine_setup_method",
       "community": 259,
-      "community_name": "_make_redis",
+      "community_name": "test_m13_campaigns.py",
       "norm_label": ".setup_method()"
     },
     {
@@ -26539,7 +26635,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m13_campaigns_testconcurrencygate_setup_method",
       "community": 259,
-      "community_name": "_make_redis",
+      "community_name": "test_m13_campaigns.py",
       "norm_label": ".setup_method()"
     },
     {
@@ -28826,7 +28922,7 @@
       "label": "_smoke_test()",
       "file_type": "code",
       "source_file": "backend/agent/engine.py",
-      "source_location": "L301",
+      "source_location": "L300",
       "_callable": true,
       "_origin": "ast",
       "id": "backend_agent_engine_smoke_test",
@@ -31917,102 +32013,6 @@
       "community": 311,
       "community_name": "TestTranscriptsHTTP",
       "norm_label": ".test_unauthenticated_rejected()"
-    },
-    {
-      "label": ".create()",
-      "file_type": "code",
-      "source_file": "backend/repositories/organization_repo.py",
-      "source_location": "L27",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_repositories_organization_repo_organizationrepository_create",
-      "community": 312,
-      "community_name": "OrganizationSettings",
-      "norm_label": ".create()"
-    },
-    {
-      "label": ".test_organization_to_mongo()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_m1_mongodb.py",
-      "source_location": "L67",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_m1_mongodb_testmodels_test_organization_to_mongo",
-      "community": 312,
-      "community_name": "OrganizationSettings",
-      "norm_label": ".test_organization_to_mongo()"
-    },
-    {
-      "label": "test_calling_packs_minute_denominations()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_simplified_models.py",
-      "source_location": "L11",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_simplified_models_test_calling_packs_minute_denominations",
-      "community": 312,
-      "community_name": "OrganizationSettings",
-      "norm_label": "test_calling_packs_minute_denominations()"
-    },
-    {
-      "label": "test_organization_settings_defaults()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_simplified_models.py",
-      "source_location": "L5",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_simplified_models_test_organization_settings_defaults",
-      "community": 312,
-      "community_name": "OrganizationSettings",
-      "norm_label": "test_organization_settings_defaults()"
-    },
-    {
-      "label": "run()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_campaign_crud.py",
-      "source_location": "L12",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_campaign_crud_run",
-      "community": 313,
-      "community_name": "test_campaign_crud.py",
-      "norm_label": "run()"
-    },
-    {
-      "label": ".setup_method()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_campaign_crud.py",
-      "source_location": "L21",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_campaign_crud_testcampaigncrud_setup_method",
-      "community": 313,
-      "community_name": "test_campaign_crud.py",
-      "norm_label": ".setup_method()"
-    },
-    {
-      "label": ".test_campaign_create_read_update_delete()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_campaign_crud.py",
-      "source_location": "L27",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_campaign_crud_testcampaigncrud_test_campaign_create_read_update_delete",
-      "community": 313,
-      "community_name": "test_campaign_crud.py",
-      "norm_label": ".test_campaign_create_read_update_delete()"
-    },
-    {
-      "label": ".test_delete_running_campaign_prevented()",
-      "file_type": "code",
-      "source_file": "backend/tests/test_campaign_crud.py",
-      "source_location": "L85",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_tests_test_campaign_crud_testcampaigncrud_test_delete_running_campaign_prevented",
-      "community": 313,
-      "community_name": "test_campaign_crud.py",
-      "norm_label": ".test_delete_running_campaign_prevented()"
     },
     {
       "label": ".test_can_start_call_insufficient()",
@@ -38699,172 +38699,172 @@
       "norm_label": ".record_message_usage()"
     },
     {
-      "label": "add_number_to_inventory()",
+      "label": "change_password()",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L134",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L301",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_add_number_to_inventory",
+      "id": "backend_api_v1_auth_change_password",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "add_number_to_inventory()"
+      "community_name": "v1/auth.py",
+      "norm_label": "change_password()"
     },
     {
-      "label": "admin_list_numbers()",
+      "label": ".password_strength()",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L121",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L83",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_admin_list_numbers",
+      "id": "backend_api_v1_auth_changepasswordrequest_password_strength",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "admin_list_numbers()"
+      "community_name": "v1/auth.py",
+      "norm_label": ".password_strength()"
     },
     {
-      "label": "assign_number()",
+      "label": "login()",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L148",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L199",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_assign_number",
+      "id": "backend_api_v1_auth_login",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "assign_number()"
+      "community_name": "v1/auth.py",
+      "norm_label": "login()"
     },
     {
-      "label": "get_my_number()",
+      "label": ".lowercase()",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L94",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_get_my_number",
-      "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "get_my_number()"
-    },
-    {
-      "label": "inventory_stats()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L113",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_inventory_stats",
-      "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "inventory_stats()"
-    },
-    {
-      "label": "list_available_numbers()",
-      "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_file": "backend/api/v1/auth.py",
       "source_location": "L69",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_list_available_numbers",
+      "id": "backend_api_v1_auth_loginrequest_lowercase",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "list_available_numbers()"
+      "community_name": "v1/auth.py",
+      "norm_label": ".lowercase()"
     },
     {
-      "label": "list_my_numbers()",
+      "label": "logout()",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L84",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L238",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_list_my_numbers",
+      "id": "backend_api_v1_auth_logout",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "list_my_numbers()"
+      "community_name": "v1/auth.py",
+      "norm_label": "logout()"
     },
     {
-      "label": "reactivate_number()",
+      "label": "me()",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L215",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L279",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_reactivate_number",
+      "id": "backend_api_v1_auth_me",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "reactivate_number()"
+      "community_name": "v1/auth.py",
+      "norm_label": "me()"
     },
     {
-      "label": "release_number()",
+      "label": "refresh_token()",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L175",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L255",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_release_number",
+      "id": "backend_api_v1_auth_refresh_token",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "release_number()"
+      "community_name": "v1/auth.py",
+      "norm_label": "refresh_token()"
     },
     {
-      "label": "suspend_number()",
+      "label": "signup()",
       "file_type": "code",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L195",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L139",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_suspend_number",
+      "id": "backend_api_v1_auth_signup",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "suspend_number()"
+      "community_name": "v1/auth.py",
+      "norm_label": "signup()"
     },
     {
-      "label": ".get_inventory_stats()",
+      "label": ".lowercase_email()",
       "file_type": "code",
-      "source_file": "backend/services/phone_number_service.py",
-      "source_location": "L325",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L59",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_services_phone_number_service_phonenumberservice_get_inventory_stats",
+      "id": "backend_api_v1_auth_signuprequest_lowercase_email",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": ".get_inventory_stats()"
+      "community_name": "v1/auth.py",
+      "norm_label": ".lowercase_email()"
     },
     {
-      "label": ".reactivate_number()",
+      "label": ".password_strength()",
       "file_type": "code",
-      "source_file": "backend/services/phone_number_service.py",
-      "source_location": "L277",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L52",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_services_phone_number_service_phonenumberservice_reactivate_number",
+      "id": "backend_api_v1_auth_signuprequest_password_strength",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": ".reactivate_number()"
+      "community_name": "v1/auth.py",
+      "norm_label": ".password_strength()"
     },
     {
-      "label": ".release_from_org()",
+      "label": "_token_response()",
       "file_type": "code",
-      "source_file": "backend/services/phone_number_service.py",
-      "source_location": "L229",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L112",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_services_phone_number_service_phonenumberservice_release_from_org",
+      "id": "backend_api_v1_auth_token_response",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": ".release_from_org()"
+      "community_name": "v1/auth.py",
+      "norm_label": "_token_response()"
     },
     {
-      "label": ".suspend_number()",
+      "label": "decode_refresh_token()",
       "file_type": "code",
-      "source_file": "backend/services/phone_number_service.py",
-      "source_location": "L256",
+      "source_file": "backend/core/auth.py",
+      "source_location": "L138",
       "_callable": true,
       "_origin": "ast",
-      "id": "backend_services_phone_number_service_phonenumberservice_suspend_number",
+      "id": "backend_core_auth_decode_refresh_token",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": ".suspend_number()"
+      "community_name": "v1/auth.py",
+      "norm_label": "decode_refresh_token()"
+    },
+    {
+      "label": "is_refresh_token_revoked()",
+      "file_type": "code",
+      "source_file": "backend/core/auth.py",
+      "source_location": "L210",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_core_auth_is_refresh_token_revoked",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "is_refresh_token_revoked()"
+    },
+    {
+      "label": "revoke_refresh_token()",
+      "file_type": "code",
+      "source_file": "backend/core/auth.py",
+      "source_location": "L200",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "backend_core_auth_revoke_refresh_token",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "revoke_refresh_token()"
     },
     {
       "label": ".get_capabilities()",
@@ -46845,72 +46845,6 @@
       "norm_label": "request"
     },
     {
-      "label": "BaseModel",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_users_py_basemodel",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "basemodel"
-    },
-    {
-      "label": "delete",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_users_py_delete",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "delete"
-    },
-    {
-      "label": "get",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_users_py_get",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "get"
-    },
-    {
-      "label": "patch",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_users_py_patch",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "patch"
-    },
-    {
-      "label": "post",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_users_py_post",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "post"
-    },
-    {
-      "label": "Request",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_users_py_request",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "request"
-    },
-    {
       "label": "audit_log_repo.py",
       "file_type": "code",
       "source_file": "backend/repositories/audit_log_repo.py",
@@ -46953,28 +46887,6 @@
       "community": 1,
       "community_name": "AuditLogRepository",
       "norm_label": "create a new organization (platform admin only)."
-    },
-    {
-      "label": "Invite a user to an organization.",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L22",
-      "_origin": "ast",
-      "id": "backend_api_v1_users_rationale_22",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "invite a user to an organization."
-    },
-    {
-      "label": "Invite a user to the organization (org_admin or higher).",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/users.py",
-      "source_location": "L61",
-      "_origin": "ast",
-      "id": "backend_api_v1_users_rationale_61",
-      "community": 1,
-      "community_name": "AuditLogRepository",
-      "norm_label": "invite a user to the organization (org_admin or higher)."
     },
     {
       "label": "Resolved org-scoped request context.",
@@ -48429,15 +48341,15 @@
       "norm_label": "asynciomotordatabase"
     },
     {
-      "label": "test_m13_campaigns.py",
+      "label": "test_campaign_crud.py",
       "file_type": "code",
-      "source_file": "backend/tests/test_m13_campaigns.py",
+      "source_file": "backend/tests/test_campaign_crud.py",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "backend_tests_test_m13_campaigns",
+      "id": "backend_tests_test_campaign_crud",
       "community": 114,
       "community_name": "CampaignRepository",
-      "norm_label": "test_m13_campaigns.py"
+      "norm_label": "test_campaign_crud.py"
     },
     {
       "label": "All running/scheduled campaigns \u2014 for worker polling.",
@@ -48462,15 +48374,15 @@
       "norm_label": "atomic status update scoped to org."
     },
     {
-      "label": "M13 tests \u2014 Campaign Engine. Tests: 1. Campaign model \u2014 status validation, FSM\u2026",
+      "label": "Unit and API tests for Campaign CRUD operations.",
       "file_type": "rationale",
-      "source_file": "backend/tests/test_m13_campaigns.py",
+      "source_file": "backend/tests/test_campaign_crud.py",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "backend_tests_test_m13_campaigns_rationale_1",
+      "id": "backend_tests_test_campaign_crud_rationale_1",
       "community": 114,
       "community_name": "CampaignRepository",
-      "norm_label": "m13 tests \u2014 campaign engine. tests: 1. campaign model \u2014 status validation, fsm..."
+      "norm_label": "unit and api tests for campaign crud operations."
     },
     {
       "label": "2026-10-30-razorpay-and-manual-billing-design.md",
@@ -49117,6 +49029,17 @@
       "norm_label": "voice_profile_service.py"
     },
     {
+      "label": "test_simplified_models.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_simplified_models.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_tests_test_simplified_models",
+      "community": 121,
+      "community_name": "TimestampedModel",
+      "norm_label": "test_simplified_models.py"
+    },
+    {
       "label": "DocumentModel with created_at and updated_at.",
       "file_type": "rationale",
       "source_file": "backend/models/base.py",
@@ -49126,6 +49049,17 @@
       "community": 121,
       "community_name": "TimestampedModel",
       "norm_label": "documentmodel with created_at and updated_at."
+    },
+    {
+      "label": "Mutable settings nested inside an organization.",
+      "file_type": "rationale",
+      "source_file": "backend/models/organization.py",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "backend_models_organization_rationale_15",
+      "community": 121,
+      "community_name": "TimestampedModel",
+      "norm_label": "mutable settings nested inside an organization."
     },
     {
       "label": "Input schema for creating an organization (used by signup).",
@@ -51618,72 +51552,6 @@
       "norm_label": "org a cannot see org b's invoice."
     },
     {
-      "label": "v1/auth.py",
-      "file_type": "code",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "v1/auth.py"
-    },
-    {
-      "label": "BaseModel",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_py_basemodel",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "basemodel"
-    },
-    {
-      "label": "field_validator",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_py_field_validator",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "field_validator"
-    },
-    {
-      "label": "get",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_py_get",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "get"
-    },
-    {
-      "label": "post",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_py_post",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "post"
-    },
-    {
-      "label": "Request",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_py_request",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "request"
-    },
-    {
       "label": "demo.py",
       "file_type": "code",
       "source_file": "backend/api/v1/demo.py",
@@ -51715,6 +51583,39 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": "phone_numbers.py"
+    },
+    {
+      "label": "BaseModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_phone_numbers_py_basemodel",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "basemodel"
+    },
+    {
+      "label": "get",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_phone_numbers_py_get",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "get"
+    },
+    {
+      "label": "post",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_phone_numbers_py_post",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "post"
     },
     {
       "label": "v1/pricing.py",
@@ -51781,6 +51682,72 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": "users.py"
+    },
+    {
+      "label": "BaseModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_users_py_basemodel",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "basemodel"
+    },
+    {
+      "label": "delete",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_users_py_delete",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "delete"
+    },
+    {
+      "label": "get",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_users_py_get",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "get"
+    },
+    {
+      "label": "patch",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_users_py_patch",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "patch"
+    },
+    {
+      "label": "post",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_users_py_post",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "post"
+    },
+    {
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_users_py_request",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "request"
     },
     {
       "label": "voice_profiles.py",
@@ -51915,83 +51882,6 @@
       "norm_label": "httpauthorizationcredentials"
     },
     {
-      "label": "Authentication API endpoints. POST /api/v1/auth/signup \u2014 create org + owner\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_rationale_1",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "authentication api endpoints. post /api/v1/auth/signup \u2014 create org + owner..."
-    },
-    {
-      "label": "Create a new organization + organization_owner user in one atomic step. Returns\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L140",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_rationale_140",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "create a new organization + organization_owner user in one atomic step. returns..."
-    },
-    {
-      "label": "Authenticate with email + password. Returns token pair.",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L200",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_rationale_200",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "authenticate with email + password. returns token pair."
-    },
-    {
-      "label": "Revoke the refresh token. Access token expires naturally.",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L242",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_rationale_242",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "revoke the refresh token. access token expires naturally."
-    },
-    {
-      "label": "Exchange a valid refresh token for a new access token.",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L256",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_rationale_256",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "exchange a valid refresh token for a new access token."
-    },
-    {
-      "label": "Get the current authenticated user's profile.",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L280",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_rationale_280",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "get the current authenticated user's profile."
-    },
-    {
-      "label": "Change current authenticated user's password.",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/auth.py",
-      "source_location": "L306",
-      "_origin": "ast",
-      "id": "backend_api_v1_auth_rationale_306",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "change current authenticated user's password."
-    },
-    {
       "label": "Demo Mode API. GET /api/v1/demo/status \u2014 check if demo mode is active and\u2026",
       "file_type": "rationale",
       "source_file": "backend/api/v1/demo.py",
@@ -52023,6 +51913,28 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": "phone numbers api. customer endpoints (provider details never included): get..."
+    },
+    {
+      "label": "Browse available numbers to rent (no provider details).",
+      "file_type": "rationale",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L75",
+      "_origin": "ast",
+      "id": "backend_api_v1_phone_numbers_rationale_75",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "browse available numbers to rent (no provider details)."
+    },
+    {
+      "label": "Numbers assigned to the current org (no provider details).",
+      "file_type": "rationale",
+      "source_file": "backend/api/v1/phone_numbers.py",
+      "source_location": "L85",
+      "_origin": "ast",
+      "id": "backend_api_v1_phone_numbers_rationale_85",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "numbers assigned to the current org (no provider details)."
     },
     {
       "label": "REST API for dynamic provider rate cards, daily FX updates, and loss\u2026",
@@ -52089,6 +52001,28 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": "users api \u2014 rbac-protected."
+    },
+    {
+      "label": "Invite a user to an organization.",
+      "file_type": "rationale",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "backend_api_v1_users_rationale_22",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "invite a user to an organization."
+    },
+    {
+      "label": "Invite a user to the organization (org_admin or higher).",
+      "file_type": "rationale",
+      "source_file": "backend/api/v1/users.py",
+      "source_location": "L61",
+      "_origin": "ast",
+      "id": "backend_api_v1_users_rationale_61",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "invite a user to the organization (org_admin or higher)."
     },
     {
       "label": "Wallet and calling packs API. Customer: GET /api/v1/wallet \u2014 wallet balance +\u2026",
@@ -52179,28 +52113,6 @@
       "norm_label": "dependency: returns currentuser or none (for public endpoints with optional..."
     },
     {
-      "label": "Mark a refresh token as revoked. Called on logout.",
-      "file_type": "rationale",
-      "source_file": "backend/core/auth.py",
-      "source_location": "L201",
-      "_origin": "ast",
-      "id": "backend_core_auth_rationale_201",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "mark a refresh token as revoked. called on logout."
-    },
-    {
-      "label": "Returns True if the refresh token has been revoked.",
-      "file_type": "rationale",
-      "source_file": "backend/core/auth.py",
-      "source_location": "L211",
-      "_origin": "ast",
-      "id": "backend_core_auth_rationale_211",
-      "community": 14,
-      "community_name": "FastAPI",
-      "norm_label": "returns true if the refresh token has been revoked."
-    },
-    {
       "label": "MongoDB async client via Motor. Single process-wide client. Use get_db()\u2026",
       "file_type": "rationale",
       "source_file": "backend/core/db.py",
@@ -52265,6 +52177,17 @@
       "community": 14,
       "community_name": "FastAPI",
       "norm_label": "dependency: requires a platform-level role. default: any platform role..."
+    },
+    {
+      "label": "Return a number to the available pool.",
+      "file_type": "rationale",
+      "source_file": "backend/services/phone_number_service.py",
+      "source_location": "L235",
+      "_origin": "ast",
+      "id": "backend_services_phone_number_service_rationale_235",
+      "community": 14,
+      "community_name": "FastAPI",
+      "norm_label": "return a number to the available pool."
     },
     {
       "label": "Tests for Campaign Leads API endpoints.",
@@ -60786,6 +60709,28 @@
       "norm_label": "voice latency and interruption validation"
     },
     {
+      "label": "test_m13_campaigns.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_m13_campaigns.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_tests_test_m13_campaigns",
+      "community": 259,
+      "community_name": "test_m13_campaigns.py",
+      "norm_label": "test_m13_campaigns.py"
+    },
+    {
+      "label": "M13 tests \u2014 Campaign Engine. Tests: 1. Campaign model \u2014 status validation, FSM\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_m13_campaigns.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_tests_test_m13_campaigns_rationale_1",
+      "community": 259,
+      "community_name": "test_m13_campaigns.py",
+      "norm_label": "m13 tests \u2014 campaign engine. tests: 1. campaign model \u2014 status validation, fsm..."
+    },
+    {
       "label": "In-memory Redis mock.",
       "file_type": "rationale",
       "source_file": "backend/tests/test_m13_campaigns.py",
@@ -60793,7 +60738,7 @@
       "_origin": "ast",
       "id": "backend_tests_test_m13_campaigns_rationale_57",
       "community": 259,
-      "community_name": "_make_redis",
+      "community_name": "test_m13_campaigns.py",
       "norm_label": "in-memory redis mock."
     },
     {
@@ -62860,6 +62805,17 @@
       "norm_label": "campaign_service.py"
     },
     {
+      "label": "demo_seed_service.py",
+      "file_type": "code",
+      "source_file": "backend/services/demo_seed_service.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_services_demo_seed_service",
+      "community": 29,
+      "community_name": "utcnow",
+      "norm_label": "demo_seed_service.py"
+    },
+    {
       "label": "lead_service.py",
       "file_type": "code",
       "source_file": "backend/services/lead_service.py",
@@ -63177,6 +63133,17 @@
       "community": 29,
       "community_name": "utcnow",
       "norm_label": "campaign service \u2014 state machine and concurrency control. state machine..."
+    },
+    {
+      "label": "Demo Mode seeding service. When DEMO_MODE=true, seeds a complete demo\u2026",
+      "file_type": "rationale",
+      "source_file": "backend/services/demo_seed_service.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_services_demo_seed_service_rationale_1",
+      "community": 29,
+      "community_name": "utcnow",
+      "norm_label": "demo mode seeding service. when demo_mode=true, seeds a complete demo..."
     },
     {
       "label": "Lead CRM service \u2014 import pipeline and CRUD. Import pipeline: 1. Parse file\u2026",
@@ -65241,50 +65208,6 @@
       "community": 311,
       "community_name": "TestTranscriptsHTTP",
       "norm_label": "skip"
-    },
-    {
-      "label": "test_simplified_models.py",
-      "file_type": "code",
-      "source_file": "backend/tests/test_simplified_models.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_tests_test_simplified_models",
-      "community": 312,
-      "community_name": "OrganizationSettings",
-      "norm_label": "test_simplified_models.py"
-    },
-    {
-      "label": "Mutable settings nested inside an organization.",
-      "file_type": "rationale",
-      "source_file": "backend/models/organization.py",
-      "source_location": "L15",
-      "_origin": "ast",
-      "id": "backend_models_organization_rationale_15",
-      "community": 312,
-      "community_name": "OrganizationSettings",
-      "norm_label": "mutable settings nested inside an organization."
-    },
-    {
-      "label": "test_campaign_crud.py",
-      "file_type": "code",
-      "source_file": "backend/tests/test_campaign_crud.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_tests_test_campaign_crud",
-      "community": 313,
-      "community_name": "test_campaign_crud.py",
-      "norm_label": "test_campaign_crud.py"
-    },
-    {
-      "label": "Unit and API tests for Campaign CRUD operations.",
-      "file_type": "rationale",
-      "source_file": "backend/tests/test_campaign_crud.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_tests_test_campaign_crud_rationale_1",
-      "community": 313,
-      "community_name": "test_campaign_crud.py",
-      "norm_label": "unit and api tests for campaign crud operations."
     },
     {
       "label": "SKIP",
@@ -69546,15 +69469,37 @@
       "norm_label": "admin: provider cost by provider combination."
     },
     {
+      "label": "v1/auth.py",
+      "file_type": "code",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_api_v1_auth",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "v1/auth.py"
+    },
+    {
       "label": "BaseModel",
       "file_type": "code",
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_py_basemodel",
+      "id": "backend_api_v1_auth_py_basemodel",
       "community": 6,
-      "community_name": "PhoneNumberService",
+      "community_name": "v1/auth.py",
       "norm_label": "basemodel"
+    },
+    {
+      "label": "field_validator",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "backend_api_v1_auth_py_field_validator",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "field_validator"
     },
     {
       "label": "get",
@@ -69562,9 +69507,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_py_get",
+      "id": "backend_api_v1_auth_py_get",
       "community": 6,
-      "community_name": "PhoneNumberService",
+      "community_name": "v1/auth.py",
       "norm_label": "get"
     },
     {
@@ -69573,43 +69518,120 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_py_post",
+      "id": "backend_api_v1_auth_py_post",
       "community": 6,
-      "community_name": "PhoneNumberService",
+      "community_name": "v1/auth.py",
       "norm_label": "post"
     },
     {
-      "label": "Browse available numbers to rent (no provider details).",
-      "file_type": "rationale",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L75",
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_rationale_75",
+      "id": "backend_api_v1_auth_py_request",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "browse available numbers to rent (no provider details)."
+      "community_name": "v1/auth.py",
+      "norm_label": "request"
     },
     {
-      "label": "Numbers assigned to the current org (no provider details).",
+      "label": "Authentication API endpoints. POST /api/v1/auth/signup \u2014 create org + owner\u2026",
       "file_type": "rationale",
-      "source_file": "backend/api/v1/phone_numbers.py",
-      "source_location": "L85",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L1",
       "_origin": "ast",
-      "id": "backend_api_v1_phone_numbers_rationale_85",
+      "id": "backend_api_v1_auth_rationale_1",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "numbers assigned to the current org (no provider details)."
+      "community_name": "v1/auth.py",
+      "norm_label": "authentication api endpoints. post /api/v1/auth/signup \u2014 create org + owner..."
     },
     {
-      "label": "Return a number to the available pool.",
+      "label": "Create a new organization + organization_owner user in one atomic step. Returns\u2026",
       "file_type": "rationale",
-      "source_file": "backend/services/phone_number_service.py",
-      "source_location": "L235",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L140",
       "_origin": "ast",
-      "id": "backend_services_phone_number_service_rationale_235",
+      "id": "backend_api_v1_auth_rationale_140",
       "community": 6,
-      "community_name": "PhoneNumberService",
-      "norm_label": "return a number to the available pool."
+      "community_name": "v1/auth.py",
+      "norm_label": "create a new organization + organization_owner user in one atomic step. returns..."
+    },
+    {
+      "label": "Authenticate with email + password. Returns token pair.",
+      "file_type": "rationale",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L200",
+      "_origin": "ast",
+      "id": "backend_api_v1_auth_rationale_200",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "authenticate with email + password. returns token pair."
+    },
+    {
+      "label": "Revoke the refresh token. Access token expires naturally.",
+      "file_type": "rationale",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L242",
+      "_origin": "ast",
+      "id": "backend_api_v1_auth_rationale_242",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "revoke the refresh token. access token expires naturally."
+    },
+    {
+      "label": "Exchange a valid refresh token for a new access token.",
+      "file_type": "rationale",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L256",
+      "_origin": "ast",
+      "id": "backend_api_v1_auth_rationale_256",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "exchange a valid refresh token for a new access token."
+    },
+    {
+      "label": "Get the current authenticated user's profile.",
+      "file_type": "rationale",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L280",
+      "_origin": "ast",
+      "id": "backend_api_v1_auth_rationale_280",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "get the current authenticated user's profile."
+    },
+    {
+      "label": "Change current authenticated user's password.",
+      "file_type": "rationale",
+      "source_file": "backend/api/v1/auth.py",
+      "source_location": "L306",
+      "_origin": "ast",
+      "id": "backend_api_v1_auth_rationale_306",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "change current authenticated user's password."
+    },
+    {
+      "label": "Mark a refresh token as revoked. Called on logout.",
+      "file_type": "rationale",
+      "source_file": "backend/core/auth.py",
+      "source_location": "L201",
+      "_origin": "ast",
+      "id": "backend_core_auth_rationale_201",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "mark a refresh token as revoked. called on logout."
+    },
+    {
+      "label": "Returns True if the refresh token has been revoked.",
+      "file_type": "rationale",
+      "source_file": "backend/core/auth.py",
+      "source_location": "L211",
+      "_origin": "ast",
+      "id": "backend_core_auth_rationale_211",
+      "community": 6,
+      "community_name": "v1/auth.py",
+      "norm_label": "returns true if the refresh token has been revoked."
     },
     {
       "label": "config.py",
@@ -69887,17 +69909,6 @@
       "norm_label": "any"
     },
     {
-      "label": "demo_seed_service.py",
-      "file_type": "code",
-      "source_file": "backend/services/demo_seed_service.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_services_demo_seed_service",
-      "community": 62,
-      "community_name": "new_id",
-      "norm_label": "demo_seed_service.py"
-    },
-    {
       "label": "AsyncIOMotorDatabase",
       "file_type": "code",
       "source_file": "",
@@ -70017,17 +70028,6 @@
       "community": 62,
       "community_name": "new_id",
       "norm_label": "record a usage event. returns none if idempotency_key already exists."
-    },
-    {
-      "label": "Demo Mode seeding service. When DEMO_MODE=true, seeds a complete demo\u2026",
-      "file_type": "rationale",
-      "source_file": "backend/services/demo_seed_service.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_services_demo_seed_service_rationale_1",
-      "community": 62,
-      "community_name": "new_id",
-      "norm_label": "demo mode seeding service. when demo_mode=true, seeds a complete demo..."
     },
     {
       "label": "Check if demo environment is already seeded.",
@@ -74650,7 +74650,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/agent/engine.py",
-      "source_location": "L293",
+      "source_location": "L292",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_agent_engine_conversationengine_run_turn",
@@ -74685,7 +74685,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/agent/engine.py",
-      "source_location": "L307",
+      "source_location": "L306",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_agent_engine_smoke_test",
@@ -74697,7 +74697,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/agent/engine.py",
-      "source_location": "L308",
+      "source_location": "L307",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_agent_engine_smoke_test",
@@ -121353,7 +121353,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/agent/engine.py",
-      "source_location": "L304",
+      "source_location": "L303",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_agent_engine",
@@ -159947,7 +159947,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/agent/engine.py",
-      "source_location": "L301",
+      "source_location": "L300",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_agent_engine",
@@ -233280,5 +233280,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "bdc3427a92c0a0c04c65a2498115810873374ec1"
+  "built_at_commit": "cfcd4893e38ffafb9b1e1266dc64c57d43e38be2"
 }

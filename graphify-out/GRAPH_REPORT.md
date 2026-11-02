@@ -1,16 +1,16 @@
 # Graph Report - saas  (2026-11-02)
 
 ## Corpus Check
-- 406 files · ~330,779 words
+- 406 files · ~330,834 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 6325 nodes · 13761 edges · 327 communities (273 shown, 54 thin omitted)
+- 6325 nodes · 13761 edges · 325 communities (271 shown, 54 thin omitted)
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 980 edges (avg confidence: 0.57)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `bdc3427a`
+- Built from commit: `cfcd4893`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,7 +21,7 @@
 - MVP_CHECKPOINTS.md
 - PreflightService
 - AdminOrgDetailPage
-- PhoneNumberService
+- v1/auth.py
 - dashboard.py
 - test_m42_cloud_providers.py
 - CurrentUser
@@ -253,7 +253,7 @@
 - Review Focus
 - SDD ledger — plan: docs/superpowers/plans/2026-10-27-simplified-credit-system.md
 - Voice latency and interruption validation
-- _make_redis
+- test_m13_campaigns.py
 - admin.py
 - vobiz_voice
 - test_m4_payment.py
@@ -305,8 +305,6 @@
 - test_agent_kb_integration.py
 - test_m6_credit_reservation.py
 - TestTranscriptsHTTP
-- OrganizationSettings
-- test_campaign_crud.py
 - SKIP
 - test_m42_runtime_providers.py
 - security_audit
@@ -348,15 +346,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (327 total, 54 thin omitted)
+## Communities (325 total, 54 thin omitted)
 
 ### Community 0 - "AppointmentRepository"
 Cohesion: 0.16
 Nodes (8): AppointmentRepository, Appointment, datetime, Upcoming scheduled/confirmed appointments., Mark existing as rescheduled and create a new one., AsyncIOMotorDatabase, SKIP, TestAppointmentRepository
 
 ### Community 1 - "AuditLogRepository"
-Cohesion: 0.07
-Nodes (39): AuditLog, create_organization(), get_organization(), list_organizations(), OrgCreateRequest, OrgUpdateRequest, BaseModel, get (+31 more)
+Cohesion: 0.11
+Nodes (23): AuditLog, create_organization(), get_organization(), list_organizations(), OrgCreateRequest, OrgUpdateRequest, BaseModel, get (+15 more)
 
 ### Community 2 - "CloudProviderRuntime"
 Cohesion: 0.05
@@ -370,9 +368,9 @@ Nodes (67): 10. PHONE NUMBER PRINCIPLES, 11. AI VOICE PROFILE PRINCIPLES, 12. BU
 Cohesion: 0.15
 Nodes (11): PreflightCheck, PreflightResult, PreflightService, Any, AsyncIOMotorDatabase, Campaign, Campaign pre-flight validation service. Before a campaign starts, ALL of these…, Run all pre-flight checks for a campaign. Returns PreflightResult with all… (+3 more)
 
-### Community 6 - "PhoneNumberService"
-Cohesion: 0.12
-Nodes (21): add_number_to_inventory(), AddNumberRequest, admin_list_numbers(), assign_number(), AssignRequest, get_my_number(), inventory_stats(), list_available_numbers() (+13 more)
+### Community 6 - "v1/auth.py"
+Cohesion: 0.11
+Nodes (29): change_password(), login(), LoginRequest, logout(), me(), MeResponse, BaseModel, field_validator (+21 more)
 
 ### Community 7 - "dashboard.py"
 Cohesion: 0.06
@@ -403,8 +401,8 @@ Cohesion: 0.07
 Nodes (56): AdminAuditLogsPage(), AuditLog, initialFormData, PackFormData, Tab, AdminPaymentsPage(), Tab, AgentItem (+48 more)
 
 ### Community 14 - "FastAPI"
-Cohesion: 0.04
-Nodes (87): change_password(), login(), LoginRequest, logout(), me(), MeResponse, BaseModel, field_validator (+79 more)
+Cohesion: 0.03
+Nodes (95): Demo Mode API. GET /api/v1/demo/status — check if demo mode is active and…, API v1 router — aggregates all v1 sub-routers., add_number_to_inventory(), AddNumberRequest, admin_list_numbers(), assign_number(), AssignRequest, get_my_number() (+87 more)
 
 ### Community 15 - "devDependencies"
 Cohesion: 0.11
@@ -463,8 +461,8 @@ Cohesion: 0.08
 Nodes (32): ConversationEngine, _decide_stage(), TypedDict, The conversation engine: a LangGraph state machine that drives the call. Per…, Advance the conversation by one user turn. Updates `state` in place (stage,…, Ephemeral state passed through the graph for a single turn., Pure transition logic. Order matters: end > objection > booking > qualify., Extract slots + output variables + intent flags from the latest user message. (+24 more)
 
 ### Community 29 - "utcnow"
-Cohesion: 0.06
-Nodes (36): Appointment model — generic scheduling. Appointments are generic. Solar uses…, Audit log model. Immutable record of actions in the system. Used for security,…, datetime, Base Pydantic models for MongoDB documents. MongoDB uses _id (ObjectId) as the…, utcnow(), Call model — an outbound AI call record. Each call is scoped to an…, CampaignLead junction model. Represents enrollment of a Lead in a specific…, Campaign model. A campaign is a scheduled outbound calling operation that dials… (+28 more)
+Cohesion: 0.05
+Nodes (37): Appointment model — generic scheduling. Appointments are generic. Solar uses…, Audit log model. Immutable record of actions in the system. Used for security,…, datetime, Base Pydantic models for MongoDB documents. MongoDB uses _id (ObjectId) as the…, utcnow(), Call model — an outbound AI call record. Each call is scoped to an…, CampaignLead junction model. Represents enrollment of a Lead in a specific…, Campaign model. A campaign is a scheduled outbound calling operation that dials… (+29 more)
 
 ### Community 30 - "api.ts"
 Cohesion: 0.04
@@ -596,7 +594,7 @@ Nodes (13): AgentVersion, BusinessTemplate, Agent builder models. An Agent is an
 
 ### Community 62 - "new_id"
 Cohesion: 0.05
-Nodes (32): add_turn(), finalize_call(), Persist final slots/score on lead, close call. Returns lead score., new_id(), Generate a new UUID4 string., Call, An outbound AI call record., field_validator (+24 more)
+Nodes (31): add_turn(), finalize_call(), Persist final slots/score on lead, close call. Returns lead score., new_id(), Generate a new UUID4 string., Call, An outbound AI call record., field_validator (+23 more)
 
 ### Community 63 - "SubscriptionPlan"
 Cohesion: 0.12
@@ -787,8 +785,8 @@ Cohesion: 0.12
 Nodes (7): M31 tests — Production Deployment Configuration. Tests: 1. Dockerfile exists…, TestDeploymentModulesImportable, TestWorkerShutdown, CampaignWorker, Initiate the actual call and handle completion., Find running campaigns and dispatch calls., Try to start a new call for this campaign.
 
 ### Community 114 - "CampaignRepository"
-Cohesion: 0.11
-Nodes (9): CampaignRepository, Campaign, All running/scheduled campaigns — for worker polling., Atomic status update scoped to org., AsyncIOMotorDatabase, AsyncIOMotorDatabase, M13 tests — Campaign Engine. Tests: 1. Campaign model — status validation, FSM…, TestCampaignRepository (+1 more)
+Cohesion: 0.10
+Nodes (11): CampaignRepository, Campaign, All running/scheduled campaigns — for worker polling., Atomic status update scoped to org., AsyncIOMotorDatabase, AsyncIOMotorDatabase, Unit and API tests for Campaign CRUD operations., run() (+3 more)
 
 ### Community 115 - "Design Document: Full Razorpay Integration & Admin Manual Approval Mode for Subscriptions"
 Cohesion: 0.12
@@ -815,8 +813,8 @@ Cohesion: 0.13
 Nodes (13): PhoneNumberAssignment, Phone number inventory models. IMPORTANT ABSTRACTION: - Customers see: number…, Immutable record of a number assignment to an org. History tracking., PhoneNumberAssignmentRepository, Phone number inventory and assignment repositories. Concurrent reservation…, Phone number service — inventory management. All operations record an immutable…, # NOTE: provider, provider_resource_id, provider_metadata,…, Tests for CallService Plivo outbound dispatch and failure handling. (+5 more)
 
 ### Community 121 - "TimestampedModel"
-Cohesion: 0.07
-Nodes (30): DocumentModel with created_at and updated_at., TimestampedModel, OrganizationCreate, OrganizationPublic, Input schema for creating an organization (used by signup)., Safe organization response (no sensitive internal fields)., Tool models — generic callable actions the AI agent can invoke during a call.…, Organization-level tool configuration (enable/disable, override params). (+22 more)
+Cohesion: 0.06
+Nodes (33): DocumentModel with created_at and updated_at., TimestampedModel, OrganizationCreate, OrganizationPublic, OrganizationSettings, Mutable settings nested inside an organization., Input schema for creating an organization (used by signup)., Safe organization response (no sensitive internal fields). (+25 more)
 
 ### Community 122 - "run"
 Cohesion: 0.18
@@ -1178,9 +1176,9 @@ Nodes (3): Execution Progress, Pre-flight Plan Scan, SDD ledger — plan: docs/s
 Cohesion: 0.33
 Nodes (5): Changed files and regression checks, Changes in this pass, Measure before claiming provider parity, Remaining limitations and next steps, Voice latency and interruption validation
 
-### Community 259 - "_make_redis"
-Cohesion: 0.33
-Nodes (3): _get_mock_db(), _make_redis(), In-memory Redis mock.
+### Community 259 - "test_m13_campaigns.py"
+Cohesion: 0.24
+Nodes (4): _get_mock_db(), _make_redis(), M13 tests — Campaign Engine. Tests: 1. Campaign model — status validation, FSM…, In-memory Redis mock.
 
 ### Community 260 - "admin.py"
 Cohesion: 0.08
@@ -1330,14 +1328,6 @@ Nodes (3): _fund_org(), M6 tests — Credit Reservation + Settlement. Tests: 1. 
 Cohesion: 0.36
 Nodes (3): _create_call(), SKIP, TestTranscriptsHTTP
 
-### Community 312 - "OrganizationSettings"
-Cohesion: 0.33
-Nodes (3): OrganizationSettings, Mutable settings nested inside an organization., test_organization_settings_defaults()
-
-### Community 313 - "test_campaign_crud.py"
-Cohesion: 0.38
-Nodes (3): Unit and API tests for Campaign CRUD operations., run(), TestCampaignCRUD
-
 ### Community 315 - "test_m42_runtime_providers.py"
 Cohesion: 0.38
 Nodes (6): M42 runtime wiring tests. The production change these tests protect: active…, A rotated credential must not be selected over the current active one., A corrupt/manual DB edit cannot route inference to Ollama or another local…, run(), test_runtime_loads_active_gemini_from_encrypted_configuration(), test_runtime_rejects_local_provider_even_if_database_marks_it_active()
@@ -1362,17 +1352,17 @@ Nodes (3): AsyncIOMotorDatabase, Seed demo phone numbers for DEMO_MODE. Idempote
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `get_db()` connect `get_db` to `AuditLogRepository`, `admin.py`, `vobiz_voice`, `PhoneNumberService`, `dashboard.py`, `CurrentUser`, `transcripts.py`, `admin_create_pack`, `FastAPI`, `v1/billing.py`, `appointments.py`, `agents.py`, `backend/telephony/plivo.py`, `billing_portal.py`, `admin_update_billing_settings`, `analytics.py`, `calls.py`, `ProviderOpsService`, `leads.py`, `repository.py`, `HTTPException`, `UsageService`, `test_password_update.py`, `new_id`, `backend/telephony/vobiz.py`, `backend/telephony/twilio.py`, `credits.py`, `subscriptions.py`, `BrowserTransport`, `main.py`, `CampaignWorker`?**
+- **Why does `get_db()` connect `get_db` to `AuditLogRepository`, `admin.py`, `vobiz_voice`, `v1/auth.py`, `dashboard.py`, `CurrentUser`, `transcripts.py`, `admin_create_pack`, `FastAPI`, `v1/billing.py`, `appointments.py`, `agents.py`, `backend/telephony/plivo.py`, `billing_portal.py`, `admin_update_billing_settings`, `analytics.py`, `calls.py`, `ProviderOpsService`, `leads.py`, `repository.py`, `HTTPException`, `UsageService`, `test_password_update.py`, `new_id`, `backend/telephony/vobiz.py`, `backend/telephony/twilio.py`, `credits.py`, `subscriptions.py`, `BrowserTransport`, `main.py`, `CampaignWorker`?**
   _High betweenness centrality (0.076) - this node is a cross-community bridge._
-- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `AuditLogRepository`, `test_m12_leads.py`, `test_m4_payment.py`, `test_m1_mongodb.py`, `test_m26_provider_ops.py`, `FastAPI`, `test_m14_preflight.py`, `CallingPack`, `test_m3_subscriptions.py`, `billing_repo.py`, `test_m19_knowledge.py`, `CreditService`, `test_m5_wallet.py`, `ModelTestService`, `UsageEventRepository`, `test_m15_calls.py`, `build_demo_registry`, `test_m33_e2e_acceptance.py`, `Campaign`, `utcnow`, `billing_portal.py`, `VoiceProfileRepository`, `TranscriptRepository`, `test_m20_post_call.py`, `leads.py`, `DocumentModel`, `HandoffService`, `AgentRepository`, `repository.py`, `test_m17_tools_handoff.py`, `.enroll_lead`, `TestCustomerBillingPortal`, `Appointment`, `ReconciliationService`, `OrganizationSettings`, `PostCallService`, `PhoneNumber`, `seed_templates`, `SubscriptionPlan`, `PaymentRepository`, `test_m23_customer_billing.py`, `SubscriptionPlanRepository`, `Lead`, `LeadRepository`, `SubscriptionRepository`, `CallingPackRepository`, `UserRepository`, `WalletService`, `PhoneNumberRepository`, `DNCRepository`, `run`, `OrderRepository`, `BaseRepository`, `run`, `CampaignRepository`, `phone_number_repo.py`, `TimestampedModel`, `AgentVersionRepository`?**
+- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `AuditLogRepository`, `test_m12_leads.py`, `test_m13_campaigns.py`, `test_m4_payment.py`, `test_m1_mongodb.py`, `test_m26_provider_ops.py`, `FastAPI`, `test_m14_preflight.py`, `CallingPack`, `test_m3_subscriptions.py`, `billing_repo.py`, `test_m19_knowledge.py`, `CreditService`, `test_m5_wallet.py`, `ModelTestService`, `UsageEventRepository`, `test_m15_calls.py`, `build_demo_registry`, `test_m33_e2e_acceptance.py`, `Campaign`, `utcnow`, `billing_portal.py`, `VoiceProfileRepository`, `TranscriptRepository`, `test_m20_post_call.py`, `leads.py`, `DocumentModel`, `HandoffService`, `AgentRepository`, `repository.py`, `test_m17_tools_handoff.py`, `.enroll_lead`, `TestCustomerBillingPortal`, `Appointment`, `ReconciliationService`, `PostCallService`, `PhoneNumber`, `seed_templates`, `SubscriptionPlan`, `PaymentRepository`, `test_m23_customer_billing.py`, `SubscriptionPlanRepository`, `Lead`, `LeadRepository`, `SubscriptionRepository`, `CallingPackRepository`, `UserRepository`, `WalletService`, `PhoneNumberRepository`, `DNCRepository`, `run`, `OrderRepository`, `BaseRepository`, `run`, `phone_number_repo.py`, `TimestampedModel`, `AgentVersionRepository`?**
   _High betweenness centrality (0.070) - this node is a cross-community bridge._
-- **Why does `CurrentUser` connect `CurrentUser` to `AuditLogRepository`, `admin.py`, `PhoneNumberService`, `dashboard.py`, `transcripts.py`, `admin_create_pack`, `FastAPI`, `v1/billing.py`, `CreditService`, `ModelTestService`, `appointments.py`, `agents.py`, `billing_portal.py`, `admin_update_billing_settings`, `calls.py`, `test_m29_kb_export_import.py`, `leads.py`, `get_db`, `HTTPException`, `UsageService`, `test_m42_runtime_providers.py`, `test_password_update.py`, `credits.py`, `subscriptions.py`, `test_m28_agent_export_import.py`, `create_token_pair`?**
+- **Why does `CurrentUser` connect `CurrentUser` to `AuditLogRepository`, `admin.py`, `v1/auth.py`, `dashboard.py`, `transcripts.py`, `admin_create_pack`, `FastAPI`, `v1/billing.py`, `CreditService`, `ModelTestService`, `appointments.py`, `agents.py`, `billing_portal.py`, `admin_update_billing_settings`, `calls.py`, `test_m29_kb_export_import.py`, `leads.py`, `get_db`, `HTTPException`, `UsageService`, `test_m42_runtime_providers.py`, `test_password_update.py`, `credits.py`, `subscriptions.py`, `test_m28_agent_export_import.py`, `create_token_pair`?**
   _High betweenness centrality (0.040) - this node is a cross-community bridge._
 - **Are the 151 inferred relationships involving `HTTPException` (e.g. with `call_detail()` and `admin_adjust_wallet()`) actually correct?**
   _`HTTPException` has 151 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `MRRData`, `MRRMovement`, `RevenueData` to the rest of the system?**
   _620 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AuditLogRepository` be split into smaller, more focused modules?**
-  _Cohesion score 0.0696969696969697 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11330049261083744 - nodes in this community are weakly interconnected._
 - **Should `CloudProviderRuntime` be split into smaller, more focused modules?**
   _Cohesion score 0.053821800090456805 - nodes in this community are weakly interconnected._
