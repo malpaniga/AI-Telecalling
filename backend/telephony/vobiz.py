@@ -530,8 +530,8 @@ async def ws_vobiz(ws: WebSocket):
                 await call_broadcaster.broadcast(call_id, {"type": "hangup", "reason": "call_disconnected", "call_id": call_id})
             except Exception:
                 pass
-        # Finalize call status and settle credits / campaign counters if call record exists
-        if call_id and db is not None:
+        # Fallback finalize call status and settle credits / campaign counters only if session was never started
+        if call_id and db is not None and session is None:
             try:
                 from backend.repositories.call_repo import CallRepository
                 c_doc = await CallRepository(db).find_by_id(call_id)

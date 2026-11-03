@@ -323,16 +323,69 @@ class CallService:
         if call is None:
             raise ValueError(f"Call {call_id} not found")
 
-        # Idempotency guard: only skip if this call has already been finalized by CallService
+        # Idempotency guard: if this call has already been finalized by CallService,
+        # skip duplicate billing settlement and campaign concurrency updates.
+        # BUT if subsequent post-call evaluation arrives (e.g. from CallSession.finalize with
+        # score, summary, qualification, or updated outcome), enrich the call and lead records.
         call_raw = await self.db["calls"].find_one({"_id": call_id})
         if call_raw and call_raw.get("call_service_finalized"):
-            log.info("call %s already finalized by CallService; skipping duplicate finalize", call_id)
+            enrichment_updates = {}
+            if score and score > (call_raw.get("score") or 0):
+                enrichment_updates["score"] = score
+            if summary and summary != call_raw.get("summary"):
+                enrichment_updates["summary"] = summary
+            if qualification and isinstance(qualification, dict):
+                existing_qual = call_raw.get("qualification") or {}
+                merged_qual = {**existing_qual, **{k: v for k, v in qualification.items() if v is not None}}
+                if merged_qual != existing_qual:
+                    enrichment_updates["qualification"] = merged_qual
+            if outcome and outcome not in ("contacted", "unknown", None) and (call_raw.get("outcome") in ("contacted", None, "", "unknown") or call_raw.get("outcome") != outcome):
+                enrichment_updates["outcome"] = outcome
+            if avg_latency_ms and not call_raw.get("avg_latency_ms"):
+                enrichment_updates["avg_latency_ms"] = avg_latency_ms
+            if turn_count and not call_raw.get("turn_count"):
+                enrichment_updates["turn_count"] = turn_count
+            if recording_url and not call_raw.get("recording_url"):
+                enrichment_updates["recording_url"] = recording_url
+
+            if enrichment_updates:
+                enrichment_updates["updated_at"] = utcnow()
+                await self.db["calls"].update_one(
+                    {"_id": call_id, "organization_id": organization_id},
+                    {"$set": enrichment_updates},
+                )
+                effective_outcome = enrichment_updates.get("outcome") or call_raw.get("outcome")
+                if call.lead_id and (enrichment_updates.get("score") or enrichment_updates.get("qualification") or enrichment_updates.get("outcome")):
+                    lead_status_map = {
+                        "qualified": "qualified",
+                        "not_interested": "not_interested",
+                        "callback": "callback",
+                        "appointment_set": "qualified",
+                        "no_answer": "failed",
+                        "failed": "failed",
+                        "transferred": "contacted",
+                        "booked": "qualified",
+                        "contacted": "contacted",
+                    }
+                    new_lead_status = lead_status_map.get(effective_outcome or "", "contacted")
+                    qual_for_lead = enrichment_updates.get("qualification") or call_raw.get("qualification")
+                    await self.lead_repo.update_status(
+                        call.lead_id, organization_id, new_lead_status,
+                        qualification=qual_for_lead,
+                        score=enrichment_updates.get("score", call_raw.get("score", 0)),
+                    )
+                log.info("call %s already finalized by CallService; enriched with post-call evaluation: %s",
+                         call_id, list(enrichment_updates.keys()))
+            else:
+                log.info("call %s already finalized by CallService; skipping duplicate finalize", call_id)
+
+            updated_call = await self.call_repo.get_for_org(call_id, organization_id) or call
             return {
                 "call_id": call_id,
-                "status": call.status,
-                "outcome": call.outcome,
-                "duration_s": call.duration_s,
-                "credits_consumed": call.credits_consumed,
+                "status": updated_call.status,
+                "outcome": updated_call.outcome,
+                "duration_s": updated_call.duration_s,
+                "credits_consumed": updated_call.credits_consumed,
             }
 
         # Calculate duration

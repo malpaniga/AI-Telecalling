@@ -197,6 +197,73 @@ class TestCampaignCallCompletion:
 
         run(_t())
 
+    def test_finalize_call_enriches_already_finalized_call_with_post_call_evaluation(self):
+        """When carrier hangup webhook finalizes first (outcome=contacted, score=0, summary=None),
+        a subsequent CallSession.finalize call properly enriches the call and lead with score,
+        summary, qualification, and updated outcome without double-incrementing campaign counters."""
+        async def _t():
+            campaign, leads = await self._setup_data(org_id="org-c2b", num_leads=2)
+            await self.camp_svc.start_campaign(campaign.id, "org-c2b", skip_preflight=True)
+
+            await self.camp_svc.acquire_call_slot(campaign.id)
+            res = await self.call_svc.initiate_call(
+                organization_id="org-c2b",
+                to_number=leads[0].phone,
+                from_number=campaign.calling_number,
+                campaign_id=campaign.id,
+                lead_id=leads[0].id,
+                slot_already_acquired=True,
+            )
+            call_id = res["call_id"]
+
+            # 1. Carrier hangup webhook arrives first
+            await self.call_svc.finalize_call(
+                call_id, "org-c2b",
+                status="completed",
+                outcome="contacted",
+                duration_s=47,
+                score=0,
+                summary=None,
+            )
+            call1 = await self.call_repo.get_for_org(call_id, "org-c2b")
+            assert call1.status == "completed"
+            assert call1.outcome == "contacted"
+            assert call1.score == 0
+            assert call1.summary is None
+            camp1 = await self.camp_svc.get_campaign(campaign.id, "org-c2b")
+            assert camp1.leads_dialed == 1
+            assert camp1.leads_completed == 1
+
+            # 2. CallSession.finalize finishes 1s later with post-call evaluation
+            await self.call_svc.finalize_call(
+                call_id, "org-c2b",
+                status="completed",
+                outcome="qualified",
+                score=55,
+                summary="Customer stated electricity bill is ~₹1000-2000.",
+                qualification={"monthly_bill": "₹1000-2000"},
+            )
+            call2 = await self.call_repo.get_for_org(call_id, "org-c2b")
+            assert call2.status == "completed"
+            assert call2.outcome == "qualified"
+            assert call2.score == 55
+            assert call2.summary == "Customer stated electricity bill is ~₹1000-2000."
+            assert call2.qualification == {"monthly_bill": "₹1000-2000"}
+
+            # Campaign counters must not double-increment
+            camp2 = await self.camp_svc.get_campaign(campaign.id, "org-c2b")
+            assert camp2.leads_dialed == 1
+            assert camp2.leads_completed == 1
+
+            # Lead record must be updated with qualified status and score
+            lead_repo = self.call_svc.lead_repo
+            updated_lead = await lead_repo.find_by_id(leads[0].id)
+            assert updated_lead.status == "qualified"
+            assert updated_lead.score == 55
+            assert updated_lead.qualification == {"monthly_bill": "₹1000-2000"}
+
+        run(_t())
+
     def test_call_session_finalize_integrates_with_campaign(self, monkeypatch):
         """CallSession.finalize() directly finalizes the SaaS call without hitting legacy repo,
         updating campaign counters, releasing slots, and completing the campaign.

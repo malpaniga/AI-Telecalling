@@ -469,8 +469,8 @@ async def ws_plivo(ws: WebSocket):
             except Exception as exc:
                 log.warning("Session finalize error for call_id=%s: %s", call_id, exc)
 
-        # Finalize and settle credits / campaign counters for call in DB
-        if call_id and db is not None:
+        # Fallback finalize call status and settle credits / campaign counters only if session was never started
+        if call_id and db is not None and session is None:
             try:
                 call_doc = await db.calls.find_one({"_id": call_id})
                 if call_doc:

@@ -1,67 +1,67 @@
 # Graph Report - saas  (2026-11-03)
 
 ## Corpus Check
-- 416 files · ~339,272 words
+- 416 files · ~339,731 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 6417 nodes · 13963 edges · 300 communities (251 shown, 49 thin omitted)
+- 6419 nodes · 13966 edges · 328 communities (270 shown, 58 thin omitted)
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 985 edges (avg confidence: 0.57)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5d304057`
+- Built from commit: `ecd36a03`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - AppointmentRepository
-- organizations.py
+- AuditLogRepository
 - TimestampedModel
 - MVP_CHECKPOINTS.md
 - PreflightService
-- model_directory_service.py
+- timedelta
 - rate_limit.py
 - dashboard.py
-- ModelTestService
-- v1/model_directory.py
+- test_m42_cloud_providers.py
+- CurrentUser
 - button.tsx
-- api.ts
+- input.tsx
 - UsageService
 - spinner.tsx
 - FastAPI
 - devDependencies
-- test_m5_wallet.py
+- CallingPack
 - v1/billing.py
-- test_m33_e2e_acceptance.py
+- test_m4_payment.py
 - CallRepository
 - CreditService
-- run
+- test_m5_wallet.py
 - ModelDirectoryService
-- AppointmentService
+- appointments.py
 - TTSEngine
 - agents.py
-- TestE2EHappyPath
-- models/page.tsx
+- test_m33_e2e_acceptance.py
+- auth-context.tsx
 - ConversationEngine
-- BaseRepository
-- ModelSetupWizard.tsx
+- new_id
+- api.ts
 - billing_portal.py
-- AnalyticsService
+- analytics.py
 - calls.py
 - run
 - run
 - providers/base.py
-- call_session.py
+- stt.py
 - TestSuperAdmin
-- leads.py
+- LeadService
 - 3. Detailed Architecture & Specifications
-- v1/auth.py
+- ModelTestService
 - run
 - TestFlyToml
-- Call
+- test_m20_post_call.py
 - CampaignService
-- HTTPException
+- KnowledgeService
 - dependencies
 - routes.py
 - test_m17_tools_handoff.py
@@ -76,8 +76,8 @@
 - AgentService
 - OrganizationRepository
 - test_test_agent.py
-- SessionStore
-- utcnow
+- Transport
+- DemoSeedService
 - SubscriptionPlan
 - backend/telephony/vobiz.py
 - AI Telecalling SaaS — Architecture Reference
@@ -89,7 +89,7 @@
 - release_credits
 - SubscriptionPlanRepository
 - subscriptions.py
-- test_m14_preflight.py
+- TestPreflightChecks
 - Issues Log — post-Sarvam call testing (2026-07)
 - VADEndpointer
 - CallSession
@@ -101,44 +101,44 @@
 - run
 - test_m8_provider_abstraction.py
 - SubscriptionRepository
-- test_calling_packs_crud.py
-- SubscriptionService
+- CallingPackRepository
+- build_demo_registry
 - SecurityAuditService
 - run
 - PhoneNumberRepository
 - VobizTelephonyProvider
 - DNCRepository
-- hash_password
+- call_session.py
 - run
 - PlivoTelephonyProvider
 - Real Estate Voice Agent — Execution Plan
-- test_m30_demo_mode.py
+- .__init__
 - TestAgentHTTP
 - CallAudioRecorder
 - TestSecurityAudit
-- PricingSyncService
+- BaseRepository
 - main.py
 - TestLeadsHTTP
-- LeadService
+- _apply_mapping
 - run
 - LLMClient
-- gemini.py
+- GeminiLLMProvider
 - CampaignLeadRepository
 - Settings
 - CallEventBroadcaster
-- new_id
+- DocumentModel
 - seed_default_plans
-- CampaignWorker
+- TestAnalyticsService
 - CampaignRepository
 - Design Document: Full Razorpay Integration & Admin Manual Approval Mode for Subscriptions
 - seed_templates
 - LatencyMetrics
 - TestPhoneNumberHTTP
-- EntitlementCheck
-- PhoneNumber
-- OrganizationSettings
-- llm/groq.py
-- test_m13_campaigns.py
+- SubscriptionService
+- phone_number_repo.py
+- TestModels
+- AppointmentService
+- _make_redis
 - API-to-UI Mapping — Super Admin Dashboard
 - voice-playback.test.cjs
 - create_token_pair
@@ -146,7 +146,7 @@
 - test_m12_leads.py
 - Review Focus
 - Detailed Data Model & API Changes
-- test_m16_barge_in_latency.py
+- run
 - TestAnalyticsHTTP
 - test_voice_runtime_regressions.py
 - models.py
@@ -155,9 +155,9 @@
 - Design: Multi-Step Campaign Creation Wizard & Enhanced Contact Filtering
 - Design: Multi-Campaign Leads, Custom Column Variable Mapping & Dynamic Prompt Interpolation
 - TestBillingHTTP
-- Campaign
+- TestCampaignModel
 - FakeRedis
-- BillingPage
+- providers/page.tsx
 - TestDemoHTTP
 - MockPaymentProvider
 - Review Focus
@@ -170,21 +170,21 @@
 - TestMultiTenancyIsolation
 - TestLeadFilters
 - run.py
-- CallingHours
+- Campaign
 - backend/telephony/plivo.py
 - AI Telecalling SaaS — Development Progress
 - Admin UI Implementation Plan — M40 FEAT-005A
-- AdminOrgDetailPage
-- seed_default_packs
+- AnalyticsService
+- run
 - TestCallPipelinePreserved
-- PaymentRepository
-- test_m20_post_call.py
+- TestAppointmentsHTTP
+- TranscriptRepository
 - HandoffService
 - CredentialStore
 - VoiceProfileVersionRepository
 - LeadsPage
 - datetime
-- elevenlabs_v2.py
+- ElevenLabsTTSProviderV2
 - TestRBACHTTP
 - _exists
 - TestCreditHTTP
@@ -192,20 +192,20 @@
 - CampaignDetailPage
 - AdminPhoneNumbersPage
 - Review Focus
-- CurrentUser
-- CallingPackRepository
+- HTTPException
+- test_m14_preflight.py
 - TestEnvExampleCompleteness
 - NewCampaignWizardPage
 - test_m31_deployment.py
 - security_audit
 - Review Focus
-- .initiate_call
+- ProviderOpsService
 - TestDockerfile
 - RazorpayProvider
 - GoogleWaveNetTTSProvider
 - AdminOrgsPage
 - run
-- User
+- test_password_update.py
 - test_m32_documentation.py
 - _read
 - date-fns
@@ -215,11 +215,11 @@
 - TestMVPProgress
 - TestReadme
 - Provider Configuration
-- (auth)/layout.tsx
+- app/layout.tsx
 - 5. PROVIDER ABSTRACTION
 - TestGitignore
 - _read
-- AdminSubscriptionsPage
+- Appointment
 - Review Focus
 - ui.tsx
 - 29. AUTONOMOUS CHECKPOINT EXECUTION CONTRACT
@@ -229,7 +229,7 @@
 - Local Development
 - Testing
 - 36. DOCUMENTATION FILES MAINTAINED DURING EXECUTION
-- TestCampaignCallCompletion
+- CallService
 - Subscription
 - Adding a New Provider
 - Installation
@@ -239,7 +239,7 @@
 - 4. MULTI-TENANCY
 - rules/graphify.md
 - workflows/graphify.md
-- seed_demo_numbers
+- PhoneNumber
 - next.config.mjs
 - next-env.d.ts
 - tailwind.config.ts
@@ -248,17 +248,18 @@
 - .export_knowledge_base
 - TestManualBillingAPI
 - Global Constraints
-- AgentRepository
+- BusinessTemplateRepository
 - AdminCallingPacksPage
 - Review Focus
 - SDD ledger — plan: docs/superpowers/plans/2026-10-27-simplified-credit-system.md
 - Voice latency and interruption validation
 - test_m23_customer_billing.py
 - get_db
-- test_m4_payment.py
+- ToolRegistry
+- WebhookEventRepository
 - Design: Agent Multi-KB Selector and Grounded Response Injection
 - Review Focus
-- transcripts.py
+- TelephonyProvider
 - next
 - react-hot-toast
 - progress.md
@@ -266,33 +267,60 @@
 - test_m3_subscriptions.py
 - TestCreditSettle
 - recharts
+- test_m16_barge_in_latency.py
 - normalize_phone
+- campaigns/[id]/page.tsx
 - interpolate_template
 - AgentsPage
 - TestEnvExample
-- TestCallsHTTP
-- AdminVoiceProfilesPage
-- providers/page.tsx
+- test_m15_calls.py
+- Transcript
+- TestWalletHTTP
 - Review Focus
 - TestMVPValidation
 - ImportAgentModal
 - ImportKbModal
 - AppointmentsPage
+- soniox.py
 - VoiceProfileService
 - Review Focus
+- SarvamTTSProvider
 - TestPreflightHTTP
 - TestPlivoCallDispatch
+- ._get_redis
 - TwilioProvider
 - TestConcurrentReservations
 - Design: Plivo Phone Number Provider & Multi-Organization Support
+- PostCallService
+- AgentVersionRepository
+- WalletService
 - TestSecurityHTTP
+- TestHandoffService
+- TestTranscriptsHTTP
 - _make_mock_redis
 - TestVobizCallDispatch
+- VoiceProfileRepository
 - TestCreditConservation
+- FakeRedis
 - test_agent_kb_integration.py
 - test_m6_credit_reservation.py
+- MockTelephonyProvider
+- .list_active
+- test_browser_test_session.py
 - SKIP
 - CloudProviderRuntime
+- _slugify
+- LatencyService
+- test_campaign_crud.py
+- TestTransferToHuman
+- UpdateBillingSettingsRequest
+- TestTokenRefresh
+- StepAgent
+- .create_campaign
+- InlineLeadUploadModal
+- LeadsImportPage
+- TestCampaignLeadsAPI
+- _get_mock_db
 
 ## God Nodes (most connected - your core abstractions)
 1. `get_db()` - 283 edges
@@ -309,31 +337,31 @@
 ## Surprising Connections (you probably didn't know these)
 - `ConversationEngine` --uses--> `LLMClient`  [INFERRED]
   backend/agent/engine.py → backend/agent/llm.py
+- `ConversationEngine` --uses--> `ConversationState`  [INFERRED]
+  backend/agent/engine.py → backend/agent/state.py
 - `CallSession` --uses--> `ConversationEngine`  [INFERRED]
   backend/call_session.py → backend/agent/engine.py
 - `lifespan()` --uses--> `ConversationEngine`  [INFERRED]
   backend/main.py → backend/agent/engine.py
 - `ws_call()` --uses--> `ConversationEngine`  [INFERRED]
   backend/main.py → backend/agent/engine.py
-- `ws_plivo()` --uses--> `ConversationEngine`  [INFERRED]
-  backend/telephony/plivo.py → backend/agent/engine.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (300 total, 49 thin omitted)
+## Communities (328 total, 58 thin omitted)
 
 ### Community 0 - "AppointmentRepository"
-Cohesion: 0.06
-Nodes (19): Appointment, field_validator, A generic appointment record., AppointmentRepository, Appointment, datetime, Upcoming scheduled/confirmed appointments., Mark existing as rescheduled and create a new one. (+11 more)
+Cohesion: 0.19
+Nodes (6): AppointmentRepository, Appointment, datetime, Upcoming scheduled/confirmed appointments., Mark existing as rescheduled and create a new one., TestAppointmentRepository
 
-### Community 1 - "organizations.py"
-Cohesion: 0.16
-Nodes (19): create_organization(), get_organization(), list_organizations(), OrgCreateRequest, OrgUpdateRequest, BaseModel, get, Organization (+11 more)
+### Community 1 - "AuditLogRepository"
+Cohesion: 0.07
+Nodes (40): AuditLog, create_organization(), get_organization(), list_organizations(), OrgCreateRequest, OrgUpdateRequest, BaseModel, get (+32 more)
 
 ### Community 2 - "TimestampedModel"
-Cohesion: 0.07
-Nodes (31): DocumentModel with created_at and updated_at., TimestampedModel, KnowledgeBase, KnowledgeBaseAgent, KnowledgeDocument, Knowledge base models — minimal, tenant-safe. Per spec: "Do NOT over-engineer…, A named collection of knowledge documents., A single knowledge document with versioning. (+23 more)
+Cohesion: 0.06
+Nodes (32): DocumentModel with created_at and updated_at., TimestampedModel, KnowledgeBase, KnowledgeBaseAgent, KnowledgeDocument, Knowledge base models — minimal, tenant-safe. Per spec: "Do NOT over-engineer…, A named collection of knowledge documents., A single knowledge document with versioning. (+24 more)
 
 ### Community 3 - "MVP_CHECKPOINTS.md"
 Cohesion: 0.03
@@ -343,9 +371,9 @@ Nodes (67): 10. PHONE NUMBER PRINCIPLES, 11. AI VOICE PROFILE PRINCIPLES, 12. BU
 Cohesion: 0.15
 Nodes (11): PreflightCheck, PreflightResult, PreflightService, Any, AsyncIOMotorDatabase, Campaign, Campaign pre-flight validation service. Before a campaign starts, ALL of these…, Run all pre-flight checks for a campaign. Returns PreflightResult with all… (+3 more)
 
-### Community 5 - "model_directory_service.py"
-Cohesion: 0.06
-Nodes (28): Fernet-based credential encryption for stored provider API keys. The encryption…, AIModelCatalogue, ProviderCredential, MongoDB document models for the AI Models Directory. Three collections:…, One entry per (provider_name, model_id) in the catalogue., Fernet-encrypted credential for a provider. Multiple rows per provider_name are…, AIModelCatalogueRepo, AIModelCatalogue (+20 more)
+### Community 5 - "timedelta"
+Cohesion: 0.11
+Nodes (10): CreditLot, A batch of credits from a single purchase or grant. Consumed FIFO by billing.…, _catalogue_to_dict(), AIModelCatalogue, Return a single catalogue entry or raise LookupError., Serialize catalogue entry. No credentials present in this model., Return catalogue entries with a pricing_stale flag. Entries whose…, Platform-wide latency stats from recent calls. (+2 more)
 
 ### Community 6 - "rate_limit.py"
 Cohesion: 0.17
@@ -353,23 +381,23 @@ Nodes (15): _check_rate_limit(), _client_ip(), Request, rate_limit_api(), rate_l
 
 ### Community 7 - "dashboard.py"
 Cohesion: 0.06
-Nodes (35): dashboard(), dashboard_analytics(), dashboard_appointments(), dashboard_calls(), dashboard_campaigns(), dashboard_credits(), dashboard_leads(), _get_analytics() (+27 more)
+Nodes (34): dashboard(), dashboard_analytics(), dashboard_appointments(), dashboard_calls(), dashboard_campaigns(), dashboard_credits(), dashboard_leads(), _get_analytics() (+26 more)
 
-### Community 8 - "ModelTestService"
-Cohesion: 0.02
-Nodes (90): OllamaLLMClient, Async client for a locally-running Ollama server. Ollama must be started…, Return True if the Ollama server is responding on /api/tags., Call /api/chat with the configured model and messages. Raises RuntimeError if…, GeminiLLMProvider, Gemini LLM adapter using google-genai SDK. Pass api_key at construction time;…, GroqLLMProvider, Fetch models dynamically from the official Groq API using this client. (+82 more)
+### Community 8 - "test_m42_cloud_providers.py"
+Cohesion: 0.04
+Nodes (63): GroqLLMProvider, Any, Exception, Groq LLM provider adapter. Uses the official groq Python SDK (OpenAI-compatible…, Streaming chat completion — yields text deltas., Fetch models dynamically from the official Groq API using this client., Return a sanitized error message — never includes the API key., Groq chat-completion adapter. api_key is required and must come from the… (+55 more)
 
-### Community 9 - "v1/model_directory.py"
-Cohesion: 0.09
-Nodes (42): activate_configuration(), configure_provider(), ConfigureProviderBody, delete_configuration(), delete_credential(), FallbackBody, get_catalogue_entry(), get_configuration() (+34 more)
+### Community 9 - "CurrentUser"
+Cohesion: 0.06
+Nodes (57): demo_status(), get, post, Allow if DEMO_MODE=true OR caller is platform admin., Check demo mode status and seeding state., Seed the demo environment. Pass force=true to re-seed., _require_demo_or_admin(), seed_demo() (+49 more)
 
 ### Community 10 - "button.tsx"
-Cohesion: 0.05
-Nodes (38): AdminSettingsPage(), InlineLeadUploadModal(), handleClose(), handleImport(), resetState(), InlineLeadUploadModalProps, MAPPING_OPTIONS, PreviewData (+30 more)
+Cohesion: 0.07
+Nodes (43): AdminAnalyticsPage(), DailyEntry, MRRData, MRRMovement, PERIOD_OPTIONS, RevenueData, UsageSummary, AnalyticsPage() (+35 more)
 
-### Community 11 - "api.ts"
-Cohesion: 0.04
-Nodes (58): ChatMessage, StudioTab, TestTab, LANGUAGE_OPTIONS, NewAgentPage(), Step, TONE_OPTIONS, KnowledgePage() (+50 more)
+### Community 11 - "input.tsx"
+Cohesion: 0.07
+Nodes (32): ChatMessage, StudioTab, TestTab, LANGUAGE_OPTIONS, NewAgentPage(), Step, TONE_OPTIONS, InlineLeadUploadModalProps (+24 more)
 
 ### Community 12 - "UsageService"
 Cohesion: 0.13
@@ -377,135 +405,135 @@ Nodes (22): admin_usage_summary(), list_usage_events(), provider_aggregates(), p
 
 ### Community 13 - "spinner.tsx"
 Cohesion: 0.08
-Nodes (68): AdminAuditLogsPage(), AuditLog, initialFormData, PackFormData, AdminDashboardPage(), Tab, AdminPaymentsPage(), Tab (+60 more)
+Nodes (62): AdminAuditLogsPage(), AuditLog, initialFormData, PackFormData, Tab, AdminPaymentsPage(), Tab, AgentItem (+54 more)
 
 ### Community 14 - "FastAPI"
 Cohesion: 0.03
-Nodes (88): active_reservations(), admin_active_reservations(), check_credits(), get, Credit reservation/settlement API — internal call billing endpoints. These are…, Pre-flight credit check. No state change., List active call credit reservations for the current org., Platform admin: view active reservations for any org. (+80 more)
+Nodes (92): change_password(), login(), LoginRequest, logout(), me(), MeResponse, BaseModel, field_validator (+84 more)
 
 ### Community 15 - "devDependencies"
 Cohesion: 0.11
 Nodes (19): autoprefixer, eslint, eslint-config-next, devDependencies, autoprefixer, eslint, eslint-config-next, postcss (+11 more)
 
-### Community 16 - "test_m5_wallet.py"
-Cohesion: 0.07
-Nodes (16): CallingPack, CreditLot, field_validator, Wallet, credit ledger, credit lots, and calling pack models. KEY RULES: - 1…, Immutable ledger record. Never updated after creation., A batch of credits from a single purchase or grant. Consumed FIFO by billing.…, A calling credit pack offered for purchase., Base + bonus credits. (+8 more)
+### Community 16 - "CallingPack"
+Cohesion: 0.08
+Nodes (12): CallingPack, field_validator, Immutable ledger record. Never updated after creation., A calling credit pack offered for purchase., Base + bonus credits., Platform cost analysis only — not exposed to customers., Organization wallet. Always one per org., Wallet (+4 more)
 
 ### Community 17 - "v1/billing.py"
 Cohesion: 0.06
-Nodes (43): cancel_manual_request(), create_subscription_order(), CreateManualRequestSchema, CreateSubscriptionOrderRequest, get_invoice(), get_public_billing_settings(), _invoice_response(), list_invoices() (+35 more)
+Nodes (46): cancel_manual_request(), create_subscription_order(), CreateManualRequestSchema, CreateSubscriptionOrderRequest, get_invoice(), get_my_manual_requests(), get_public_billing_settings(), _invoice_response() (+38 more)
 
-### Community 18 - "test_m33_e2e_acceptance.py"
-Cohesion: 0.06
-Nodes (27): Invoice, ManualSubscriptionRequest, Order, Payment, PlatformPaymentSettings, field_validator, Billing models: Order, Payment, Invoice, WebhookEvent. ALL monetary amounts are…, Invoice generated after a successful payment. (+19 more)
+### Community 18 - "test_m4_payment.py"
+Cohesion: 0.05
+Nodes (31): Invoice, ManualSubscriptionRequest, Order, Payment, PlatformPaymentSettings, field_validator, Billing models: Order, Payment, Invoice, WebhookEvent. ALL monetary amounts are…, Invoice generated after a successful payment. (+23 more)
 
 ### Community 19 - "CallRepository"
-Cohesion: 0.07
-Nodes (18): CallRepository, Finalize a call. Tenant-safe (org check on update)., CallService, AsyncIOMotorDatabase, AsyncIOMotorDatabase, TestCallRecordingPersistenceAndService, run(), test_vobiz_hangup_busy_updates_status() (+10 more)
+Cohesion: 0.10
+Nodes (11): CallRepository, Finalize a call. Tenant-safe (org check on update)., run(), TestCallRecordingAPI, TestCallRecordingPersistenceAndService, run(), test_vobiz_hangup_busy_updates_status(), test_vobiz_hangup_webhook_unanswered_settles_and_updates_status() (+3 more)
 
 ### Community 20 - "CreditService"
 Cohesion: 0.05
-Nodes (58): Call model — an outbound AI call record. Each call is scoped to an…, Organization model — the top-level tenant unit. Every customer is an…, Call repository — org-scoped call records., Organization repository., CreditLotRepository, datetime, Wallet, WalletTransaction, CreditLot, and CallingPack repositories. All credit…, Active lots, sorted FIFO (oldest first for consumption). (+50 more)
+Nodes (52): CreditLotRepository, Wallet, WalletTransaction, CreditLot, and CallingPack repositories. All credit…, Move credits from available → reserved. Returns updated doc or None if…, Move credits from reserved → available (call cancelled, not billed)., Finalize call billing: remove from reserved, add difference back to available.…, Add credits to available_credits and update a lifetime counter., Remove expired credits from available_credits., Mark fully-expired lots as inactive. Returns count. (+44 more)
 
-### Community 21 - "run"
-Cohesion: 0.06
-Nodes (15): _get_mock_db(), SKIP, Buy 2000 credits → wallet=2000, ledger=+2000, lot=2000, 2000 base + 200 bonus = 2200 total credits granted, Every credit movement requires an immutable WalletTransaction., Same idempotency_key does not double-grant credits., Wallet must never go negative., Customer cannot view another org's wallet via admin endpoint. (+7 more)
+### Community 21 - "test_m5_wallet.py"
+Cohesion: 0.08
+Nodes (14): _get_mock_db(), SKIP, M5 tests — Calling Packs + Wallet. Tests: 1. CallingPack model — integer…, Buy 2000 credits → wallet=2000, ledger=+2000, lot=2000, 2000 base + 200 bonus = 2200 total credits granted, Every credit movement requires an immutable WalletTransaction., Same idempotency_key does not double-grant credits., Wallet must never go negative. (+6 more)
 
 ### Community 22 - "ModelDirectoryService"
-Cohesion: 0.03
-Nodes (72): ProviderConfigurationRepo, ProviderCredentialRepo, ProviderConfiguration, Set rotated_at=now on all non-rotated credentials for the provider. Call before…, Delete ALL credential records for a provider (including history)., Return the single active config for a capability, or None., Set is_active=False on all configs for the given capability. Returns the number…, Upsert the 12 M41 catalogue entries. Safe to call on every startup. (+64 more)
+Cohesion: 0.02
+Nodes (104): Fernet-based credential encryption for stored provider API keys. The encryption…, is_language_supported(), normalize_sarvam_language(), Supported call languages (Indian-focused, backed by Sarvam Bulbul). Each entry…, Normalize language code to a valid Sarvam API format (e.g. 'mr' -> 'mr-IN')., Check if requested language matches supported languages list, handling 2-letter…, Return (canonical_code, info). Falls back to the default if unknown., resolve() (+96 more)
 
-### Community 23 - "AppointmentService"
-Cohesion: 0.12
-Nodes (29): appointment_summary(), _appt_response(), cancel_appointment(), CancelRequest, complete_appointment(), CompleteRequest, confirm_appointment(), create_appointment() (+21 more)
+### Community 23 - "appointments.py"
+Cohesion: 0.19
+Nodes (24): appointment_summary(), _appt_response(), cancel_appointment(), CancelRequest, complete_appointment(), CompleteRequest, confirm_appointment(), create_appointment() (+16 more)
 
 ### Community 24 - "TTSEngine"
 Cohesion: 0.07
 Nodes (25): AI4BharatTTSEngine, get_tts_engine(), IndicF5Engine, OllamaTTSEngine, OrpheusEngine, pcm_to_wav(), PiperEngine, ABC (+17 more)
 
 ### Community 25 - "agents.py"
-Cohesion: 0.13
-Nodes (34): _agent_response(), create_agent(), create_version(), CreateAgentRequest, CreateVersionRequest, delete_agent(), export_agent(), get_agent() (+26 more)
+Cohesion: 0.11
+Nodes (38): _agent_response(), create_agent(), create_version(), CreateAgentRequest, CreateVersionRequest, delete_agent(), export_agent(), get_agent() (+30 more)
 
-### Community 26 - "TestE2EHappyPath"
-Cohesion: 0.08
-Nodes (19): _get_mock_db(), _make_redis(), SKIP, Complete E2E: signup → org → plan → credits → voice profile → agent → phone →…, Change voice profile provider route — campaign unaffected., Active campaign pins a version_id — changing routes creates new version., Org A data completely invisible to Org B end-to-end., Complete workflow: signup → call → settlement → analytics. (+11 more)
+### Community 26 - "test_m33_e2e_acceptance.py"
+Cohesion: 0.09
+Nodes (19): _get_mock_db(), _make_redis(), SKIP, M33 tests — Final End-to-End Acceptance. Tests the complete SaaS workflow as…, Complete E2E: signup → org → plan → credits → voice profile → agent → phone →…, Change voice profile provider route — campaign unaffected., Active campaign pins a version_id — changing routes creates new version., Org A data completely invisible to Org B end-to-end. (+11 more)
 
-### Community 27 - "models/page.tsx"
+### Community 27 - "auth-context.tsx"
 Cohesion: 0.05
-Nodes (60): AdminModelsPage(), Capability, capabilityVariant(), formatFreeTierInfo(), freeTierDetails(), hostingIcon(), hostingLabel(), isStale() (+52 more)
+Nodes (52): AdminModelsPage(), AdminSettingsPage(), AdminGuard(), AuthClientLayout(), metadata, LoginPage(), handleSubmit(), SignupPage() (+44 more)
 
 ### Community 28 - "ConversationEngine"
-Cohesion: 0.10
-Nodes (29): ConversationEngine, _decide_stage(), TypedDict, The conversation engine: a LangGraph state machine that drives the call. Per…, Advance the conversation by one user turn. Updates `state` in place (stage,…, Ephemeral state passed through the graph for a single turn., Pure transition logic. Order matters: end > objection > booking > qualify., Extract slots + output variables + intent flags from the latest user message. (+21 more)
+Cohesion: 0.11
+Nodes (27): ConversationEngine, _decide_stage(), TypedDict, The conversation engine: a LangGraph state machine that drives the call. Per…, Advance the conversation by one user turn. Updates `state` in place (stage,…, Ephemeral state passed through the graph for a single turn., Pure transition logic. Order matters: end > objection > booking > qualify., Extract slots + output variables + intent flags from the latest user message. (+19 more)
 
-### Community 29 - "BaseRepository"
+### Community 29 - "new_id"
 Cohesion: 0.04
-Nodes (40): Appointment model — generic scheduling. Appointments are generic. Solar uses…, AuditLog, Audit log model. Immutable record of actions in the system. Used for security,…, Audit log entry — immutable after creation., DocumentModel, Any, BaseModel, Base Pydantic models for MongoDB documents. MongoDB uses _id (ObjectId) as the… (+32 more)
+Nodes (60): add_turn(), Appointment model — generic scheduling. Appointments are generic. Solar uses…, Audit log model. Immutable record of actions in the system. Used for security,…, new_id(), datetime, Base Pydantic models for MongoDB documents. MongoDB uses _id (ObjectId) as the…, Generate a new UUID4 string., utcnow() (+52 more)
 
-### Community 30 - "ModelSetupWizard.tsx"
-Cohesion: 0.07
-Nodes (32): capabilityVariant(), hostingIcon(), hostingLabel(), isStale(), ModelConnectCard(), ModelConnectCardProps, CapabilityType, formatLanguageLabel() (+24 more)
+### Community 30 - "api.ts"
+Cohesion: 0.04
+Nodes (64): Capability, capabilityVariant(), formatFreeTierInfo(), freeTierDetails(), hostingIcon(), hostingLabel(), isStale(), ModelCard() (+56 more)
 
 ### Community 31 - "billing_portal.py"
 Cohesion: 0.09
 Nodes (37): billing_overview(), buy_calling_pack(), cancel_subscription(), CancelRequest, _days_remaining(), get_invoice(), get_subscription(), _invoice_response() (+29 more)
 
-### Community 32 - "AnalyticsService"
-Cohesion: 0.06
-Nodes (33): get_arpu(), get_costs(), get_daily_analytics(), get_full_report(), get_margins(), get_mrr(), get_mrr_movement(), get_revenue() (+25 more)
+### Community 32 - "analytics.py"
+Cohesion: 0.16
+Nodes (19): get_arpu(), get_costs(), get_daily_analytics(), get_full_report(), get_margins(), get_mrr(), get_mrr_movement(), get_revenue() (+11 more)
 
 ### Community 33 - "calls.py"
-Cohesion: 0.14
-Nodes (24): _call_response(), finalize_call(), FinalizeCallRequest, get_call(), get_call_recording(), get_call_transcript(), hangup_call(), initiate_call() (+16 more)
+Cohesion: 0.18
+Nodes (20): _call_response(), finalize_call(), FinalizeCallRequest, get_call(), get_call_recording(), get_call_transcript(), hangup_call(), initiate_call() (+12 more)
 
 ### Community 34 - "run"
 Cohesion: 0.09
 Nodes (11): _get_mock_db(), SKIP, M11 tests — Agent Builder. Tests: 1. BusinessTemplate — 7 templates seeded,…, Org A cannot see Org B agents., Once published, a version cannot be modified., Solar template is configuration, not code. No if/else in service., run(), _seed() (+3 more)
 
 ### Community 35 - "run"
-Cohesion: 0.06
-Nodes (13): _get_mock_db(), SKIP, transfer_to_human must not contain business-specific logic., Tool implementations must not contain business-specific branches (if/else on…, run(), TestAddNote, TestBookAppointment, TestHandoffService (+5 more)
+Cohesion: 0.09
+Nodes (9): _get_mock_db(), SKIP, run(), TestAddNote, TestBookAppointment, TestMessaging, TestScheduleCallback, TestToolRegistry (+1 more)
 
 ### Community 36 - "providers/base.py"
-Cohesion: 0.03
-Nodes (36): Central configuration for the AI Telecalling SaaS platform. Loads backend/.env…, LLMProvider, PaymentProvider, PhoneNumberProvider, Provider, ABC, Any, Abstract provider interfaces for the AI Telecalling SaaS platform. Core… (+28 more)
+Cohesion: 0.04
+Nodes (29): LLMProvider, PaymentProvider, PhoneNumberProvider, Provider, ABC, Any, Abstract provider interfaces for the AI Telecalling SaaS platform. Core…, Verify payment signature. Returns True if valid. (+21 more)
 
-### Community 37 - "call_session.py"
-Cohesion: 0.08
-Nodes (17): FasterWhisperSTT, Speech-to-text via Groq Whisper. Sprint 1 does non-streaming transcription: the…, Routes each utterance to the best STT: Sarvam Saaras for Indian languages…, Stub for faster-whisper local runtime. Status: experimental. Raises…, Return (max no_speech_prob, min avg_logprob) across segments. Handles both…, Sarvam Saaras v3 speech-to-text — Indic-tuned, code-mixing aware.…, SarvamSTT, _segment_confidence() (+9 more)
+### Community 37 - "stt.py"
+Cohesion: 0.12
+Nodes (11): FasterWhisperSTT, Speech-to-text via Groq Whisper. Sprint 1 does non-streaming transcription: the…, Routes each utterance to the best STT: Sarvam Saaras for Indian languages…, Stub for faster-whisper local runtime. Status: experimental. Raises…, Return (max no_speech_prob, min avg_logprob) across segments. Handles both…, Sarvam Saaras v3 speech-to-text — Indic-tuned, code-mixing aware.…, SarvamSTT, _segment_confidence() (+3 more)
 
 ### Community 38 - "TestSuperAdmin"
-Cohesion: 0.12
-Nodes (3): SKIP, Customer receives 403 on all admin endpoints., TestSuperAdmin
+Cohesion: 0.09
+Nodes (5): SKIP, M24 tests — Super Admin. Tests: 1. All admin endpoints require platform role…, Customer receives 403 on all admin endpoints., run(), TestSuperAdmin
 
-### Community 39 - "leads.py"
-Cohesion: 0.12
-Nodes (32): add_to_dnc(), create_lead(), CreateLeadRequest, delete_lead(), DNCAddRequest, get_lead(), get_lead_filters(), import_leads() (+24 more)
+### Community 39 - "LeadService"
+Cohesion: 0.11
+Nodes (33): add_to_dnc(), create_lead(), CreateLeadRequest, delete_lead(), DNCAddRequest, get_lead(), get_lead_filters(), import_leads() (+25 more)
 
 ### Community 40 - "3. Detailed Architecture & Specifications"
 Cohesion: 0.11
 Nodes (18): 1.1 The Problem, 1.2 The Solution, 1. Intent & Problem Statement, 2.1 Goals, 2.2 Non-Goals, 2.3 Anti-Goals, 2. Goals, Non-Goals, and Anti-Goals, 3.1 Currency & Accounting Rules (+10 more)
 
-### Community 41 - "v1/auth.py"
-Cohesion: 0.09
-Nodes (32): AuditLog, change_password(), login(), LoginRequest, logout(), me(), MeResponse, BaseModel (+24 more)
+### Community 41 - "ModelTestService"
+Cohesion: 0.07
+Nodes (22): OllamaLLMClient, Async client for a locally-running Ollama server. Ollama must be started…, Return True if the Ollama server is responding on /api/tags., Call /api/chat with the configured model and messages. Raises RuntimeError if…, ModelTestService, Test connectivity and inference for each provider/model combination. Returns a…, [LIVE] Test Sarvam TTS using an injected API key., [LIVE] Test ElevenLabs TTS using an injected API key. (+14 more)
 
 ### Community 42 - "run"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (8): SKIP, draft → running → paused → running → completed, Org B cannot start Org A's campaign., Never exceed max_concurrent_calls., 10 concurrent acquire attempts with max=5: exactly 5 succeed., run(), TestCampaignStateMachine, TestConcurrencyGate
 
-### Community 44 - "Call"
-Cohesion: 0.13
-Nodes (12): Call, An outbound AI call record., _analyze_call(), _compute_score(), _derive_outcome(), _generate_summary(), Derive qualification, score, outcome, and summary from call state., Simple slot-based scoring. 15 pts per filled slot, bonuses for intent. (+4 more)
+### Community 44 - "test_m20_post_call.py"
+Cohesion: 0.11
+Nodes (15): Call, An outbound AI call record., _analyze_call(), _compute_score(), _derive_outcome(), _generate_summary(), Derive qualification, score, outcome, and summary from call state., Simple slot-based scoring. 15 pts per filled slot, bonuses for intent. (+7 more)
 
 ### Community 45 - "CampaignService"
-Cohesion: 0.12
-Nodes (11): CampaignService, Any, Campaign, datetime, Resolve qualification criteria schema for an agent., Transition draft/scheduled → running. Runs pre-flight validation first., Mark campaign as completed (all leads processed)., Mark campaign as failed (unrecoverable error). (+3 more)
+Cohesion: 0.14
+Nodes (8): CampaignService, Campaign, Transition draft/scheduled → running. Runs pre-flight validation first., Mark campaign as completed (all leads processed)., Mark campaign as failed (unrecoverable error)., Check whether a new call can start for this campaign. Returns {allowed, reason,…, Atomically increment active call count. Returns True if slot acquired (count ≤…, Atomically increment and return new count.
 
-### Community 46 - "HTTPException"
+### Community 46 - "KnowledgeService"
 Cohesion: 0.06
-Nodes (53): Use active LLM to translate the greeting text into the target language.…, translate_greeting(), delete, Remove demo data (org, users, leads, etc.). Platform admin only., reset_demo(), add_document(), associate_agent(), create_knowledge_base() (+45 more)
+Nodes (44): add_document(), associate_agent(), create_knowledge_base(), CreateDocumentRequest, CreateKBRequest, delete_document(), delete_knowledge_base(), disassociate_agent() (+36 more)
 
 ### Community 47 - "dependencies"
 Cohesion: 0.12
@@ -516,8 +544,8 @@ Cohesion: 0.24
 Nodes (14): call_detail(), CallDetail, CallRow, calls(), languages(), LeadOut, leads(), BaseModel (+6 more)
 
 ### Community 49 - "test_m17_tools_handoff.py"
-Cohesion: 0.09
-Nodes (34): Tool models — generic callable actions the AI agent can invoke during a call.…, Immutable record of a single tool invocation during a call., ToolCall, add_note(), book_appointment(), get_customer_details(), Built-in tool implementations. Every tool: - Receives (inputs: dict, context:…, Transfer the call to a human agent with complete context. Context package… (+26 more)
+Cohesion: 0.16
+Nodes (24): add_note(), book_appointment(), get_customer_details(), Built-in tool implementations. Every tool: - Receives (inputs: dict, context:…, Transfer the call to a human agent with complete context. Context package…, Update lead qualification data., Create an appointment record for this lead., Add a note to the lead record. (+16 more)
 
 ### Community 50 - "TestCustomerBillingPortal"
 Cohesion: 0.13
@@ -544,36 +572,36 @@ Cohesion: 0.09
 Nodes (18): _detect_encoding(), GoogleCloudSTTProvider, Any, Exception, Google Cloud Speech-to-Text v2 provider adapter. Uses google-cloud-speech SDK…, Transcribe audio bytes to text using Cloud Speech-to-Text v1 batch API. audio:…, Run synchronous recognition (in a thread pool)., Detect audio encoding from header bytes. Returns (encoding_enum,… (+10 more)
 
 ### Community 56 - "repository.py"
-Cohesion: 0.12
-Nodes (18): call_outcome(), lead_status(), Any, Lead scoring: a simple, explainable 0-100 heuristic. Each filled qualification…, Map conversation state to a CRM status., score_lead(), add_turn(), _Call (+10 more)
+Cohesion: 0.13
+Nodes (17): call_outcome(), lead_status(), Any, Lead scoring: a simple, explainable 0-100 heuristic. Each filled qualification…, Map conversation state to a CRM status., score_lead(), _Call, finalize_call() (+9 more)
 
 ### Community 57 - "PhoneNumberService"
 Cohesion: 0.08
-Nodes (17): PhoneNumberService, PhoneNumber, Get a specific number only if it belongs to this org., Add a new number to the platform inventory., Atomically assign an available number to an organization. Returns customer-safe…, Assign an available or assigned number to multiple organizations., Return a number to the available pool., Available numbers — customer-safe view (no provider details). (+9 more)
+Nodes (13): PhoneNumberService, AsyncIOMotorDatabase, Get a specific number only if it belongs to this org., Add a new number to the platform inventory., Atomically assign an available number to an organization. Returns customer-safe…, Assign an available or assigned number to multiple organizations., Return a number to the available pool., Available numbers — customer-safe view (no provider details). (+5 more)
 
 ### Community 58 - "AgentService"
 Cohesion: 0.15
 Nodes (11): AgentService, Agent, AgentVersion, Any, Returns agent only if it belongs to this org (tenant isolation)., Resolve dynamic qualification criteria for an agent., Create a new draft version. Optionally publish and activate it., Publish a draft version and set it as active. Immutable after this. (+3 more)
 
 ### Community 59 - "OrganizationRepository"
-Cohesion: 0.14
-Nodes (7): OrganizationRepository, Organization, anyio, test_admin_grant_free_tests(), test_free_test_decrement_when_session_starts(), test_organization_created_with_10_free_tests(), TestOrganizationRepository
+Cohesion: 0.15
+Nodes (5): OrganizationRepository, Organization, run(), TestAuditLogRepository, TestOrganizationRepository
 
 ### Community 60 - "test_test_agent.py"
-Cohesion: 0.06
-Nodes (32): is_language_supported(), normalize_sarvam_language(), Supported call languages (Indian-focused, backed by Sarvam Bulbul). Each entry…, Normalize language code to a valid Sarvam API format (e.g. 'mr' -> 'mr-IN')., Check if requested language matches supported languages list, handling 2-letter…, Return (canonical_code, info). Falls back to the default if unknown., resolve(), STTProvider (+24 more)
+Cohesion: 0.09
+Nodes (18): GroqSTTProvider, Any, Groq Whisper STT provider adapter., Any, AsyncClient, Sarvam Saaras STT provider adapter., SarvamSTTProvider, CloudCallTTS (+10 more)
 
-### Community 61 - "SessionStore"
-Cohesion: 0.12
-Nodes (8): Any, A medium (browser websocket, phone line) the session speaks through., Send agent audio to the caller., Flush any audio already queued on the caller side (barge-in)., Deliver a metadata event (transcript, stage, etc.). May be a no-op., Transport, SessionStore, Protocol
+### Community 61 - "Transport"
+Cohesion: 0.22
+Nodes (6): A medium (browser websocket, phone line) the session speaks through., Send agent audio to the caller., Flush any audio already queued on the caller side (barge-in)., Deliver a metadata event (transcript, stage, etc.). May be a no-op., Transport, Protocol
 
-### Community 62 - "utcnow"
-Cohesion: 0.04
-Nodes (30): datetime, utcnow(), Internal provider selection with health, capability, language, and fallback…, Resolve a route and durably retain any failover event for operations review., ResolvedProvider, Any, Insert multiple lead documents. Skips duplicates (same org + phone). Returns…, Create a new subscription. Cancels any existing active subscription first. (+22 more)
+### Community 62 - "DemoSeedService"
+Cohesion: 0.21
+Nodes (4): DemoSeedService, AsyncIOMotorDatabase, Check if demo environment is already seeded., Seed the complete demo environment. Idempotent unless force=True.
 
 ### Community 63 - "SubscriptionPlan"
-Cohesion: 0.13
-Nodes (8): field_validator, A plan offered on the platform. Managed by platform admins only., Convenience for display — never use for billing calculations., An organization's active subscription to a plan., Subscription, SubscriptionPlan, Subscription service — business logic layer. Responsibilities: - Entitlement…, TestSubscriptionPlanModel
+Cohesion: 0.14
+Nodes (7): field_validator, A plan offered on the platform. Managed by platform admins only., Convenience for display — never use for billing calculations., An organization's active subscription to a plan., Subscription, SubscriptionPlan, TestSubscriptionPlanModel
 
 ### Community 64 - "backend/telephony/vobiz.py"
 Cohesion: 0.08
@@ -615,69 +643,69 @@ Nodes (7): SubscriptionPlan, Platform-managed subscription plans., Upgrade/downg
 Cohesion: 0.09
 Nodes (34): admin_activate_subscription(), admin_create_plan(), admin_list_plans(), admin_list_subscriptions(), admin_update_plan(), AdminActivateRequest, cancel_my_subscription(), change_my_plan() (+26 more)
 
-### Community 74 - "test_m14_preflight.py"
-Cohesion: 0.07
-Nodes (20): _get_mock_db(), _make_redis(), SKIP, M14 tests — Campaign Pre-flight. Tests: 1. All checks pass → campaign can start…, Create an active platform voice profile with a version., Create leads for the org., Calling hours check fails when current time is outside window., Low credits (above minimum) generate a warning, not a failure. (+12 more)
+### Community 74 - "TestPreflightChecks"
+Cohesion: 0.11
+Nodes (10): SKIP, Calling hours check fails when current time is outside window., Low credits (above minimum) generate a warning, not a failure., All failing checks are reported — not just the first., Campaign with no subscription/credits/etc must not start., Campaign with all pre-flight checks passing can start., skip_preflight=True starts even if checks would fail., run() (+2 more)
 
 ### Community 75 - "Issues Log — post-Sarvam call testing (2026-07)"
 Cohesion: 0.09
 Nodes (21): Before → after (same harness), Conversation stalls (silent agent) — FIXED: gpt-oss reasoning, Fix order, Fix plan, Fix plan (addresses 1-5 together), Follow-up (Hindi call): echo-driven hallucination loop, Hindi/Hinglish — FIXED, Hindi / Hinglish naturalness — issues + fix plan (+13 more)
 
 ### Community 76 - "VADEndpointer"
-Cohesion: 0.09
-Nodes (18): Streaming voice-activity detection + endpointing. Fed continuous 16-bit mono…, Silero VAD v5 over onnxruntime. Returns P(speech) for a 512-sample window., Fallback: webrtcvad on 20 ms frames -> boolean speech., _rms_dbfs(), SileroVAD, VADEndpointer, _WebRTCVAD, reset() should clear accumulated state. (+10 more)
+Cohesion: 0.15
+Nodes (8): Streaming voice-activity detection + endpointing. Fed continuous 16-bit mono…, Silero VAD v5 over onnxruntime. Returns P(speech) for a 512-sample window., Fallback: webrtcvad on 20 ms frames -> boolean speech., _rms_dbfs(), SileroVAD, VADEndpointer, _WebRTCVAD, ndarray
 
 ### Community 77 - "CallSession"
-Cohesion: 0.09
-Nodes (14): CallSession, Return custom greeting, or generate one in the call language., Handle explicit caller interrupt event (barge-in)., Feed a chunk of caller audio; drives VAD, barge-in, and responses., Compatibility alias for Plivo / WebSocket audio push., Compatibility alias for Plivo clearAudio / barge-in., Run post-call LLM evaluation to generate summary, outcome, and qualification., Build a CallSession with mocked dependencies. (+6 more)
+Cohesion: 0.10
+Nodes (13): CallSession, Return custom greeting, or generate one in the call language., Handle explicit caller interrupt event (barge-in)., Feed a chunk of caller audio; drives VAD, barge-in, and responses., Compatibility alias for Plivo / WebSocket audio push., Compatibility alias for Plivo clearAudio / barge-in., Run post-call LLM evaluation to generate summary, outcome, and qualification., Build a CallSession with mocked dependencies. (+5 more)
 
 ### Community 78 - "LeadRepository"
 Cohesion: 0.13
 Nodes (5): LeadRepository, Lead, Return distinct cities and tags available to the organization., Return the subset of phones that already exist in this org., TestLeadRepository
 
 ### Community 79 - "UserRepository"
-Cohesion: 0.15
-Nodes (7): UserRepository, SKIP_IF_NO_MONGOMOCK, Organization A should not see Organization B's users., run(), TestAuditLogRepository, TestTenantIsolation, TestUserRepository
+Cohesion: 0.14
+Nodes (6): UserRepository, SKIP_IF_NO_MONGOMOCK, Organization A should not see Organization B's users., TestTenantIsolation, TestUserRepository, User
 
 ### Community 80 - "StructuredInstructionEditor"
 Cohesion: 0.16
 Nodes (14): ConversationPhase, ObjectionItem, StructuredInstructionEditor(), compileStructuredToMarkdown(), handleLoadTemplate(), insertPrefix(), insertSnippet(), insertVariable() (+6 more)
 
 ### Community 82 - "TestDemoSeedService"
-Cohesion: 0.18
-Nodes (4): SKIP, Provider routes in voice_profile_versions are internal only., run(), TestDemoSeedService
+Cohesion: 0.14
+Nodes (6): _get_mock_db(), SKIP, M30 tests — Demo Mode. Tests: 1. DemoSeedService.seed_all creates all required…, Provider routes in voice_profile_versions are internal only., run(), TestDemoSeedService
 
 ### Community 83 - "run"
 Cohesion: 0.17
 Nodes (3): run(), TestMockPaymentProvider, TestPaymentService
 
 ### Community 84 - "test_m8_provider_abstraction.py"
-Cohesion: 0.06
-Nodes (23): MockLLMProvider, OpenAICompatibleLLMProvider, MockPhoneNumberProvider, build_demo_registry(), ProviderRegistry, Typed provider registry; business services resolve providers by capability., ProviderRouter, MockSTTProvider (+15 more)
+Cohesion: 0.11
+Nodes (10): MockLLMProvider, OpenAICompatibleLLMProvider, MockPhoneNumberProvider, MockSTTProvider, M8 provider contracts and registry tests., run(), test_demo_registry_registers_all_runtime_provider_categories(), test_live_http_adapters_normalize_provider_responses_without_network() (+2 more)
 
 ### Community 85 - "SubscriptionRepository"
 Cohesion: 0.16
 Nodes (7): Subscription, Organization subscriptions — one active subscription per org., Get the current active/trialing/past_due subscription for an org., Get the most recent subscription (any status)., How many active orgs are on this plan., SubscriptionRepository, TestSubscriptionRepository
 
-### Community 86 - "test_calling_packs_crud.py"
-Cohesion: 0.24
-Nodes (4): skipif, Tests for Admin Calling Packs CRUD & Seed cleanup., run(), TestCallingPacksCRUD
+### Community 86 - "CallingPackRepository"
+Cohesion: 0.12
+Nodes (11): CallingPackRepository, CallingPack, AsyncIOMotorDatabase, CallingPack, Seed default calling packs. Idempotent, auto-updates legacy descriptions., seed_default_packs(), skipif, Tests for Admin Calling Packs CRUD & Seed cleanup. (+3 more)
 
-### Community 87 - "SubscriptionService"
-Cohesion: 0.24
-Nodes (6): SubscriptionPlan, SubscriptionService, Changing plan config in DB changes entitlements without code changes., Activating a new plan cancels the previous one., run(), TestSubscriptionServiceEntitlements
+### Community 87 - "build_demo_registry"
+Cohesion: 0.13
+Nodes (14): build_demo_registry(), ProviderRegistry, Typed provider registry; business services resolve providers by capability., ProviderRouter, Internal provider selection with health, capability, language, and fallback…, ResolvedProvider, MockTTSProvider, skipif (+6 more)
 
 ### Community 88 - "SecurityAuditService"
 Cohesion: 0.14
 Nodes (10): Security audit service — static checks for known vulnerability patterns. This…, All API endpoint files must use auth dependencies., Check for secret keys in API response builders (not in models/repos)., Webhook endpoints must verify signatures., Rate limiting module must exist and auth endpoints use it., Check that repos filter by organization_id (heuristic)., File upload endpoints must validate file type/size., Runs targeted security checks against the codebase. (+2 more)
 
 ### Community 89 - "run"
-Cohesion: 0.18
+Cohesion: 0.17
 Nodes (4): Auto-mapping handles common aliases (mobile → phone, etc.)., run(), TestCSVImport, TestLeadService
 
 ### Community 90 - "PhoneNumberRepository"
 Cohesion: 0.10
-Nodes (11): PhoneNumberRepository, PhoneNumber, Atomically mark a number as 'reserved' only if it is currently 'available'.…, Finalize assignment: reserved → assigned., Finalize assignment to multiple orgs., Return number to available pool., Create a phone number assigned to the org., _seed_phone_number() (+3 more)
+Nodes (10): PhoneNumberRepository, PhoneNumber, Atomically mark a number as 'reserved' only if it is currently 'available'.…, Finalize assignment: reserved → assigned., Finalize assignment to multiple orgs., Return number to available pool., Create a phone number assigned to the org., _seed_phone_number() (+2 more)
 
 ### Community 91 - "VobizTelephonyProvider"
 Cohesion: 0.17
@@ -687,9 +715,9 @@ Nodes (10): Any, AsyncClient, Vobiz.ai Telephony adapter. Initiates outbound PST
 Cohesion: 0.16
 Nodes (6): DNCRepository, Add phone to DNC. Returns None if already on DNC., Return the subset of phones that are on DNC for this org., AsyncIOMotorDatabase, TestDNCRepository, DNCEntry
 
-### Community 93 - "hash_password"
-Cohesion: 0.22
-Nodes (4): hash_password(), verify_password(), TestPasswordHashing, User
+### Community 93 - "call_session.py"
+Cohesion: 0.13
+Nodes (10): ConversationState, TypedDict, Transport-agnostic call pipeline. `CallSession` owns everything that makes a…, configure_logging(), Structured logging with a per-turn/trace correlation id. Every log line carries…, set_trace_id(), _TraceFilter, Redis-backed live session store. Holds in-flight conversation state (stage,… (+2 more)
 
 ### Community 94 - "run"
 Cohesion: 0.05
@@ -703,45 +731,41 @@ Nodes (10): PlivoTelephonyProvider, Any, AsyncClient, Plivo Telephony adapter. I
 Cohesion: 0.11
 Nodes (18): 0. The one thing that matters: latency, 1. Hardware reality & the stack decision, 2. System architecture, 3. Repository structure, 4. Conversation design (the product), 5. Data model (first cut), 6. API surface (backend), 7. Sprint plan (walking skeleton first) (+10 more)
 
-### Community 97 - "test_m30_demo_mode.py"
-Cohesion: 0.15
-Nodes (6): get_payment_provider(), Return the appropriate payment provider based on config., _get_mock_db(), M30 tests — Demo Mode. Tests: 1. DemoSeedService.seed_all creates all required…, In DEMO_MODE, payment_service uses MockPaymentProvider., TestDemoModeProviders
+### Community 97 - ".__init__"
+Cohesion: 0.13
+Nodes (6): Clear mock state between tests., get_payment_provider(), AsyncIOMotorDatabase, Return the appropriate payment provider based on config., In DEMO_MODE, payment_service uses MockPaymentProvider., TestDemoModeProviders
 
 ### Community 99 - "CallAudioRecorder"
-Cohesion: 0.09
-Nodes (18): CallAudioRecorder, get_candidate_dirs(), get_recording_path(), get_recordings_dir(), Call audio recording engine. Captures caller audio (inbound PCM) and AI agent…, Feed a chunk of caller PCM audio., Feed a chunk of AI agent synthesized speech., Mix timeline tracks into a 16 kHz 16-bit mono WAV file. (+10 more)
+Cohesion: 0.11
+Nodes (16): CallAudioRecorder, get_candidate_dirs(), get_recording_path(), get_recordings_dir(), Call audio recording engine. Captures caller audio (inbound PCM) and AI agent…, Feed a chunk of caller PCM audio., Feed a chunk of AI agent synthesized speech., Mix timeline tracks into a 16 kHz 16-bit mono WAV file. (+8 more)
 
-### Community 101 - "PricingSyncService"
-Cohesion: 0.07
-Nodes (31): PricingSettings, ProviderRateCard, MongoDB document models for provider pricing, FX rates, and rate cards. Tracks…, Stores the effective cost and billable rate for a provider/model., Global platform pricing and loss-protection settings., _deserialize(), Clean up a MongoDB document for use with Pydantic models., PricingSettingsRepository (+23 more)
+### Community 101 - "BaseRepository"
+Cohesion: 0.06
+Nodes (34): PricingSettings, ProviderRateCard, MongoDB document models for provider pricing, FX rates, and rate cards. Tracks…, Stores the effective cost and billable rate for a provider/model., Global platform pricing and loss-protection settings., BaseRepository, _deserialize(), AsyncIOMotorDatabase (+26 more)
 
 ### Community 102 - "main.py"
-Cohesion: 0.11
-Nodes (26): close_db(), _ensure_indexes(), init_db(), ping_db(), AsyncIOMotorDatabase, Connect to MongoDB and create all indexes., Health check — returns True if MongoDB is reachable., Create all collection indexes. Idempotent. (+18 more)
+Cohesion: 0.07
+Nodes (32): Central configuration for the AI Telecalling SaaS platform. Loads backend/.env…, close_db(), _ensure_indexes(), init_db(), ping_db(), AsyncIOMotorDatabase, Connect to MongoDB and create all indexes., Health check — returns True if MongoDB is reachable. (+24 more)
 
-### Community 103 - "TestLeadsHTTP"
-Cohesion: 0.18
-Nodes (4): _make_csv(), Build a CSV bytes payload from a list of dicts., Org A DNC does not affect Org B., TestLeadsHTTP
-
-### Community 104 - "LeadService"
-Cohesion: 0.16
-Nodes (8): _apply_mapping(), LeadService, Any, Lead, Apply column mapping to raw rows → list of dicts with standard and custom field…, Tests for custom column mapping, contact upsert, and campaign enrollment., run(), TestLeadImportMapping
+### Community 104 - "_apply_mapping"
+Cohesion: 0.24
+Nodes (6): _apply_mapping(), Any, Apply column mapping to raw rows → list of dicts with standard and custom field…, Tests for custom column mapping, contact upsert, and campaign enrollment., run(), TestLeadImportMapping
 
 ### Community 105 - "run"
-Cohesion: 0.08
-Nodes (16): _get_mock_db(), SKIP, M7 tests — Phone Number Inventory. Tests: 1. PhoneNumber model — status…, Two concurrent atomic_reserve calls on same number: only ONE wins., Org A cannot see Org B numbers., get_number_for_org returns None if number belongs to a different org., Provider details must not leak into any customer-facing response., Only one org can claim the same number — concurrent request safety. (+8 more)
+Cohesion: 0.09
+Nodes (13): _get_mock_db(), SKIP, Org A cannot see Org B numbers., get_number_for_org returns None if number belongs to a different org., Provider details must not leak into any customer-facing response., Only one org can claim the same number — concurrent request safety., 5 concurrent assign attempts for the same number: exactly 1 wins., 5 concurrent assigns for 5 different numbers: all succeed. (+5 more)
 
 ### Community 106 - "LLMClient"
 Cohesion: 0.18
 Nodes (10): _extract_json(), LLMClient, Groq gpt-oss client (OpenAI-compatible), async + streaming. Streaming matters:…, Yield complete sentences as soon as they're ready, so TTS can start speaking…, Non-streaming convenience helper (used by smoke tests)., Structured extraction. Never raises: returns {} if extraction fails. gpt-oss on…, Best-effort parse of a JSON object from model output. None on failure., Yield raw text deltas as the model generates them. gpt-oss on Groq… (+2 more)
 
-### Community 107 - "gemini.py"
-Cohesion: 0.19
-Nodes (9): _get_candidate_models(), _is_transient_error(), Any, Exception, Gemini LLM provider adapter using the official google-genai SDK. Uses…, Generate a reply for the given conversation messages., Stream text deltas from Gemini with automatic retry and model fallback., Return ordered list of models to try: primary model first, then compatible… (+1 more)
+### Community 107 - "GeminiLLMProvider"
+Cohesion: 0.13
+Nodes (15): GeminiLLMProvider, _get_candidate_models(), _is_transient_error(), Any, Exception, Gemini LLM provider adapter using the official google-genai SDK. Uses…, Generate a reply for the given conversation messages., Stream text deltas from Gemini with automatic retry and model fallback. (+7 more)
 
 ### Community 108 - "CampaignLeadRepository"
-Cohesion: 0.10
-Nodes (12): CampaignLeadRepository, Any, Atomically pick the next eligible lead to dial and mark scheduled., Mark all active enrollments for a phone number as DNC across all campaigns., Remove a lead from a campaign if it hasn't been dialed or completed., Create required indexes., Enroll or re-enroll a lead in a campaign., Bulk enroll leads into a campaign. items: list of dicts with: lead_id: str… (+4 more)
+Cohesion: 0.08
+Nodes (17): CampaignLead, field_validator, CampaignLead junction model. Represents enrollment of a Lead in a specific…, Enrollment of a Lead in a specific Campaign., CampaignLeadRepository, Any, Repository for CampaignLead collection., Atomically pick the next eligible lead to dial and mark scheduled. (+9 more)
 
 ### Community 109 - "Settings"
 Cohesion: 0.19
@@ -751,29 +775,29 @@ Nodes (5): Return whichever Sarvam key is set., Legacy compat for existing sessi
 Cohesion: 0.17
 Nodes (9): CallEventBroadcaster, Any, In-memory real-time event broadcaster for live phone calls., Pub/sub broadcaster delivering real-time call events (turns, status,…, Tests for CallEventBroadcaster and live call transcript monitoring., run(), test_broadcaster_empty_and_cleanup(), test_broadcaster_pubsub() (+1 more)
 
-### Community 111 - "new_id"
-Cohesion: 0.08
-Nodes (22): new_id(), Generate a new UUID4 string., CampaignLead, field_validator, CampaignLead junction model. Represents enrollment of a Lead in a specific…, Enrollment of a Lead in a specific Campaign., DNCEntry, Lead (+14 more)
+### Community 111 - "DocumentModel"
+Cohesion: 0.07
+Nodes (17): DocumentModel, Any, BaseModel, Base for MongoDB documents. `id` maps to the document's `_id` field., Serialize for MongoDB insertion (use `_id`, not `id`)., Deserialize from a MongoDB document., ProviderUsage, field_validator (+9 more)
 
 ### Community 112 - "seed_default_plans"
-Cohesion: 0.19
-Nodes (4): AsyncIOMotorDatabase, Create default plans if they don't exist. Safe to call on every startup., seed_default_plans(), TestSubscriptionHTTP
+Cohesion: 0.15
+Nodes (5): AsyncIOMotorDatabase, SubscriptionPlan, Create default plans if they don't exist. Safe to call on every startup., seed_default_plans(), TestSubscriptionHTTP
 
-### Community 113 - "CampaignWorker"
-Cohesion: 0.20
-Nodes (5): TestWorkerShutdown, CampaignWorker, Initiate the actual call and handle completion., Find running campaigns and dispatch calls., Try to start a new call for this campaign.
+### Community 113 - "TestAnalyticsService"
+Cohesion: 0.17
+Nodes (5): _get_mock_db(), charge=1000, cost=300 → margin=70%, total_revenue = subscription + calling, run(), TestAnalyticsService
 
 ### Community 114 - "CampaignRepository"
 Cohesion: 0.11
-Nodes (9): CampaignRepository, Campaign, All running/scheduled campaigns — for worker polling., Atomic status update scoped to org., AsyncIOMotorDatabase, Unit and API tests for Campaign CRUD operations., run(), TestCampaignCRUD (+1 more)
+Nodes (9): CampaignRepository, Campaign, All running/scheduled campaigns — for worker polling., Atomic status update scoped to org., AsyncIOMotorDatabase, AsyncIOMotorDatabase, M13 tests — Campaign Engine. Tests: 1. Campaign model — status validation, FSM…, TestCampaignRepository (+1 more)
 
 ### Community 115 - "Design Document: Full Razorpay Integration & Admin Manual Approval Mode for Subscriptions"
 Cohesion: 0.12
 Nodes (16): 1. Customer Billing Page (`frontend/app/(dashboard)/billing/page.tsx`), 1. Intent and Why, 2. Admin Billing & Subscriptions (`frontend/app/(dashboard)/admin/subscriptions/page.tsx` or new tab), 2. Goals, Non-Goals, and Anti-Goals, 3. Architecture & Data Model, 4. API Specification, 5. Frontend Implementation, 6. Settled Builder Decisions (+8 more)
 
 ### Community 116 - "seed_templates"
-Cohesion: 0.16
-Nodes (9): BusinessTemplate, Seed default business templates. Idempotent., seed_templates(), _get_mock_db(), SKIP, M28 tests — Agent Studio Export & Import Across Organizations. Tests: 1. Export…, run(), TestAgentExportImport (+1 more)
+Cohesion: 0.14
+Nodes (10): AsyncIOMotorDatabase, BusinessTemplate, Seed default business templates. Idempotent., seed_templates(), _get_mock_db(), SKIP, M28 tests — Agent Studio Export & Import Across Organizations. Tests: 1. Export…, run() (+2 more)
 
 ### Community 117 - "LatencyMetrics"
 Cohesion: 0.16
@@ -783,25 +807,25 @@ Nodes (5): _grade_latency(), LatencyMetrics, Latency metrics service. Records pe
 Cohesion: 0.21
 Nodes (3): CRITICAL: provider details must never appear in customer API response., Org A cannot see Org B's assigned numbers via /my endpoint., TestPhoneNumberHTTP
 
-### Community 119 - "EntitlementCheck"
-Cohesion: 0.17
-Nodes (4): EntitlementCheck, Result of an entitlement check. Not stored in DB., Check a boolean feature gate, e.g. 'knowledge_base_enabled'., Return a safe summary of what the org is entitled to (for API response).
+### Community 119 - "SubscriptionService"
+Cohesion: 0.14
+Nodes (9): EntitlementCheck, Result of an entitlement check. Not stored in DB., Check a boolean feature gate, e.g. 'knowledge_base_enabled'., Return a safe summary of what the org is entitled to (for API response)., SubscriptionService, Changing plan config in DB changes entitlements without code changes., Activating a new plan cancels the previous one., run() (+1 more)
 
-### Community 120 - "PhoneNumber"
+### Community 120 - "phone_number_repo.py"
 Cohesion: 0.13
-Nodes (15): PhoneNumber, PhoneNumberAssignment, Phone number inventory models. IMPORTANT ABSTRACTION: - Customers see: number…, A phone number in the platform inventory., Immutable record of a number assignment to an org. History tracking., PhoneNumberAssignmentRepository, Phone number inventory and assignment repositories. Concurrent reservation…, Phone number service — inventory management. All operations record an immutable… (+7 more)
+Nodes (12): PhoneNumberAssignment, Phone number inventory models. IMPORTANT ABSTRACTION: - Customers see: number…, Immutable record of a number assignment to an org. History tracking., PhoneNumberAssignmentRepository, Phone number inventory and assignment repositories. Concurrent reservation…, Phone number service — inventory management. All operations record an immutable…, # NOTE: provider, provider_resource_id, provider_metadata,…, Tests for CallService Plivo outbound dispatch and failure handling. (+4 more)
 
-### Community 121 - "OrganizationSettings"
-Cohesion: 0.20
-Nodes (4): OrganizationSettings, Mutable settings nested inside an organization., TestModels, test_organization_settings_defaults()
+### Community 121 - "TestModels"
+Cohesion: 0.25
+Nodes (3): AuditLog, Audit log entry — immutable after creation., TestModels
 
-### Community 122 - "llm/groq.py"
-Cohesion: 0.20
-Nodes (7): Any, Exception, Groq LLM provider adapter. Uses the official groq Python SDK (OpenAI-compatible…, Streaming chat completion — yields text deltas., Return a sanitized error message — never includes the API key., Non-streaming chat completion. Raises RuntimeError on auth failure, rate limit,…, _sanitize_groq_error()
+### Community 122 - "AppointmentService"
+Cohesion: 0.21
+Nodes (6): AppointmentService, _appt_brief(), Appointment, AsyncIOMotorDatabase, datetime, Appointment service. Handles: - Creating appointments (standalone or from a…
 
-### Community 123 - "test_m13_campaigns.py"
-Cohesion: 0.24
-Nodes (4): _get_mock_db(), _make_redis(), M13 tests — Campaign Engine. Tests: 1. Campaign model — status validation, FSM…, In-memory Redis mock.
+### Community 123 - "_make_redis"
+Cohesion: 0.33
+Nodes (3): _get_mock_db(), _make_redis(), In-memory Redis mock.
 
 ### Community 124 - "API-to-UI Mapping — Super Admin Dashboard"
 Cohesion: 0.13
@@ -812,7 +836,7 @@ Cohesion: 0.21
 Nodes (11): assert, fs, loadPlayback(), visit(), loadStudioCallback(), visit(), path, { test } (+3 more)
 
 ### Community 126 - "create_token_pair"
-Cohesion: 0.13
+Cohesion: 0.14
 Nodes (13): create_access_token(), create_refresh_token(), create_token_pair(), decode_access_token(), _make_token(), Return (encoded_jwt, jti)., Returns (token, jti). Caller stores jti in Redis for revocation., _get_test_app() (+5 more)
 
 ### Community 127 - "package.json"
@@ -820,8 +844,8 @@ Cohesion: 0.22
 Nodes (8): name, private, scripts, build, dev, lint, start, version
 
 ### Community 128 - "test_m12_leads.py"
-Cohesion: 0.10
-Nodes (9): _get_mock_db(), SKIP, M12 tests — Lead CRM. Tests: 1. Lead model — status validation, phone required…, Test 4000+ lead import — the M12 mandatory acceptance criterion., Import 4000 leads: all imported, correct count, no errors., 4000 leads, 100 on DNC → 3900 imported, 100 skipped., TestJSONImport, TestLargeImport (+1 more)
+Cohesion: 0.09
+Nodes (11): _get_mock_db(), _make_csv(), SKIP, M12 tests — Lead CRM. Tests: 1. Lead model — status validation, phone required…, Test 4000+ lead import — the M12 mandatory acceptance criterion., Import 4000 leads: all imported, correct count, no errors., 4000 leads, 100 on DNC → 3900 imported, 100 skipped., Build a CSV bytes payload from a list of dicts. (+3 more)
 
 ### Community 129 - "Review Focus"
 Cohesion: 0.18
@@ -831,12 +855,12 @@ Nodes (10): Global Constraints, Review Focus, Simplified Credit System & In-Brow
 Cohesion: 0.15
 Nodes (12): 1. Model Updates (`backend/models/phone_number.py`), 2. Service & Repository Updates, 3. Vobiz Telephony Provider Adapter (`backend/providers/telephony/vobiz.py`), 4. Vobiz Webhook & WebSocket Streaming (`backend/telephony/vobiz.py`), 5. Frontend Admin Dashboard Updates (`frontend/app/(admin)/admin/phone-numbers/page.tsx`), 6. Frontend AI Agent Studio Updates (`frontend/app/(dashboard)/agents/[id]/page.tsx`), Architecture & Data Flow, Design: Vobiz.ai Phone Number Provider & Multi-Organization Assignment (+4 more)
 
-### Community 131 - "test_m16_barge_in_latency.py"
-Cohesion: 0.10
-Nodes (16): LatencyService, Redis-backed latency tracker for active calls., M16 tests — Barge-In + Latency. Tests: 1. VAD SPEECH_START event fires when…, Test the barge-in flow in CallSession using mock components., SPEECH_START → _cancel_responder() + transport.clear()., During TTS playback, barge-in cancels the task., SPEECH_START with no active responder still calls transport.clear()., UTTERANCE event → new responder task created. (+8 more)
+### Community 131 - "run"
+Cohesion: 0.12
+Nodes (13): Test the barge-in flow in CallSession using mock components., SPEECH_START → _cancel_responder() + transport.clear()., During TTS playback, barge-in cancels the task., SPEECH_START with no active responder still calls transport.clear()., UTTERANCE event → new responder task created., Each processed utterance appends to self.latencies., Barge-in mid-response logs partial text as '…(interrupted)'., Explicit handle_interrupt() must work even during greeting playback. (+5 more)
 
 ### Community 132 - "TestAnalyticsHTTP"
-Cohesion: 0.23
+Cohesion: 0.21
 Nodes (3): SKIP, All paise values must be integers in responses., TestAnalyticsHTTP
 
 ### Community 133 - "test_voice_runtime_regressions.py"
@@ -863,25 +887,17 @@ Nodes (13): 1. Intent and Context, 2. Goals & Non-Goals, 3.1.1 `GET /api/v1/lead
 Cohesion: 0.09
 Nodes (22): 1. Intent and Context, 2. Goals & Non-Goals, 3.1. Campaign Lead Junction Model (`CampaignLead`), 3.2. Lead Model Updates (`backend/models/lead.py`), 3.3. Variable Scoping & Hierarchy (Builder Decision), 3. Data Architecture & Schema Changes, 4.1. Import Endpoint & Mapping Schema, 4.2. Lead Service Processing (`backend/services/lead_service.py`) (+14 more)
 
-### Community 139 - "TestBillingHTTP"
-Cohesion: 0.19
-Nodes (3): Generate a valid webhook signature for testing., Org A cannot see Org B's invoice., TestBillingHTTP
-
-### Community 140 - "Campaign"
-Cohesion: 0.14
-Nodes (5): Campaign, field_validator, An outbound calling campaign., TestCampaignModel, _make_campaign()
-
 ### Community 141 - "FakeRedis"
 Cohesion: 0.18
 Nodes (3): FakeRedis, run(), TestCampaignMultiLeadWorker
 
-### Community 142 - "BillingPage"
-Cohesion: 0.22
-Nodes (5): BillingPage(), handleSelectPlan(), loadRazorpayScript(), openRazorpayCheckout(), RazorpayCheckoutOptions
+### Community 142 - "providers/page.tsx"
+Cohesion: 0.07
+Nodes (17): AdminDashboardPage(), AdminProvidersPage(), HealthSummary, LatencyStats, ProviderHealth, ProviderMetric, statusIcon(), VoiceProfileHealth (+9 more)
 
 ### Community 144 - "MockPaymentProvider"
 Cohesion: 0.11
-Nodes (6): MockPaymentProvider, Verify against the fixed mock secret., Clear mock state between tests., Generate a test-valid mock signature for verify_payment., In-memory mock payment provider. No external calls., should_fail=True: verify_payment always returns False (simulate failed payment).
+Nodes (6): MockPaymentProvider, Verify against the fixed mock secret., Generate a test-valid mock signature for verify_payment., Generate a valid webhook signature for testing., In-memory mock payment provider. No external calls., should_fail=True: verify_payment always returns False (simulate failed payment).
 
 ### Community 145 - "Review Focus"
 Cohesion: 0.18
@@ -900,8 +916,8 @@ Cohesion: 0.18
 Nodes (10): Global Constraints, Review Focus, Task 1: Phone Number Multi-Organization Data Model & Service Layer, Task 2: Vobiz Telephony Provider Adapter & Registry Integration, Task 3: Vobiz Real-Time Media Stream WebSocket & Webhook, Task 4: Outbound Calling Integration in `CallService` & Campaign Worker, Task 5: Frontend Admin Dashboard - Phone Number Inventory & Multi-Org UI, Task 6: Frontend AI Agent Studio - Calling Number Selection (+2 more)
 
 ### Community 149 - "test_m1_mongodb.py"
-Cohesion: 0.16
-Nodes (8): Simple slugifier: lowercase, alphanumeric + hyphens., _slugify(), get_mock_db(), M1 tests — MongoDB foundation. Tests run against mongomock (in-memory MongoDB…, Return a mongomock-backed async Motor database substitute., health.check_all should return the correct structure (mocked)., TestHealthCheck, TestSlugGeneration
+Cohesion: 0.17
+Nodes (8): hash_password(), verify_password(), get_mock_db(), M1 tests — MongoDB foundation. Tests run against mongomock (in-memory MongoDB…, Return a mongomock-backed async Motor database substitute., health.check_all should return the correct structure (mocked)., TestHealthCheck, TestPasswordHashing
 
 ### Community 150 - "Agent Studio: Export & Import AI Agents & Separate Knowledge Bases Across Organizations"
 Cohesion: 0.14
@@ -923,13 +939,13 @@ Nodes (3): fixture, SKIP, TestLeadFilters
 Cohesion: 0.22
 Nodes (13): is_port_in_use(), kill_process_tree(), main(), preflight_checks(), Launch backend and frontend in separate console windows (Windows)., Run both services unified in the current console with log prefixing., Check if a TCP port is in use., Stream stdout/stderr line by line with a colored prefix. (+5 more)
 
-### Community 155 - "CallingHours"
-Cohesion: 0.26
-Nodes (11): CallingHours, Any, Time window during which calls are allowed., test_calling_hours_accepts_7_as_sunday(), test_calling_hours_accepts_day_strings(), test_calling_hours_accepts_integers(), test_calling_hours_normalizes_and_sorts_with_sunday(), test_calling_hours_rejects_empty_days() (+3 more)
+### Community 155 - "Campaign"
+Cohesion: 0.14
+Nodes (14): CallingHours, Campaign, Any, field_validator, An outbound calling campaign., Time window during which calls are allowed., test_calling_hours_accepts_7_as_sunday(), test_calling_hours_accepts_day_strings() (+6 more)
 
 ### Community 156 - "backend/telephony/plivo.py"
-Cohesion: 0.09
-Nodes (26): get_redis(), Return the Redis client, or None if Redis is unavailable (dev only)., get_active_transport(), hangup_plivo_call(), _mulaw8k_to_pcm16k(), plivo_hangup(), plivo_ring(), _plivo_unavailable_xml() (+18 more)
+Cohesion: 0.07
+Nodes (27): get_redis(), Return the Redis client, or None if Redis is unavailable (dev only)., AgentRepository, Agent, Get agent only if it belongs to this org (tenant isolation)., get_active_transport(), _mulaw8k_to_pcm16k(), plivo_hangup() (+19 more)
 
 ### Community 157 - "AI Telecalling SaaS — Development Progress"
 Cohesion: 0.15
@@ -939,25 +955,21 @@ Nodes (13): AI Telecalling SaaS — Development Progress, Build, CHECKPOINT HIST
 Cohesion: 0.17
 Nodes (11): 1. Current State (post FEAT-005A), 2. File Structure, 3. Shared Component Reuse, 4. Auth/Permission Guard Strategy, 5. Design System, 6. API Client Namespaces (lib/api.ts), 7. Verification Commands, 8. Known Gaps / Future Work (+3 more)
 
-### Community 160 - "seed_default_packs"
-Cohesion: 0.18
-Nodes (6): AsyncIOMotorDatabase, CallingPack, Seed default calling packs. Idempotent, auto-updates legacy descriptions., seed_default_packs(), M24 tests — Super Admin. Tests: 1. All admin endpoints require platform role…, run()
+### Community 159 - "AnalyticsService"
+Cohesion: 0.16
+Nodes (9): AnalyticsService, AsyncIOMotorDatabase, datetime, Revenue and margin analytics service — MVP simple approach. Per spec: "Keep MVP…, Total revenue: subscription + calling., Per-day call/credit analytics for the last N days., Complete analytics report for the admin dashboard., Current MRR from active subscriptions. MRR = sum of monthly price of all… (+1 more)
+
+### Community 160 - "run"
+Cohesion: 0.20
+Nodes (3): SKIP, run(), TestAppointmentService
 
 ### Community 161 - "TestCallPipelinePreserved"
 Cohesion: 0.17
 Nodes (5): Verify the original call_session.py pipeline is intact., CallSession must import without errors., Silero VAD endpointer must import without errors., Transport protocol (play/clear/notify) is still intact., TestCallPipelinePreserved
 
-### Community 162 - "PaymentRepository"
-Cohesion: 0.32
-Nodes (3): PaymentRepository, AsyncIOMotorDatabase, Payment
-
-### Community 163 - "test_m20_post_call.py"
-Cohesion: 0.06
-Nodes (23): A single turn (user or agent utterance) in the call transcript., Full transcript for a single call. Unique per call_id., Transcript, Turn, Get existing transcript or create one. Idempotent., Append turns to transcript and update count., TranscriptRepository, PostCallService (+15 more)
-
-### Community 164 - "HandoffService"
-Cohesion: 0.20
-Nodes (6): HandoffService, AsyncIOMotorDatabase, Human handoff service. Packages complete call context for transfer to a human…, Generate a recommended action string based on transfer trigger., Package call context and record a human transfer request. Returns the complete…, _recommended_action()
+### Community 163 - "TranscriptRepository"
+Cohesion: 0.15
+Nodes (8): TranscriptRepository, _get_mock_db(), SKIP, Running process() twice does NOT double-count analytics., Usage event written only once per call., run(), TestPostCallService, TestTranscriptRepository
 
 ### Community 165 - "CredentialStore"
 Cohesion: 0.22
@@ -971,9 +983,9 @@ Nodes (5): Immutable snapshot of a voice profile's provider configuration. Once 
 Cohesion: 0.22
 Nodes (6): _customer_event(), datetime, Usage summary safe to return to customer (no provider costs)., Customer-safe usage event list (strips provider cost)., Full admin summary with provider costs and margin., Strip provider cost from event before sending to customer.
 
-### Community 169 - "elevenlabs_v2.py"
-Cohesion: 0.20
-Nodes (7): Any, Exception, ElevenLabs TTS provider adapter — proper implementation. Uses the official…, Stream audio chunks from ElevenLabs. Yields {"audio": bytes_chunk,…, Return a sanitized error message — never includes the API key., Synthesize text to PCM16 audio bytes. Returns {"audio": bytes, "sample_rate":…, _sanitize_elevenlabs_error()
+### Community 169 - "ElevenLabsTTSProviderV2"
+Cohesion: 0.10
+Nodes (14): ElevenLabsTTSProviderV2, Any, Exception, ElevenLabs TTS provider adapter — proper implementation. Uses the official…, Synchronous synthesis — called in a thread pool., Stream audio chunks from ElevenLabs. Yields {"audio": bytes_chunk,…, Collect streaming chunks synchronously (run in thread)., Return list of available voice dicts from the API. (+6 more)
 
 ### Community 170 - "TestRBACHTTP"
 Cohesion: 0.26
@@ -987,9 +999,13 @@ Nodes (9): SarvamAgentStudioPage(), connectPhoneCallStream(), downsampleTo16k(),
 Cohesion: 0.20
 Nodes (9): Full Razorpay Payment Integration & Admin Manual Approval Mode Implementation Plan, Global Constraints, Review Focus, Task 1: Backend Data Models and Repositories, Task 2: Backend API Endpoints (Customer & Admin), Task 3: Frontend API Client and Razorpay Helper, Task 4: Frontend Customer Billing Page Integration, Task 5: Frontend Admin Dashboard Mode Toggle & Approval Queue (+1 more)
 
-### Community 177 - "CurrentUser"
-Cohesion: 0.06
-Nodes (48): get_pipeline_status(), Return whether STT, LLM, and TTS pipeline components are configured and ready.…, _campaign_response(), campaign_stats(), cancel_campaign(), create_campaign(), CreateCampaignRequest, delete_campaign() (+40 more)
+### Community 177 - "HTTPException"
+Cohesion: 0.08
+Nodes (47): _campaign_response(), campaign_stats(), cancel_campaign(), create_campaign(), CreateCampaignRequest, delete_campaign(), enroll_campaign_leads(), EnrollCampaignLeadsRequest (+39 more)
+
+### Community 178 - "test_m14_preflight.py"
+Cohesion: 0.15
+Nodes (11): _get_mock_db(), _make_campaign(), _make_redis(), M14 tests — Campaign Pre-flight. Tests: 1. All checks pass → campaign can start…, Create an active platform voice profile with a version., Create leads for the org., Create an active subscription for the org., _seed_credits() (+3 more)
 
 ### Community 182 - "security_audit"
 Cohesion: 0.40
@@ -999,13 +1015,17 @@ Nodes (5): get, rate_limits(), Run security audit checks against the codebase., 
 Cohesion: 0.22
 Nodes (8): Agent Studio: Export & Import AI Agents and Separate Knowledge Bases Implementation Plan, Global Constraints, Review Focus, Task 1: Backend Agent Export & Import Services and Endpoints, Task 2: Backend Knowledge Base Export & Import Services and Endpoints, Task 3: Frontend API Client & Agent Import/Export UI Components, Task 4: Frontend Separate Knowledge Base Import/Export Components, Task 5: End-to-End System Verification and Graphify Update
 
+### Community 184 - "ProviderOpsService"
+Cohesion: 0.15
+Nodes (13): platform_latency(), provider_health(), provider_metrics(), get, Health summary across all providers., Per-provider metrics: success rate, latency, cost, call count., Platform-wide call latency statistics., Health status of active voice profiles and their provider routes. (+5 more)
+
 ### Community 186 - "RazorpayProvider"
 Cohesion: 0.14
 Nodes (6): Verify Razorpay webhook signature. Signature = HMAC-SHA256(body,…, Route verified webhook event to appropriate handler., Razorpay v1 payment provider., Create a Razorpay order. Amount is in PAISE (integer). Returns:…, Verify Razorpay payment signature. Signature = HMAC-SHA256(order_id + "|" +…, RazorpayProvider
 
 ### Community 187 - "GoogleWaveNetTTSProvider"
-Cohesion: 0.04
-Nodes (58): _clean_key(), Any, AsyncClient, Exception, Soniox Speech-to-Text provider adapter. Connects to Soniox's official REST API:…, Transcribe audio bytes to text via Soniox REST API., Normalize and strip quotes or redundant Bearer prefix from API key., Return a sanitized error message — never includes the API key. (+50 more)
+Cohesion: 0.05
+Nodes (49): Soniox Speech-to-Text adapter., SonioxSTTProvider, _clean_key(), GoogleWaveNetTTSProvider, Any, AsyncClient, Exception, Google Cloud WaveNet Text-to-Speech provider adapter. Connects to Google Cloud… (+41 more)
 
 ### Community 188 - "AdminOrgsPage"
 Cohesion: 0.33
@@ -1015,9 +1035,9 @@ Nodes (3): AdminOrgsPage(), handleGeneratePassword(), generateRandomPassword()
 Cohesion: 0.17
 Nodes (6): Same call_id reserve twice: no double-deduction., Can't release a call that was already settled., reserve() moves available → reserved; total unchanged., run(), TestCreditRelease, TestCreditReserve
 
-### Community 190 - "User"
-Cohesion: 0.12
-Nodes (19): AdminUpdateOrgPasswordRequest, field_validator, ChangePasswordRequest, Organization, Represents a customer organization (tenant)., MongoDB user document., User, MockRequest (+11 more)
+### Community 190 - "test_password_update.py"
+Cohesion: 0.13
+Nodes (22): AdminUpdateOrgPasswordRequest, Request, Update / reset password for the owner/primary user of an organization., update_org_password(), ChangePasswordRequest, Organization, Represents a customer organization (tenant)., MongoDB user document. (+14 more)
 
 ### Community 191 - "test_m32_documentation.py"
 Cohesion: 0.39
@@ -1028,8 +1048,8 @@ Cohesion: 0.25
 Nodes (3): Should have substantial number of routes registered., _read(), TestAPICoverage
 
 ### Community 194 - "test_m26_provider_ops.py"
-Cohesion: 0.06
-Nodes (16): _compute_health(), _overall_health(), ProviderOpsService, AsyncIOMotorDatabase, Provider Operations Service. Tracks per-provider health, latency, success/error…, Quick health summary: which providers are healthy/degraded/unhealthy., Health check for each active voice profile version's provider routes., Platform-wide latency stats from recent calls. (+8 more)
+Cohesion: 0.07
+Nodes (11): _compute_health(), _overall_health(), Quick health summary: which providers are healthy/degraded/unhealthy., Aggregate metrics per provider from the last N hours. Returns: [{provider,…, _get_mock_db(), SKIP, M26 tests — Provider Operations. Tests: 1. _compute_health —…, run() (+3 more)
 
 ### Community 196 - "Review Focus"
 Cohesion: 0.25
@@ -1039,13 +1059,17 @@ Nodes (7): Global Constraints, Review Focus, Sarvam 105B Conversations LLM Integ
 Cohesion: 0.29
 Nodes (7): ElevenLabs (TTS), Exotel (Telephony), OpenAI / Groq (LLM), Provider Configuration, Razorpay (Payments), Sarvam (STT + TTS), Twilio (Telephony)
 
-### Community 200 - "(auth)/layout.tsx"
-Cohesion: 0.18
-Nodes (6): AuthClientLayout(), metadata, inter, metadata, extends, next
+### Community 200 - "app/layout.tsx"
+Cohesion: 0.29
+Nodes (4): inter, metadata, extends, next
 
 ### Community 201 - "5. PROVIDER ABSTRACTION"
 Cohesion: 0.29
 Nodes (7): 5. PROVIDER ABSTRACTION, LLMProvider, PaymentProvider, PhoneNumberProvider, STTProvider, TelephonyProvider, TTSProvider
+
+### Community 205 - "Appointment"
+Cohesion: 0.23
+Nodes (7): Appointment, field_validator, A generic appointment record., _future_dt(), datetime, M18 tests — Appointments. Tests: 1. Appointment model — valid statuses,…, TestAppointmentModel
 
 ### Community 207 - "Review Focus"
 Cohesion: 0.22
@@ -1079,9 +1103,9 @@ Nodes (5): Run all tests, Run specific checkpoint, Run with coverage, Test witho
 Cohesion: 0.40
 Nodes (5): 36. DOCUMENTATION FILES MAINTAINED DURING EXECUTION, MVP_ARCHITECTURE.md, MVP_DECISIONS.md, MVP_PROGRESS.md, MVP_TEST_STATUS.md
 
-### Community 216 - "TestCampaignCallCompletion"
-Cohesion: 0.11
-Nodes (7): FakeRedis, SKIP, When the only lead in a campaign is called and finished: 1. Concurrency slot is…, Calling finalize_call twice does not double-increment counters or release slots…, CallSession.finalize() directly finalizes the SaaS call without hitting legacy…, run(), TestCampaignCallCompletion
+### Community 216 - "CallService"
+Cohesion: 0.12
+Nodes (10): CallService, Finalize a call after it ends. 1. Settle credits 2. Finalize call record 3.…, Initiate an outbound call. 1. Reserve credits 2. Create call record 3.…, SKIP, When the only lead in a campaign is called and finished: 1. Concurrency slot is…, Calling finalize_call twice does not double-increment counters or release slots…, When carrier hangup webhook finalizes first (outcome=contacted, score=0,…, CallSession.finalize() directly finalizes the SaaS call without hitting legacy… (+2 more)
 
 ### Community 217 - "Subscription"
 Cohesion: 0.40
@@ -1103,9 +1127,9 @@ Nodes (3): OrderRepository, Order, TestOrderRepository
 Cohesion: 0.67
 Nodes (3): 4. MULTI-TENANCY, Organization, Platform
 
-### Community 227 - "seed_demo_numbers"
-Cohesion: 0.40
-Nodes (3): AsyncIOMotorDatabase, Seed demo phone numbers for DEMO_MODE. Idempotent., seed_demo_numbers()
+### Community 227 - "PhoneNumber"
+Cohesion: 0.15
+Nodes (14): PhoneNumber, A phone number in the platform inventory., PhoneNumber, Seed demo phone numbers for DEMO_MODE. Idempotent., Strip all provider details for customer-facing responses., Full view including provider details — admin only., seed_demo_numbers(), _to_admin_view() (+6 more)
 
 ### Community 251 - ".export_knowledge_base"
 Cohesion: 0.33
@@ -1115,9 +1139,13 @@ Nodes (3): Any, Export a knowledge base and all active documents in sarvam_kb_ex
 Cohesion: 0.29
 Nodes (6): Global Constraints, Model Directory Catalogue & Auto-Loading Models Implementation Plan, Task 1: Update Groq LLM Provider Adapter, Task 2: Catalogue Seeding, Credential Reuse & Live Models Endpoint, Task 3: Frontend API & Dropdown Auto-Loading, Task 4: Verification & Graphify Update
 
-### Community 254 - "AgentRepository"
-Cohesion: 0.08
-Nodes (22): Agent, AgentVersion, BusinessTemplate, Agent builder models. An Agent is an AI calling agent configuration tied to a…, A generic business template (Solar, Real Estate, Collections, etc.).…, Customer-owned AI calling agent., Immutable-once-published snapshot of an agent's configuration., AgentRepository (+14 more)
+### Community 254 - "BusinessTemplateRepository"
+Cohesion: 0.17
+Nodes (12): Agent, AgentVersion, BusinessTemplate, Agent builder models. An Agent is an AI calling agent configuration tied to a…, A generic business template (Solar, Real Estate, Collections, etc.).…, Customer-owned AI calling agent., Immutable-once-published snapshot of an agent's configuration., BusinessTemplateRepository (+4 more)
+
+### Community 255 - "AdminCallingPacksPage"
+Cohesion: 0.11
+Nodes (4): AdminCallingPacksPage(), AdminOrgDetailPage(), DashboardPage(), formatCredits()
 
 ### Community 256 - "Review Focus"
 Cohesion: 0.22
@@ -1133,11 +1161,15 @@ Nodes (5): Changed files and regression checks, Changes in this pass, Measure be
 
 ### Community 260 - "get_db"
 Cohesion: 0.04
-Nodes (105): admin_adjust_wallet(), admin_approve_manual_request(), admin_costs(), admin_create_calling_pack(), admin_dashboard(), admin_delete_calling_pack(), admin_get_billing_settings(), admin_list_manual_requests() (+97 more)
+Nodes (92): admin_adjust_wallet(), admin_approve_manual_request(), admin_costs(), admin_create_calling_pack(), admin_dashboard(), admin_delete_calling_pack(), admin_get_billing_settings(), admin_list_manual_requests() (+84 more)
 
-### Community 262 - "test_m4_payment.py"
-Cohesion: 0.14
-Nodes (6): WebhookEventRepository, _get_mock_db(), SKIP, M4 tests — Razorpay payment integration. Tests: 1. Billing models — integer…, TestInvoiceRepository, TestWebhookIdempotency
+### Community 261 - "ToolRegistry"
+Cohesion: 0.15
+Nodes (9): Immutable record of a single tool invocation during a call., ToolCall, AsyncIOMotorDatabase, Invoke a tool. Creates an immutable ToolCall audit record. Returns the tool's…, Central tool registry. Singleton-friendly; no global state., Register a tool callable., Check if tool is enabled for this org. Default: all built-ins enabled., ToolRegistry (+1 more)
+
+### Community 262 - "WebhookEventRepository"
+Cohesion: 0.15
+Nodes (5): WebhookEventRepository, _get_mock_db(), SKIP, TestInvoiceRepository, TestWebhookIdempotency
 
 ### Community 263 - "Design: Agent Multi-KB Selector and Grounded Response Injection"
 Cohesion: 0.29
@@ -1147,13 +1179,9 @@ Nodes (6): Architecture & Data Flow, Design: Agent Multi-KB Selector and Grounde
 Cohesion: 0.22
 Nodes (8): Campaign Calling Hours UI & Configuration Implementation Plan, Global Constraints, Review Focus, Task 1: Backend CallingHours Validation & Serializer, Task 2: Frontend API Client Types & Campaign Creation Day Selector, Task 3: Campaign Detail Page Schedule View & Calling Hours Edit Modal, Task 4: Pre-flight Error Recovery Dialog in UI, Task 5: Verification & Testing
 
-### Community 265 - "transcripts.py"
-Cohesion: 0.27
-Nodes (11): get_transcript(), list_transcripts(), process_call(), ProcessCallRequest, BaseModel, get, post, Transcripts API. GET /api/v1/transcripts — list transcripts for org GET… (+3 more)
-
-### Community 270 - "TestAuthEndpoints"
-Cohesion: 0.11
-Nodes (4): SKIP_IF_NO_MONGOMOCK, Test auth endpoints using TestClient + mongomock., TestAuthEndpoints, TestTokenRefresh
+### Community 265 - "TelephonyProvider"
+Cohesion: 0.13
+Nodes (3): TelephonyProvider, ExotelProvider, Exotel REST adapter boundary; credentials stay in platform configuration.
 
 ### Community 271 - "test_m3_subscriptions.py"
 Cohesion: 0.17
@@ -1163,25 +1191,37 @@ Nodes (4): _get_mock_db(), SKIP_IF_NO_MONGOMOCK, M3 tests — Plans + Subscripti
 Cohesion: 0.15
 Nodes (6): Settle bills exactly; over-reserved credits returned to available., Settle using all reserved credits., actual_credits > reserved is capped at reserved (safety guard)., Double-settle same call_id is a no-op., 0-second call: no consume ledger entry, reservation cleared., TestCreditSettle
 
+### Community 274 - "test_m16_barge_in_latency.py"
+Cohesion: 0.17
+Nodes (11): M16 tests — Barge-In + Latency. Tests: 1. VAD SPEECH_START event fires when…, reset() should clear accumulated state., Generate silent PCM16 audio., Generate loud sine wave PCM16 to simulate speech energy., Tests on the VAD endpointer logic directly, using synthetic audio., SPEECH_START fires after vad_speech_confirm_ms of sustained speech., Pure silence should not generate speech events., After speech + silence window, UTTERANCE should fire. (+3 more)
+
 ### Community 275 - "normalize_phone"
 Cohesion: 0.27
 Nodes (3): normalize_phone(), Normalize a phone number to E.164 (best-effort for Indian numbers)., TestPhoneNormalization
+
+### Community 276 - "campaigns/[id]/page.tsx"
+Cohesion: 0.17
+Nodes (9): CallingHoursModal(), CallingHoursModalProps, DAY_OPTIONS, DayOption, TIMEZONE_OPTIONS, CallingHoursConfig, Campaign, CampaignLead (+1 more)
 
 ### Community 277 - "interpolate_template"
 Cohesion: 0.19
 Nodes (8): interpolate_template(), Any, Interpolate variables into template string supporting both {var} and {{var}}…, Tests for dynamic variable injection and template interpolation., Verify that PyMongo database objects that raise on bool(db) work cleanly., run(), TestCallSessionVariableInjection, test_interpolate_template_variables()
 
-### Community 282 - "providers/page.tsx"
-Cohesion: 0.10
-Nodes (21): AdminAnalyticsPage(), DailyEntry, MRRData, MRRMovement, PERIOD_OPTIONS, RevenueData, AdminProvidersPage(), HealthSummary (+13 more)
+### Community 280 - "test_m15_calls.py"
+Cohesion: 0.11
+Nodes (8): _fund_org(), _get_mock_db(), _make_redis(), SKIP, M15 tests — Real-Time AI Calling infrastructure. Tests: 1. Call model — valid…, run(), TestCallService, TestCallsHTTP
+
+### Community 281 - "Transcript"
+Cohesion: 0.16
+Nodes (8): Transcript model — full turn-by-turn call record. One Transcript document per…, A single turn (user or agent utterance) in the call transcript., Full transcript for a single call. Unique per call_id., Transcript, Turn, Get existing transcript or create one. Idempotent., Append turns to transcript and update count., TestTranscriptModel
 
 ### Community 283 - "Review Focus"
 Cohesion: 0.20
 Nodes (9): Global Constraints, Plivo Phone Number Provider Implementation Plan, Review Focus, Task 1: Plivo Telephony Provider Adapter & Registry Integration, Task 2: Plivo Real-Time Media Stream Webhook & WebSocket, Task 3: Plivo Outbound Calling Dispatch & Hangup, Task 4: Phone Number Model & Privacy Tests for Plivo, Task 5: Admin Dashboard UI - Plivo Phone Number Support (+1 more)
 
 ### Community 284 - "TestMVPValidation"
-Cohesion: 0.14
-Nodes (8): Validate the overall MVP state., All 26+ API routers are wired., Every checkpoint M1-M32 has a test file (M29 used existing suite)., Core services never import provider-specific modules directly., All monetary model fields use int (paise), not float., All repositories include organization_id in their queries., Demo mode seed can be imported and creates the right data., TestMVPValidation
+Cohesion: 0.17
+Nodes (7): Validate the overall MVP state., All 26+ API routers are wired., Every checkpoint M1-M32 has a test file (M29 used existing suite)., Core services never import provider-specific modules directly., All repositories include organization_id in their queries., Demo mode seed can be imported and creates the right data., TestMVPValidation
 
 ### Community 285 - "ImportAgentModal"
 Cohesion: 0.48
@@ -1191,21 +1231,33 @@ Nodes (7): ImportAgentModal(), handleClose(), handleDrop(), handleFileChange(), 
 Cohesion: 0.48
 Nodes (7): ImportKbModal(), handleClose(), handleDrop(), handleFileChange(), handleImport(), processFile(), resetState()
 
+### Community 288 - "soniox.py"
+Cohesion: 0.17
+Nodes (9): _clean_key(), Any, AsyncClient, Exception, Soniox Speech-to-Text provider adapter. Connects to Soniox's official REST API:…, Transcribe audio bytes to text via Soniox REST API., Normalize and strip quotes or redundant Bearer prefix from API key., Return a sanitized error message — never includes the API key. (+1 more)
+
 ### Community 289 - "VoiceProfileService"
-Cohesion: 0.12
-Nodes (14): Return platform profiles + org's own profiles. Active only., VoiceProfileRepository, _customer_view(), AsyncIOMotorDatabase, Seed default platform voice profiles if none exist. Idempotent., seed_default_voice_profiles(), VoiceProfileService, skipif (+6 more)
+Cohesion: 0.19
+Nodes (11): _customer_view(), AsyncIOMotorDatabase, Seed default platform voice profiles if none exist. Idempotent., seed_default_voice_profiles(), VoiceProfileService, skipif, run(), test_customer_view_has_no_internal_route_fields() (+3 more)
 
 ### Community 290 - "Review Focus"
 Cohesion: 0.18
 Nodes (10): Global Constraints, Multi-Campaign Leads, Custom Column Variable Mapping & Dynamic Prompt Interpolation Implementation Plan, Review Focus, Task 1: CampaignLead Model & CampaignLeadRepository, Task 2: Lead Import with Custom Column Mapping & Contact Upsert, Task 3: Dynamic Variable Injection in Telephony & CallSession, Task 4: Dialing Worker, Retry Lifecycle & Completion Engine, Task 5: Campaign Leads API Endpoints (+2 more)
 
+### Community 291 - "SarvamTTSProvider"
+Cohesion: 0.18
+Nodes (7): Any, AsyncClient, Progressive low-latency streaming TTS using Sarvam /stream endpoint., SarvamTTSProvider, parametrize, A failed TTS stream must not replay speech the caller already heard., test_stream_fallback_only_before_audio_is_emitted()
+
 ### Community 293 - "TestPlivoCallDispatch"
 Cohesion: 0.48
 Nodes (3): patch, run(), TestPlivoCallDispatch
 
+### Community 294 - "._get_redis"
+Cohesion: 0.21
+Nodes (6): Return all reserved credits for call_id back to available. Idempotent: if no…, Finalize billing for a completed call. actual_credits ≤ reserved_credits.…, Settle call by duration in seconds, applying 1 credit = 1 minute ceil rounding:…, Extend an active reservation by additional_credits (default 5 minutes).…, Reserve up to max_credits for an active call. Raises ValueError if insufficient…, _reserve_key()
+
 ### Community 295 - "TwilioProvider"
-Cohesion: 0.23
-Nodes (6): AsyncIOMotorClient, get_client(), TwilioProvider, main(), Data Migration Script: Convert legacy second-based credits to 1-credit-per-…, run_migration()
+Cohesion: 0.19
+Nodes (7): AsyncIOMotorClient, get_client(), Twilio adapter; the Media Streams transport remains in backend.telephony.twilio., TwilioProvider, main(), Data Migration Script: Convert legacy second-based credits to 1-credit-per-…, run_migration()
 
 ### Community 296 - "TestConcurrentReservations"
 Cohesion: 0.18
@@ -1215,6 +1267,26 @@ Nodes (6): 10 concurrent calls — no double-spend, no negative credits., 10 con
 Cohesion: 0.50
 Nodes (3): Design: Plivo Phone Number Provider & Multi-Organization Support, Goals, Intent and Context
 
+### Community 298 - "PostCallService"
+Cohesion: 0.26
+Nodes (3): PostCallService, AsyncIOMotorDatabase, Run the full post-call pipeline. Returns a summary dict of what was processed.…
+
+### Community 299 - "AgentVersionRepository"
+Cohesion: 0.27
+Nodes (5): AgentVersionRepository, AgentVersion, Any, Mark a version as published (immutable after this)., Update draft configuration. Raises if already published.
+
+### Community 300 - "WalletService"
+Cohesion: 0.20
+Nodes (5): Grant credits from a calling pack purchase. Idempotent: same idempotency_key is…, Grant free bonus credits. Admin action., Manual credit adjustment by platform admin. credits_delta positive = add,…, Expire lots past their expiry date and remove those credits from wallet.…, WalletService
+
+### Community 302 - "TestHandoffService"
+Cohesion: 0.20
+Nodes (4): Generate a recommended action string based on transfer trigger., _recommended_action(), Tool implementations must not contain business-specific branches (if/else on…, TestHandoffService
+
+### Community 303 - "TestTranscriptsHTTP"
+Cohesion: 0.31
+Nodes (3): _create_call(), _make_redis(), TestTranscriptsHTTP
+
 ### Community 304 - "_make_mock_redis"
 Cohesion: 0.36
 Nodes (3): _get_mock_db(), _make_mock_redis(), In-memory dict-based Redis mock for credit reservation keys.
@@ -1222,6 +1294,10 @@ Nodes (3): _get_mock_db(), _make_mock_redis(), In-memory dict-based Redis mock f
 ### Community 305 - "TestVobizCallDispatch"
 Cohesion: 0.47
 Nodes (3): patch, run(), TestVobizCallDispatch
+
+### Community 306 - "VoiceProfileRepository"
+Cohesion: 0.31
+Nodes (3): Return platform profiles + org's own profiles. Active only., VoiceProfileRepository, VoiceProfile
 
 ### Community 307 - "TestCreditConservation"
 Cohesion: 0.29
@@ -1235,29 +1311,57 @@ Nodes (4): SKIP, End-to-End integration test for Agent Multi-KB association and 
 Cohesion: 0.33
 Nodes (3): _fund_org(), M6 tests — Credit Reservation + Settlement. Tests: 1. reserve() moves credits…, Helper: give an org N credits via bonus.
 
+### Community 312 - ".list_active"
+Cohesion: 0.25
+Nodes (5): datetime, Active lots, sorted FIFO (oldest first for consumption)., Lots expiring before `before` with remaining credits > 0., Consume credits_needed from active lots in FIFO order. Returns actual credits…, CreditLot
+
+### Community 313 - "test_browser_test_session.py"
+Cohesion: 0.36
+Nodes (7): anyio_backend(), mock_db(), anyio, fixture, test_admin_grant_free_tests(), test_free_test_decrement_when_session_starts(), test_organization_created_with_10_free_tests()
+
 ### Community 315 - "CloudProviderRuntime"
 Cohesion: 0.11
 Nodes (28): ProviderConfiguration, A configured provider/model for a given capability (tts/stt/llm)., CloudProviderRuntime, _llm_options(), Any, ProviderConfiguration, Build cloud AI providers from active encrypted admin configurations. This is…, Loads active provider configurations without exposing their credentials. (+20 more)
 
+### Community 316 - "_slugify"
+Cohesion: 0.43
+Nodes (3): Simple slugifier: lowercase, alphanumeric + hyphens., _slugify(), TestSlugGeneration
+
+### Community 318 - "test_campaign_crud.py"
+Cohesion: 0.38
+Nodes (3): Unit and API tests for Campaign CRUD operations., run(), TestCampaignCRUD
+
+### Community 320 - "UpdateBillingSettingsRequest"
+Cohesion: 0.33
+Nodes (4): BaseModel, field_validator, RejectManualRequestSchema, UpdateBillingSettingsRequest
+
+### Community 323 - ".create_campaign"
+Cohesion: 0.50
+Nodes (3): Any, datetime, Resolve qualification criteria schema for an agent.
+
+### Community 324 - "InlineLeadUploadModal"
+Cohesion: 0.60
+Nodes (4): InlineLeadUploadModal(), handleClose(), handleImport(), resetState()
+
 ## Knowledge Gaps
 - **644 isolated node(s):** `MRRData`, `MRRMovement`, `RevenueData`, `DailyEntry`, `PERIOD_OPTIONS` (+639 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **49 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **58 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `test_m12_leads.py`, `TimestampedModel`, `test_m23_customer_billing.py`, `model_directory_service.py`, `test_m4_payment.py`, `Campaign`, `test_m3_subscriptions.py`, `test_m5_wallet.py`, `test_m33_e2e_acceptance.py`, `CallRepository`, `CreditService`, `test_m1_mongodb.py`, `ModelDirectoryService`, `UsageEventRepository`, `TestMVPValidation`, `BaseRepository`, `billing_portal.py`, `VoiceProfileService`, `PaymentRepository`, `test_m20_post_call.py`, `HandoffService`, `VoiceProfileVersionRepository`, `leads.py`, `v1/auth.py`, `Call`, `test_m17_tools_handoff.py`, `CallingPackRepository`, `CurrentUser`, `TestCustomerBillingPortal`, `ReconciliationService`, `repository.py`, `.initiate_call`, `PhoneNumberService`, `OrganizationRepository`, `utcnow`, `SubscriptionPlan`, `test_m26_provider_ops.py`, `SubscriptionPlanRepository`, `test_m14_preflight.py`, `LeadRepository`, `SubscriptionRepository`, `TestCampaignCallCompletion`, `PhoneNumberRepository`, `DNCRepository`, `hash_password`, `run`, `OrderRepository`, `PricingSyncService`, `run`, `CampaignLeadRepository`, `PhoneNumber`, `OrganizationSettings`, `test_m13_campaigns.py`, `AgentRepository`?**
-  _High betweenness centrality (0.081) - this node is a cross-community bridge._
-- **Why does `get_db()` connect `get_db` to `organizations.py`, `dashboard.py`, `v1/model_directory.py`, `transcripts.py`, `UsageService`, `FastAPI`, `v1/billing.py`, `AppointmentService`, `agents.py`, `backend/telephony/plivo.py`, `billing_portal.py`, `AnalyticsService`, `calls.py`, `leads.py`, `v1/auth.py`, `HTTPException`, `routes.py`, `CurrentUser`, `repository.py`, `backend/telephony/vobiz.py`, `phone_numbers.py`, `backend/telephony/twilio.py`, `release_credits`, `subscriptions.py`, `BrowserTransport`, `main.py`, `CampaignWorker`?**
+- **Why does `new_id()` connect `new_id` to `AppointmentRepository`, `AuditLogRepository`, `TimestampedModel`, `test_m12_leads.py`, `test_m23_customer_billing.py`, `ToolRegistry`, `timedelta`, `TestCampaignModel`, `FastAPI`, `test_m3_subscriptions.py`, `CallingPack`, `test_m4_payment.py`, `CreditService`, `test_m1_mongodb.py`, `ModelDirectoryService`, `UsageEventRepository`, `test_m15_calls.py`, `Transcript`, `test_m33_e2e_acceptance.py`, `test_m5_wallet.py`, `backend/telephony/plivo.py`, `billing_portal.py`, `VoiceProfileVersionRepository`, `PostCallService`, `AgentVersionRepository`, `test_m20_post_call.py`, `test_m17_tools_handoff.py`, `VoiceProfileRepository`, `test_m14_preflight.py`, `TestCustomerBillingPortal`, `ReconciliationService`, `repository.py`, `DemoSeedService`, `SubscriptionPlan`, `test_m26_provider_ops.py`, `SubscriptionPlanRepository`, `Appointment`, `LeadRepository`, `UserRepository`, `SubscriptionRepository`, `CallingPackRepository`, `build_demo_registry`, `CallService`, `PhoneNumberRepository`, `DNCRepository`, `run`, `OrderRepository`, `PhoneNumber`, `BaseRepository`, `CampaignLeadRepository`, `DocumentModel`, `CampaignRepository`, `phone_number_repo.py`, `TestModels`, `BusinessTemplateRepository`?**
+  _High betweenness centrality (0.094) - this node is a cross-community bridge._
+- **Why does `get_db()` connect `get_db` to `AuditLogRepository`, `dashboard.py`, `CurrentUser`, `UsageService`, `FastAPI`, `v1/billing.py`, `appointments.py`, `agents.py`, `backend/telephony/plivo.py`, `new_id`, `billing_portal.py`, `analytics.py`, `calls.py`, `LeadService`, `KnowledgeService`, `routes.py`, `HTTPException`, `ProviderOpsService`, `repository.py`, `test_password_update.py`, `backend/telephony/vobiz.py`, `phone_numbers.py`, `backend/telephony/twilio.py`, `release_credits`, `subscriptions.py`, `BrowserTransport`, `main.py`?**
   _High betweenness centrality (0.060) - this node is a cross-community bridge._
-- **Why does `CurrentUser` connect `CurrentUser` to `organizations.py`, `get_db`, `model_directory_service.py`, `dashboard.py`, `v1/model_directory.py`, `transcripts.py`, `UsageService`, `FastAPI`, `v1/billing.py`, `CreditService`, `ModelDirectoryService`, `AppointmentService`, `agents.py`, `billing_portal.py`, `calls.py`, `leads.py`, `v1/auth.py`, `HTTPException`, `CloudProviderRuntime`, `User`, `phone_numbers.py`, `release_credits`, `subscriptions.py`, `seed_templates`, `create_token_pair`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+- **Why does `CurrentUser` connect `CurrentUser` to `AuditLogRepository`, `get_db`, `dashboard.py`, `UsageService`, `FastAPI`, `v1/billing.py`, `CreditService`, `ModelDirectoryService`, `appointments.py`, `agents.py`, `billing_portal.py`, `calls.py`, `LeadService`, `KnowledgeService`, `HTTPException`, `CloudProviderRuntime`, `test_password_update.py`, `phone_numbers.py`, `release_credits`, `subscriptions.py`, `seed_templates`, `create_token_pair`?**
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
 - **Are the 151 inferred relationships involving `HTTPException` (e.g. with `call_detail()` and `admin_adjust_wallet()`) actually correct?**
   _`HTTPException` has 151 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `MRRData`, `MRRMovement`, `RevenueData` to the rest of the system?**
   _644 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `AppointmentRepository` be split into smaller, more focused modules?**
-  _Cohesion score 0.055087719298245616 - nodes in this community are weakly interconnected._
+- **Should `AuditLogRepository` be split into smaller, more focused modules?**
+  _Cohesion score 0.06560283687943262 - nodes in this community are weakly interconnected._
 - **Should `TimestampedModel` be split into smaller, more focused modules?**
-  _Cohesion score 0.06736353077816493 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05735430157261795 - nodes in this community are weakly interconnected._

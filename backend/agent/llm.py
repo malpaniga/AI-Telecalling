@@ -141,7 +141,7 @@ class LLMClient:
                 messages=messages,
                 response_format={"type": "json_object"},
                 temperature=0,
-                max_tokens=150,
+                max_tokens=600,
             )
             parsed = _extract_json(resp.choices[0].message.content)
             if parsed is not None:
@@ -155,7 +155,7 @@ class LLMClient:
                 model=self.extraction_model,
                 messages=messages,
                 temperature=0,
-                max_tokens=150,
+                max_tokens=600,
             )
             parsed = _extract_json(resp.choices[0].message.content)
             if parsed is not None:
