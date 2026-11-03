@@ -8,6 +8,7 @@ Key design:
 """
 
 import logging
+import re
 from datetime import datetime
 from typing import Any, Optional
 
@@ -127,10 +128,11 @@ class LeadRepository(BaseRepository):
         if city:
             c_str = str(city).strip()
             if c_str:
+                escaped_c = re.escape(c_str)
                 conditions.append({
                     "$or": [
-                        {"custom_fields.city": {"$regex": f"^{c_str}$", "$options": "i"}},
-                        {"custom_fields.Town": {"$regex": f"^{c_str}$", "$options": "i"}},
+                        {"custom_fields.city": {"$regex": f"^{escaped_c}$", "$options": "i"}},
+                        {"custom_fields.Town": {"$regex": f"^{escaped_c}$", "$options": "i"}},
                     ]
                 })
         if tags:
@@ -140,11 +142,12 @@ class LeadRepository(BaseRepository):
         if search:
             s_str = str(search).strip()
             if s_str:
+                escaped_s = re.escape(s_str)
                 conditions.append({
                     "$or": [
-                        {"phone": {"$regex": s_str, "$options": "i"}},
-                        {"name": {"$regex": s_str, "$options": "i"}},
-                        {"email": {"$regex": s_str, "$options": "i"}},
+                        {"phone": {"$regex": escaped_s, "$options": "i"}},
+                        {"name": {"$regex": escaped_s, "$options": "i"}},
+                        {"email": {"$regex": escaped_s, "$options": "i"}},
                     ]
                 })
         if conditions:

@@ -143,3 +143,20 @@ class TestLeadFilters:
         leads = resp.json()["leads"]
         assert len(leads) >= 1
         assert leads[0]["custom_fields"].get("city") == "Bangalore"
+
+    def test_search_with_regex_metacharacters(self):
+        self.client.post("/api/v1/leads", json={
+            "phone": "+919999900001",
+            "name": "Sunil Verma",
+            "custom_fields": {"city": "Bangalore"},
+            "tags": ["enterprise"],
+        }, headers=self._auth())
+
+        # Searching phone with '+' or regex brackets should not crash with 500
+        resp = self.client.get("/api/v1/leads?search=%2B9199", headers=self._auth())
+        assert resp.status_code == 200, resp.text
+        assert resp.json()["total"] >= 1
+
+        resp2 = self.client.get("/api/v1/leads?search=[unclosed_bracket", headers=self._auth())
+        assert resp2.status_code == 200, resp2.text
+        assert resp2.json()["total"] == 0

@@ -48,6 +48,12 @@ interface StepReviewProps {
   qualificationSlots: QualificationSlot[];
   selectedLeadIds: string[];
   selectAllMatched: boolean;
+  contactFilters?: {
+    search?: string;
+    city?: string;
+    tag?: string;
+    status?: string;
+  };
   agents: Agent[];
   phoneNumbers: PhoneNumber[];
   submitting: boolean;
@@ -62,6 +68,7 @@ export function StepReview({
   qualificationSlots,
   selectedLeadIds,
   selectAllMatched,
+  contactFilters,
   agents,
   phoneNumbers,
   submitting,
@@ -77,8 +84,16 @@ export function StepReview({
     .filter(Boolean)
     .join(", ");
 
+  const filterDesc: string[] = [];
+  if (contactFilters?.city) filterDesc.push(`City: ${contactFilters.city}`);
+  if (contactFilters?.tag) filterDesc.push(`Tag: #${contactFilters.tag}`);
+  if (contactFilters?.status) filterDesc.push(`Status: ${contactFilters.status}`);
+  if (contactFilters?.search) filterDesc.push(`Search: "${contactFilters.search}"`);
+
   const audienceLabel = selectAllMatched
-    ? "All matched contacts (dynamic filter)"
+    ? filterDesc.length > 0
+      ? `All matching leads (${filterDesc.join(", ")})`
+      : "All organization contacts"
     : `${selectedLeadIds.length} contact${selectedLeadIds.length !== 1 ? "s" : ""} selected`;
 
   return (

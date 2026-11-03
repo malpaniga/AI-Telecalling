@@ -37,9 +37,18 @@ const STATUS_OPTIONS = [
   { value: "failed", label: "Failed Attempts" },
 ];
 
+export interface ContactFilters {
+  search: string;
+  city: string;
+  tag: string;
+  status: string;
+}
+
 interface StepContactsProps {
   selectedLeadIds: string[];
   selectAllMatched: boolean;
+  filters: ContactFilters;
+  onFilterChange: (filters: ContactFilters) => void;
   onToggleLead: (leadId: string) => void;
   onSetSelectedLeads: (leadIds: string[]) => void;
   onSetSelectAllMatched: (selectAll: boolean) => void;
@@ -50,6 +59,8 @@ interface StepContactsProps {
 export function StepContacts({
   selectedLeadIds,
   selectAllMatched,
+  filters,
+  onFilterChange,
   onToggleLead,
   onSetSelectedLeads,
   onSetSelectAllMatched,
@@ -61,11 +72,11 @@ export function StepContacts({
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
 
-  // Filters
-  const [search, setSearch] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-  const [selectedTag, setSelectedTag] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
+  // Filters initialized from parent
+  const [search, setSearch] = useState(filters.search || "");
+  const [selectedCity, setSelectedCity] = useState(filters.city || "");
+  const [selectedTag, setSelectedTag] = useState(filters.tag || "");
+  const [selectedStatus, setSelectedStatus] = useState(filters.status || "");
 
   // Metadata filter options
   const [cities, setCities] = useState<string[]>([]);
@@ -110,7 +121,14 @@ export function StepContacts({
 
   useEffect(() => {
     setPage(1);
-  }, [search, selectedCity, selectedTag, selectedStatus]);
+    onSetSelectAllMatched(false);
+    onFilterChange({
+      search: search.trim(),
+      city: selectedCity,
+      tag: selectedTag,
+      status: selectedStatus,
+    });
+  }, [search, selectedCity, selectedTag, selectedStatus, onSetSelectAllMatched, onFilterChange]);
 
   useEffect(() => {
     fetchLeads();
@@ -149,13 +167,32 @@ export function StepContacts({
     }
   }
 
-  function handleUploadSuccess(importedCount: number, appliedTags?: string[]) {
+  async function handleUploadSuccess(importedCount: number, appliedTags?: string[]) {
     loadFilters();
-    fetchLeads();
     if (appliedTags && appliedTags.length > 0) {
-      setSelectedTag(appliedTags[0]);
+      const primaryTag = appliedTags[0];
+      setSelectedTag(primaryTag);
+      onFilterChange({
+        search: search.trim(),
+        city: selectedCity,
+        tag: primaryTag,
+        status: selectedStatus,
+      });
+      try {
+        const res = await api.leads.list({
+          tag: primaryTag,
+          limit: Math.max(importedCount, 100),
+        });
+        const newIds = res.leads.map((l) => l.id);
+        const merged = Array.from(new Set([...selectedLeadIds, ...newIds]));
+        onSetSelectedLeads(merged);
+        toast.success(`Imported and pre-selected ${newIds.length} new contacts!`);
+      } catch {
+        fetchLeads();
+      }
+    } else {
+      fetchLeads();
     }
-    toast.success(`Added ${importedCount} contacts to campaign selection`);
   }
 
   function handleProceedNext() {

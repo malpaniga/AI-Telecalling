@@ -12,6 +12,7 @@ GET  /api/v1/campaigns/{id}/stats   — runtime stats
 """
 
 import logging
+import re
 from datetime import datetime
 from typing import Any, Optional
 
@@ -428,10 +429,11 @@ async def enroll_campaign_leads(
         if body.city:
             c_str = str(body.city).strip()
             if c_str:
+                escaped_c = re.escape(c_str)
                 conditions.append({
                     "$or": [
-                        {"custom_fields.city": {"$regex": f"^{c_str}$", "$options": "i"}},
-                        {"custom_fields.Town": {"$regex": f"^{c_str}$", "$options": "i"}},
+                        {"custom_fields.city": {"$regex": f"^{escaped_c}$", "$options": "i"}},
+                        {"custom_fields.Town": {"$regex": f"^{escaped_c}$", "$options": "i"}},
                     ]
                 })
                 has_filter = True

@@ -12,7 +12,7 @@ import { api, Agent, PhoneNumber, QualificationSlot } from "@/lib/api";
 import { StepBasics } from "./step-basics";
 import { StepAgent } from "./step-agent";
 import { StepSchedule } from "./step-schedule";
-import { StepContacts } from "./step-contacts";
+import { StepContacts, ContactFilters } from "./step-contacts";
 import { StepReview } from "./step-review";
 
 const WIZARD_STEPS = [
@@ -60,6 +60,12 @@ export default function NewCampaignWizardPage() {
   // Audience selection state
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
   const [selectAllMatched, setSelectAllMatched] = useState(false);
+  const [contactFilters, setContactFilters] = useState<ContactFilters>({
+    search: "",
+    city: "",
+    tag: "",
+    status: "",
+  });
 
   // Initial load
   useEffect(() => {
@@ -198,7 +204,15 @@ export default function NewCampaignWizardPage() {
 
       // 2. Enroll contacts if selected
       if (selectAllMatched) {
-        await api.campaigns.enrollLeads(campaign.id, { all_contacts: true });
+        await api.campaigns.enrollLeads(campaign.id, {
+          city: contactFilters.city || undefined,
+          tags: contactFilters.tag ? [contactFilters.tag] : undefined,
+          status: contactFilters.status || undefined,
+          all_contacts:
+            !contactFilters.city &&
+            !contactFilters.tag &&
+            !contactFilters.status,
+        });
       } else if (selectedLeadIds.length > 0) {
         await api.campaigns.enrollLeads(campaign.id, { lead_ids: selectedLeadIds });
       }
@@ -357,6 +371,8 @@ export default function NewCampaignWizardPage() {
         <StepContacts
           selectedLeadIds={selectedLeadIds}
           selectAllMatched={selectAllMatched}
+          filters={contactFilters}
+          onFilterChange={setContactFilters}
           onToggleLead={handleToggleLead}
           onSetSelectedLeads={setSelectedLeadIds}
           onSetSelectAllMatched={setSelectAllMatched}
@@ -372,6 +388,7 @@ export default function NewCampaignWizardPage() {
           qualificationSlots={qualificationSlots}
           selectedLeadIds={selectedLeadIds}
           selectAllMatched={selectAllMatched}
+          contactFilters={contactFilters}
           agents={agents}
           phoneNumbers={phoneNumbers}
           submitting={submitting}

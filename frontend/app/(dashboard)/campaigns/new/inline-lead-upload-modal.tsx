@@ -147,12 +147,13 @@ export function InlineLeadUploadModal({
 
     setUploading(true);
     try {
+      const uploadTag = tags.trim() || `import_${Date.now().toString(36)}`;
       const res = await api.leads.import(file, {
-        tags: tags.trim() || undefined,
+        tags: uploadTag,
         column_mapping: finalMapping,
       });
 
-      const parsedTags = tags
+      const parsedTags = uploadTag
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean);

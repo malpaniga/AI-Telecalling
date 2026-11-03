@@ -53,7 +53,9 @@ export function StepAgent({
       return;
     }
     const defaultSlots =
-      selectedAgent.qualification_schema && selectedAgent.qualification_schema.length > 0
+      qualificationSlots.length > 0
+        ? qualificationSlots
+        : selectedAgent.qualification_schema && selectedAgent.qualification_schema.length > 0
         ? selectedAgent.qualification_schema
         : selectedAgent.slot_definitions && selectedAgent.slot_definitions.length > 0
         ? selectedAgent.slot_definitions
