@@ -972,18 +972,28 @@ export const api = {
     list: (params?: {
       campaign_id?: string;
       status?: string;
+      city?: string;
+      tag?: string;
+      tags?: string;
+      search?: string;
       limit?: number;
       skip?: number;
     }) => {
       const q = new URLSearchParams();
       if (params?.campaign_id) q.set("campaign_id", params.campaign_id);
       if (params?.status) q.set("status", params.status);
+      if (params?.city) q.set("city", params.city);
+      if (params?.tag) q.set("tag", params.tag);
+      if (params?.tags) q.set("tags", params.tags);
+      if (params?.search) q.set("search", params.search);
       if (params?.limit != null) q.set("limit", String(params.limit));
       if (params?.skip != null) q.set("skip", String(params.skip));
       return apiRequest<LeadListResponse>(
         "GET", `/api/v1/leads${q.toString() ? "?" + q : ""}`
       );
     },
+    filters: () =>
+      apiRequest<{ cities: string[]; tags: string[] }>("GET", "/api/v1/leads/filters"),
     get: (id: string) => apiRequest<Lead>("GET", `/api/v1/leads/${id}`),
     create: (body: {
       phone: string;
@@ -1119,6 +1129,8 @@ export const api = {
       body: {
         lead_ids?: string[];
         tags?: string[];
+        city?: string;
+        status?: string;
         all_contacts?: boolean;
       }
     ) =>
