@@ -143,9 +143,9 @@ export function StepBasics({
                         {p.status}
                       </span>
                     </div>
-                    {p.friendly_name && (
+                    {p.display_name && (
                       <span className="text-xs text-text-secondary mt-1">
-                        {p.friendly_name}
+                        {p.display_name}
                       </span>
                     )}
                     <span className="text-[11px] text-text-muted mt-2 capitalize">

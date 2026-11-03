@@ -155,7 +155,7 @@ export function StepAgent({
               </option>
               {agents.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.name} ({a.language || "English"} • v{a.active_version ?? 1})
+                  {a.name} (v{a.active_version ?? 1})
                 </option>
               ))}
             </Select>
@@ -165,10 +165,10 @@ export function StepAgent({
             <div className="rounded-xl border border-border-default bg-bg-subtle/50 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-text-secondary">
-                  Language & Speech Mode
+                  Agent Template
                 </span>
-                <span className="text-xs font-semibold text-text-primary uppercase tracking-wider">
-                  {selectedAgent.language || "en-US"}
+                <span className="text-xs font-semibold text-text-primary capitalize tracking-wider">
+                  {selectedAgent.template_slug || "Standard"}
                 </span>
               </div>
               {selectedAgent.description && (
@@ -200,7 +200,7 @@ export function StepAgent({
             {/* Quick Skip with Defaults button */}
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleSkipWithDefaults}
               className="gap-1.5 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10 self-start sm:self-auto"
@@ -325,7 +325,7 @@ export function StepAgent({
           ) : (
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => setShowAddSlot(true)}
               className="gap-1.5 text-xs w-full sm:w-auto"

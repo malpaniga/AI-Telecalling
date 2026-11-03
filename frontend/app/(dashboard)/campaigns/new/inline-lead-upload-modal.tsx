@@ -170,13 +170,15 @@ export function InlineLeadUploadModal({
 
   return (
     <Modal
-      open={isOpen}
+      isOpen={isOpen}
       onClose={handleClose}
       title="Upload Contacts"
-      description="Upload a CSV or Excel spreadsheet of leads to immediately include in this campaign."
-      maxWidth="max-w-2xl"
+      size="lg"
     >
       <div className="space-y-5">
+        <p className="text-xs text-text-secondary -mt-3">
+          Upload a CSV or Excel spreadsheet of leads to immediately include in this campaign.
+        </p>
         {/* Drag & Drop zone */}
         {!file && (
           <div

@@ -191,7 +191,7 @@ export function StepContacts({
 
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => setShowUploadModal(true)}
               className="gap-1.5 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10 self-start sm:self-auto"
@@ -316,7 +316,7 @@ export function StepContacts({
                 </p>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => setShowUploadModal(true)}
                   className="mt-4 gap-1.5 text-xs"
