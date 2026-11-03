@@ -115,15 +115,30 @@ async def create_lead(
 async def list_leads(
     campaign_id: Optional[str] = None,
     status: Optional[str] = None,
+    city: Optional[str] = None,
+    tag: Optional[str] = None,
+    tags: Optional[str] = None,
+    search: Optional[str] = None,
     limit: int = Query(default=100, le=1000),
     skip: int = 0,
     user: CurrentUser = Depends(get_current_user),
 ):
     org_id = _require_org(user)
     svc = LeadService(get_db())
+    tag_list = []
+    if tags:
+        tag_list.extend([t.strip() for t in tags.split(",") if t.strip()])
+    if tag and tag.strip():
+        tag_list.append(tag.strip())
     leads, total = await svc.list_leads(
-        org_id, campaign_id=campaign_id, status=status,
-        limit=limit, skip=skip,
+        org_id,
+        campaign_id=campaign_id,
+        status=status,
+        city=city,
+        tags=tag_list if tag_list else None,
+        search=search,
+        limit=limit,
+        skip=skip,
     )
     return {
         "total": total,
@@ -131,6 +146,15 @@ async def list_leads(
         "skip": skip,
         "leads": [_lead_response(l) for l in leads],
     }
+
+
+@router.get("/filters")
+async def get_lead_filters(
+    user: CurrentUser = Depends(get_current_user),
+):
+    org_id = _require_org(user)
+    svc = LeadService(get_db())
+    return await svc.get_filter_options(org_id)
 
 
 @router.get("/dnc")

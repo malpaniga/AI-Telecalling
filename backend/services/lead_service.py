@@ -223,15 +223,34 @@ class LeadService:
         organization_id: str,
         campaign_id: Optional[str] = None,
         status: Optional[str] = None,
+        city: Optional[str] = None,
+        tags: Optional[list[str]] = None,
+        search: Optional[str] = None,
         limit: int = 100,
         skip: int = 0,
     ) -> tuple[list[Lead], int]:
         leads = await self.lead_repo.list_for_org(
-            organization_id, campaign_id=campaign_id,
-            status=status, limit=limit, skip=skip,
+            organization_id,
+            campaign_id=campaign_id,
+            status=status,
+            city=city,
+            tags=tags,
+            search=search,
+            limit=limit,
+            skip=skip,
         )
-        total = await self.lead_repo.count_for_org(organization_id, campaign_id)
+        total = await self.lead_repo.count_for_org(
+            organization_id,
+            campaign_id=campaign_id,
+            status=status,
+            city=city,
+            tags=tags,
+            search=search,
+        )
         return leads, total
+
+    async def get_filter_options(self, organization_id: str) -> dict[str, list[str]]:
+        return await self.lead_repo.get_filter_options(organization_id)
 
     async def update_lead(
         self,

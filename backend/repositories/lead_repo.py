@@ -109,19 +109,70 @@ class LeadRepository(BaseRepository):
             "organization_id": organization_id,
         })
 
-    async def list_for_org(
+    def _build_org_query(
         self,
         organization_id: str,
         campaign_id: Optional[str] = None,
         status: Optional[str] = None,
-        limit: int = 100,
-        skip: int = 0,
-    ) -> list[Lead]:
+        city: Optional[str] = None,
+        tags: Optional[list[str]] = None,
+        search: Optional[str] = None,
+    ) -> dict:
         query: dict = {"organization_id": organization_id}
         if campaign_id:
             query["campaign_id"] = campaign_id
         if status:
             query["status"] = status
+        conditions = []
+        if city:
+            c_str = str(city).strip()
+            if c_str:
+                conditions.append({
+                    "$or": [
+                        {"custom_fields.city": {"$regex": f"^{c_str}$", "$options": "i"}},
+                        {"custom_fields.Town": {"$regex": f"^{c_str}$", "$options": "i"}},
+                    ]
+                })
+        if tags:
+            tag_list = [t.strip() for t in tags if isinstance(t, str) and t.strip()]
+            if tag_list:
+                conditions.append({"tags": {"$in": tag_list}})
+        if search:
+            s_str = str(search).strip()
+            if s_str:
+                conditions.append({
+                    "$or": [
+                        {"phone": {"$regex": s_str, "$options": "i"}},
+                        {"name": {"$regex": s_str, "$options": "i"}},
+                        {"email": {"$regex": s_str, "$options": "i"}},
+                    ]
+                })
+        if conditions:
+            if len(conditions) == 1:
+                query.update(conditions[0])
+            else:
+                query["$and"] = conditions
+        return query
+
+    async def list_for_org(
+        self,
+        organization_id: str,
+        campaign_id: Optional[str] = None,
+        status: Optional[str] = None,
+        city: Optional[str] = None,
+        tags: Optional[list[str]] = None,
+        search: Optional[str] = None,
+        limit: int = 100,
+        skip: int = 0,
+    ) -> list[Lead]:
+        query = self._build_org_query(
+            organization_id=organization_id,
+            campaign_id=campaign_id,
+            status=status,
+            city=city,
+            tags=tags,
+            search=search,
+        )
         return await self.find_many(
             query,
             sort=[("created_at", DESCENDING)],
@@ -130,12 +181,35 @@ class LeadRepository(BaseRepository):
         )
 
     async def count_for_org(
-        self, organization_id: str, campaign_id: Optional[str] = None
+        self,
+        organization_id: str,
+        campaign_id: Optional[str] = None,
+        status: Optional[str] = None,
+        city: Optional[str] = None,
+        tags: Optional[list[str]] = None,
+        search: Optional[str] = None,
     ) -> int:
-        query: dict = {"organization_id": organization_id}
-        if campaign_id:
-            query["campaign_id"] = campaign_id
+        query = self._build_org_query(
+            organization_id=organization_id,
+            campaign_id=campaign_id,
+            status=status,
+            city=city,
+            tags=tags,
+            search=search,
+        )
         return await self.count(query)
+
+    async def get_filter_options(self, organization_id: str) -> dict[str, list[str]]:
+        """Return distinct cities and tags available to the organization."""
+        cities_a = await self.col.distinct("custom_fields.city", {"organization_id": organization_id})
+        cities_b = await self.col.distinct("custom_fields.Town", {"organization_id": organization_id})
+        raw_cities = (cities_a or []) + (cities_b or [])
+        cities = sorted({str(c).strip() for c in raw_cities if c and str(c).strip()})
+
+        raw_tags = await self.col.distinct("tags", {"organization_id": organization_id})
+        tags = sorted({str(t).strip() for t in (raw_tags or []) if t and str(t).strip()})
+
+        return {"cities": cities, "tags": tags}
 
     async def update_status(
         self,
