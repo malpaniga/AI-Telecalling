@@ -177,7 +177,7 @@ export default function CampaignDetailPage() {
         calling_hours: {
           start_time: editStartTime,
           end_time: editEndTime,
-          days_of_week: [1, 2, 3, 4, 5, 6, 7],
+          days_of_week: campaign.calling_hours?.days_of_week ?? [0, 1, 2, 3, 4, 5, 6],
         },
         retry_policy: {
           max_attempts: parseInt(editMaxAttempts) || 3,

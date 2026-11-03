@@ -28,9 +28,14 @@ def test_calling_hours_rejects_empty_days():
         CallingHours(days_of_week=[])
 
 
+def test_calling_hours_accepts_7_as_sunday():
+    ch = CallingHours(days_of_week=[1, 2, 3, 4, 5, 6, 7])
+    assert ch.days_of_week == [0, 1, 2, 3, 4, 5, 6]
+
+
 def test_calling_hours_rejects_out_of_range():
     with pytest.raises(ValidationError):
-        CallingHours(days_of_week=[7])
+        CallingHours(days_of_week=[8])
 
 
 def test_campaign_response_includes_calling_hours():

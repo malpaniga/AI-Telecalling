@@ -62,6 +62,7 @@ export default function CampaignsPage() {
     end_time: string;
     max_attempts: string;
     retry_interval_minutes: string;
+    days_of_week?: number[];
   }>({
     id: "",
     name: "",
@@ -74,6 +75,7 @@ export default function CampaignsPage() {
     end_time: "19:00",
     max_attempts: "3",
     retry_interval_minutes: "60",
+    days_of_week: [0, 1, 2, 3, 4, 5, 6],
   });
 
   const load = useCallback(async () => {
@@ -112,6 +114,7 @@ export default function CampaignsPage() {
       end_time: ch?.end_time || "19:00",
       max_attempts: String(rp?.max_attempts || "3"),
       retry_interval_minutes: String(rp?.retry_delay_minutes || "60"),
+      days_of_week: ch?.days_of_week || [0, 1, 2, 3, 4, 5, 6],
     });
     setShowEdit(true);
   }
@@ -129,7 +132,7 @@ export default function CampaignsPage() {
         calling_hours: {
           start_time: editForm.start_time,
           end_time: editForm.end_time,
-          days_of_week: [1, 2, 3, 4, 5, 6, 7],
+          days_of_week: editForm.days_of_week && editForm.days_of_week.length > 0 ? editForm.days_of_week : [0, 1, 2, 3, 4, 5, 6],
         },
         retry_policy: {
           max_attempts: parseInt(editForm.max_attempts) || 3,

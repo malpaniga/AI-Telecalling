@@ -69,15 +69,19 @@ class CallingHours(TimestampedModel):
                     num = int(cleaned)
                     if 0 <= num <= 6:
                         parsed.add(num)
+                    elif num == 7:
+                        parsed.add(0)  # ISO 8601 Sunday (7 -> 0)
                     else:
-                        raise ValueError(f"Day number must be 0-6, got {num}")
+                        raise ValueError(f"Day number must be 0-6 (or 7 for Sunday), got {num}")
                 else:
                     raise ValueError(f"Invalid day of week: '{item}'")
             elif isinstance(item, int):
                 if 0 <= item <= 6:
                     parsed.add(item)
+                elif item == 7:
+                    parsed.add(0)  # ISO 8601 Sunday (7 -> 0)
                 else:
-                    raise ValueError(f"Day number must be 0-6, got {item}")
+                    raise ValueError(f"Day number must be 0-6 (or 7 for Sunday), got {item}")
             else:
                 raise ValueError(f"Invalid day type: {type(item)}")
         if not parsed:
