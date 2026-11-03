@@ -57,6 +57,8 @@ class CreateCampaignRequest(BaseModel):
 class EnrollCampaignLeadsRequest(BaseModel):
     lead_ids: Optional[list[str]] = None
     tags: Optional[list[str]] = None
+    city: Optional[str] = None
+    status: Optional[str] = None
     all_contacts: bool = False
 
 
@@ -415,10 +417,38 @@ async def enroll_campaign_leads(
         pass
     elif body.lead_ids:
         query["_id"] = {"$in": body.lead_ids}
-    elif body.tags:
-        query["tags"] = {"$in": body.tags}
     else:
-        raise HTTPException(status_code=400, detail="Must specify lead_ids, tags, or all_contacts=true")
+        has_filter = False
+        conditions = []
+        if body.tags:
+            tag_list = [t.strip() for t in body.tags if isinstance(t, str) and t.strip()]
+            if tag_list:
+                conditions.append({"tags": {"$in": tag_list}})
+                has_filter = True
+        if body.city:
+            c_str = str(body.city).strip()
+            if c_str:
+                conditions.append({
+                    "$or": [
+                        {"custom_fields.city": {"$regex": f"^{c_str}$", "$options": "i"}},
+                        {"custom_fields.Town": {"$regex": f"^{c_str}$", "$options": "i"}},
+                    ]
+                })
+                has_filter = True
+        if body.status:
+            conditions.append({"status": body.status})
+            has_filter = True
+
+        if not has_filter:
+            raise HTTPException(
+                status_code=400,
+                detail="Must specify lead_ids, tags, city, status, or all_contacts=true",
+            )
+
+        if len(conditions) == 1:
+            query.update(conditions[0])
+        elif len(conditions) > 1:
+            query["$and"] = conditions
 
     cursor = db["leads"].find(query)
     leads = await cursor.to_list(length=5000)
