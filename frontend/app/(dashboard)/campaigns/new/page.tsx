@@ -7,6 +7,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { AppShell } from "@/components/layout/app-shell";
 import { api, Agent, PhoneNumber, QualificationSlot } from "@/lib/api";
 
 import { StepBasics } from "./step-basics";
@@ -243,15 +244,18 @@ export default function NewCampaignWizardPage() {
 
   if (loadingData) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <Spinner size="lg" />
-        <p className="text-sm text-text-muted">Loading campaign studio options...</p>
-      </div>
+      <AppShell title="New Campaign Wizard">
+        <div className="flex flex-col items-center justify-center py-24 gap-3">
+          <Spinner size="lg" />
+          <p className="text-sm text-text-muted">Loading campaign studio options...</p>
+        </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-12">
+    <AppShell title="New Campaign Wizard">
+      <div className="max-w-3xl mx-auto space-y-6 pb-12">
       {/* Top Header & Breadcrumb */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -269,7 +273,7 @@ export default function NewCampaignWizardPage() {
       </div>
 
       {/* Stepper Progress Bar */}
-      <div className="bg-bg-surface border border-border-default rounded-xl p-4 shadow-sm">
+      <div className="bg-surface border border-border rounded-xl p-4 shadow-sm">
         <div className="flex items-center justify-between">
           {WIZARD_STEPS.map((st, idx) => {
             const isCompleted = currentStep > st.step;
@@ -289,10 +293,10 @@ export default function NewCampaignWizardPage() {
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
                       isCompleted
-                        ? "bg-accent-green text-white ring-4 ring-accent-green/20"
+                        ? "bg-success text-white ring-4 ring-success/20"
                         : isCurrent
-                        ? "bg-brand-primary text-white ring-4 ring-brand-primary/20 shadow-sm"
-                        : "bg-bg-subtle text-text-secondary border border-border-default"
+                        ? "bg-accent text-white ring-4 ring-accent/20 shadow-sm"
+                        : "bg-surface-subtle text-text-secondary border border-border"
                     }`}
                   >
                     {isCompleted ? <Check className="h-4 w-4 stroke-[2.5]" /> : st.step}
@@ -300,7 +304,7 @@ export default function NewCampaignWizardPage() {
                   <span
                     className={`text-xs font-semibold ${
                       isCurrent
-                        ? "text-brand-primary"
+                        ? "text-accent"
                         : isCompleted
                         ? "text-text-primary"
                         : "text-text-muted"
@@ -313,7 +317,7 @@ export default function NewCampaignWizardPage() {
                 {idx < WIZARD_STEPS.length - 1 && (
                   <div
                     className={`flex-1 h-0.5 mx-2 rounded transition-all ${
-                      currentStep > st.step ? "bg-accent-green" : "bg-border-default"
+                      currentStep > st.step ? "bg-success" : "bg-border"
                     }`}
                   />
                 )}
@@ -398,5 +402,6 @@ export default function NewCampaignWizardPage() {
         />
       )}
     </div>
+    </AppShell>
   );
 }

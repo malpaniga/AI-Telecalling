@@ -99,8 +99,8 @@ export function StepReview({
   return (
     <div className="space-y-6">
       {/* Review Header Banner */}
-      <div className="p-4 rounded-xl bg-accent-green/10 border border-accent-green/20 flex items-start gap-3">
-        <CheckCircle2 className="h-5 w-5 text-accent-green mt-0.5 flex-shrink-0" />
+      <div className="p-4 rounded-xl bg-success/10 border border-success/20 flex items-start gap-3">
+        <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
         <div>
           <h4 className="text-sm font-semibold text-text-primary">
             Ready to Launch Campaign
@@ -116,7 +116,7 @@ export function StepReview({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-brand-primary" />
+              <Phone className="h-4 w-4 text-accent" />
               <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
                 Identity & Telephony
               </h4>
@@ -153,7 +153,7 @@ export function StepReview({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-brand-primary" />
+              <Bot className="h-4 w-4 text-accent" />
               <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
                 AI Voice Agent
               </h4>
@@ -178,7 +178,7 @@ export function StepReview({
                   {qualificationSlots.map((s) => (
                     <span
                       key={s.key}
-                      className="bg-bg-subtle border border-border-default px-2 py-0.5 rounded text-[11px] font-mono text-text-secondary"
+                      className="bg-surface-subtle border border-border px-2 py-0.5 rounded text-[11px] font-mono text-text-secondary"
                     >
                       {s.key} {s.required && <span className="text-accent-red">*</span>}
                     </span>
@@ -193,7 +193,7 @@ export function StepReview({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-brand-primary" />
+              <Calendar className="h-4 w-4 text-accent" />
               <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
                 Calling Window & Limits
               </h4>
@@ -230,7 +230,7 @@ export function StepReview({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-brand-primary" />
+              <Users className="h-4 w-4 text-accent" />
               <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
                 Target Audience
               </h4>
@@ -256,7 +256,7 @@ export function StepReview({
       </div>
 
       {/* Action Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border-default">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border">
         <Button
           type="button"
           variant="ghost"
@@ -289,7 +289,7 @@ export function StepReview({
             variant="primary"
             onClick={onCreateAndStart}
             disabled={submitting}
-            className="gap-2 flex-1 sm:flex-initial bg-accent-green hover:bg-accent-green/90 border-accent-green text-white"
+            className="gap-2 flex-1 sm:flex-initial bg-success hover:bg-success/90 border-success text-white"
           >
             {submitting ? (
               <Spinner size="sm" />

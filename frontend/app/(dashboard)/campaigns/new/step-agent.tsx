@@ -123,7 +123,7 @@ export function StepAgent({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary font-bold text-sm">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent font-bold text-sm">
                 2
               </div>
               <div>
@@ -136,7 +136,7 @@ export function StepAgent({
               </div>
             </div>
             {selectedAgent && (
-              <span className="text-xs font-mono bg-brand-primary/10 text-brand-primary px-2.5 py-1 rounded-full">
+              <span className="text-xs font-mono bg-accent/10 text-accent px-2.5 py-1 rounded-full">
                 v{selectedAgent.active_version ?? 1}
               </span>
             )}
@@ -164,7 +164,7 @@ export function StepAgent({
           </div>
 
           {selectedAgent && (
-            <div className="rounded-xl border border-border-default bg-bg-subtle/50 p-4 space-y-3">
+            <div className="rounded-xl border border-border bg-surface-subtle/50 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-text-secondary">
                   Agent Template
@@ -188,7 +188,7 @@ export function StepAgent({
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-brand-primary" />
+              <Sparkles className="h-5 w-5 text-accent" />
               <div>
                 <h3 className="text-base font-semibold text-text-primary">
                   Qualification Criteria
@@ -205,7 +205,7 @@ export function StepAgent({
               variant="secondary"
               size="sm"
               onClick={handleSkipWithDefaults}
-              className="gap-1.5 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10 self-start sm:self-auto"
+              className="gap-1.5 border-accent/30 text-accent hover:bg-accent/10 self-start sm:self-auto"
             >
               <Zap className="h-3.5 w-3.5 fill-current" />
               Use Agent Defaults & Continue
@@ -219,7 +219,7 @@ export function StepAgent({
               Loading agent qualification schema...
             </div>
           ) : qualificationSlots.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border-default p-6 text-center">
+            <div className="rounded-xl border border-dashed border-border p-6 text-center">
               <HelpCircle className="h-8 w-8 text-text-muted mx-auto mb-2 opacity-50" />
               <p className="text-sm font-medium text-text-primary">
                 No custom qualification slots configured
@@ -233,10 +233,10 @@ export function StepAgent({
               {qualificationSlots.map((slot) => (
                 <div
                   key={slot.key}
-                  className="flex items-center justify-between p-3 rounded-lg border border-border-default bg-bg-surface hover:border-border-strong transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg border border-border bg-surface hover:border-border-strong transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs font-semibold text-text-primary bg-bg-subtle px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs font-semibold text-text-primary bg-surface-subtle px-2 py-0.5 rounded">
                       {slot.key}
                     </span>
                     <span className="text-sm text-text-secondary">{slot.label}</span>
@@ -248,7 +248,7 @@ export function StepAgent({
                       className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium transition-colors ${
                         slot.required
                           ? "bg-accent-blue/10 text-accent-blue border border-accent-blue/20"
-                          : "bg-bg-subtle text-text-muted hover:text-text-primary"
+                          : "bg-surface-subtle text-text-muted hover:text-text-primary"
                       }`}
                     >
                       {slot.required ? "Required" : "Optional"}
@@ -271,9 +271,9 @@ export function StepAgent({
           {showAddSlot ? (
             <form
               onSubmit={handleAddSlot}
-              className="p-4 rounded-xl border border-brand-primary/20 bg-brand-primary/5 space-y-3"
+              className="p-4 rounded-xl border border-accent/20 bg-accent/5 space-y-3"
             >
-              <div className="font-medium text-xs text-brand-primary">
+              <div className="font-medium text-xs text-accent">
                 Add Custom Lead Qualification Slot
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -305,7 +305,7 @@ export function StepAgent({
                     type="checkbox"
                     checked={newSlotRequired}
                     onChange={(e) => setNewSlotRequired(e.target.checked)}
-                    className="rounded border-border-default text-brand-primary focus:ring-brand-primary"
+                    className="rounded border-border text-accent focus:ring-accent"
                   />
                   Mark as mandatory for lead qualification
                 </label>

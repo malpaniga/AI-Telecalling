@@ -25,7 +25,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Spinner } from "@/components/ui/spinner";
 import { Modal } from "@/components/ui/modal";
 import { Input, Select } from "@/components/ui/input";
-import { api, Campaign, Agent, VoiceProfile, PhoneNumber } from "@/lib/api";
+import { api, Campaign, Agent, PhoneNumber } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
 
 const STATUS_FILTER_OPTIONS = [
@@ -40,28 +40,14 @@ const STATUS_FILTER_OPTIONS = [
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const [showCreate, setShowCreate] = useState(false);
-  const [creating, setCreating] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editing, setEditing] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
-
-  // Create Form State
-  const [form, setForm] = useState({
-    name: "",
-    agent_id: "",
-    voice_profile_id: "",
-    calling_number_id: "",
-    max_concurrent_calls: "1",
-    timezone: "Asia/Kolkata",
-    description: "",
-  });
 
   // Edit Form State
   const [editForm, setEditForm] = useState<{
@@ -93,19 +79,14 @@ export default function CampaignsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [c, a, v, p] = await Promise.all([
+      const [c, a, p] = await Promise.all([
         api.campaigns.list(),
         api.agents.list(),
-        api.voiceProfiles.list(),
         api.phoneNumbers.myNumbers(),
       ]);
       setCampaigns(c);
       setAgents(a);
-      setVoiceProfiles(v);
       setPhoneNumbers(p);
-      if (a.length > 0) setForm((f) => ({ ...f, agent_id: a[0].id }));
-      if (v.length > 0) setForm((f) => ({ ...f, voice_profile_id: v[0].id }));
-      if (p.length > 0) setForm((f) => ({ ...f, calling_number_id: p[0].id }));
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed to load campaigns");
     } finally {
@@ -114,39 +95,6 @@ export default function CampaignsPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    const agent = agents.find((a) => a.id === form.agent_id);
-    const profile = voiceProfiles.find((v) => v.id === form.voice_profile_id);
-    const number = phoneNumbers.find((p) => p.id === form.calling_number_id);
-    if (!agent || !profile || !number) return toast.error("Select all required fields");
-    if (!agent.active_version) return toast.error("Agent has no published version");
-
-    setCreating(true);
-    try {
-      await api.campaigns.create({
-        name: form.name.trim(),
-        agent_id: form.agent_id,
-        agent_version: agent.active_version,
-        voice_profile_id: form.voice_profile_id,
-        voice_profile_version: profile.active_version ?? 1,
-        calling_number_id: form.calling_number_id,
-        calling_number: number.number,
-        max_concurrent_calls: parseInt(form.max_concurrent_calls) || 1,
-        timezone: form.timezone,
-        description: form.description.trim(),
-      });
-      toast.success("Campaign created successfully!");
-      setShowCreate(false);
-      setForm((f) => ({ ...f, name: "", description: "" }));
-      await load();
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to create campaign");
-    } finally {
-      setCreating(false);
-    }
-  }
 
   function openEditModal(c: Campaign) {
     const ch = c.calling_hours;
@@ -263,9 +211,11 @@ export default function CampaignsPage() {
             {campaigns.length} total · {campaigns.filter((c) => c.status === "running").length} active
           </p>
         </div>
-        <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5">
-          <Plus className="h-4 w-4" /> New Campaign
-        </Button>
+        <Link href="/campaigns/new">
+          <Button size="sm" className="gap-1.5">
+            <Plus className="h-4 w-4" /> New Campaign
+          </Button>
+        </Link>
       </div>
 
       {/* Filter and Search Bar */}
@@ -299,9 +249,11 @@ export default function CampaignsPage() {
               : "Create an outbound campaign to start automated calling to your leads"
           }
           action={
-            <Button onClick={() => setShowCreate(true)} className="gap-1.5">
-              <Plus className="h-4 w-4" /> Create Campaign
-            </Button>
+            <Link href="/campaigns/new">
+              <Button className="gap-1.5">
+                <Plus className="h-4 w-4" /> Create Campaign
+              </Button>
+            </Link>
           }
         />
       ) : (
@@ -420,83 +372,6 @@ export default function CampaignsPage() {
           ))}
         </div>
       )}
-
-      {/* Create Modal */}
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="New Outbound Campaign" size="lg">
-        <form onSubmit={handleCreate} className="flex flex-col gap-4">
-          <Input
-            label="Campaign Name *"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            placeholder="e.g. Diwali Festive Offer"
-            required
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <Select
-              label="AI Agent *"
-              value={form.agent_id}
-              onChange={(e) => setForm((f) => ({ ...f, agent_id: e.target.value }))}
-              required
-            >
-              {agents.length === 0 ? (
-                <option value="">No agents — create one first</option>
-              ) : (
-                agents.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))
-              )}
-            </Select>
-            <Select
-              label="Voice Profile *"
-              value={form.voice_profile_id}
-              onChange={(e) => setForm((f) => ({ ...f, voice_profile_id: e.target.value }))}
-              required
-            >
-              {voiceProfiles.length === 0 ? (
-                <option value="">No voice profiles</option>
-              ) : (
-                voiceProfiles.map((v) => (
-                  <option key={v.id} value={v.id}>{v.display_name} ({v.language})</option>
-                ))
-              )}
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Select
-              label="Calling Phone Number *"
-              value={form.calling_number_id}
-              onChange={(e) => setForm((f) => ({ ...f, calling_number_id: e.target.value }))}
-              required
-            >
-              {phoneNumbers.length === 0 ? (
-                <option value="">No numbers assigned</option>
-              ) : (
-                phoneNumbers.map((p) => (
-                  <option key={p.id} value={p.id}>{p.number}</option>
-                ))
-              )}
-            </Select>
-            <Input
-              label="Max Concurrent Calls"
-              type="number"
-              min="1"
-              max="50"
-              value={form.max_concurrent_calls}
-              onChange={(e) => setForm((f) => ({ ...f, max_concurrent_calls: e.target.value }))}
-            />
-          </div>
-          <Input
-            label="Description (optional)"
-            value={form.description}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            placeholder="Notes or campaign goals..."
-          />
-          <div className="flex justify-end gap-2 pt-2 border-t border-border">
-            <Button type="button" variant="secondary" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button type="submit" loading={creating}>Create Campaign</Button>
-          </div>
-        </form>
-      </Modal>
 
       {/* Edit Campaign Modal */}
       <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title={`Edit Campaign: ${editForm.name}`} size="lg">

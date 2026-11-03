@@ -43,7 +43,7 @@ export function StepBasics({
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary font-bold text-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent font-bold text-sm">
               1
             </div>
             <div>
@@ -78,7 +78,7 @@ export function StepBasics({
               onChange={(e) => onChange("description", e.target.value)}
               rows={3}
               placeholder="Brief context about this campaign's target audience and business goal..."
-              className="w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
         </CardBody>
@@ -88,7 +88,7 @@ export function StepBasics({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Phone className="h-5 w-5 text-brand-primary" />
+              <Phone className="h-5 w-5 text-accent" />
               <div>
                 <h3 className="text-base font-semibold text-text-primary">
                   Outbound Caller Number
@@ -125,8 +125,8 @@ export function StepBasics({
                     onClick={() => onChange("calling_number_id", p.id)}
                     className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
                       isSelected
-                        ? "border-brand-primary bg-brand-primary/5 ring-2 ring-brand-primary/30"
-                        : "border-border-default bg-bg-surface hover:border-border-strong hover:bg-bg-subtle"
+                        ? "border-accent bg-accent/5 ring-2 ring-accent/30"
+                        : "border-border bg-surface hover:border-border-strong hover:bg-surface-subtle"
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
@@ -136,8 +136,8 @@ export function StepBasics({
                       <span
                         className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
                           p.status === "active"
-                            ? "bg-accent-green/10 text-accent-green border border-accent-green/20"
-                            : "bg-bg-subtle text-text-muted"
+                            ? "bg-success/10 text-success border border-success/20"
+                            : "bg-surface-subtle text-text-muted"
                         }`}
                       >
                         {p.status}
@@ -157,8 +157,8 @@ export function StepBasics({
             </div>
           )}
 
-          <div className="flex items-center gap-2 text-xs text-text-muted bg-bg-subtle p-3 rounded-lg">
-            <Info className="h-4 w-4 text-brand-primary flex-shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-text-muted bg-surface-subtle p-3 rounded-lg">
+            <Info className="h-4 w-4 text-accent flex-shrink-0" />
             <span>
               Calls will originate from this number and adhere to local telecommunications regulations.
             </span>

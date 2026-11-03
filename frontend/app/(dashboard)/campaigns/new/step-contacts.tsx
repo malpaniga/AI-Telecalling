@@ -213,7 +213,7 @@ export function StepContacts({
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary font-bold text-sm">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent font-bold text-sm">
                 4
               </div>
               <div>
@@ -231,7 +231,7 @@ export function StepContacts({
               variant="secondary"
               size="sm"
               onClick={() => setShowUploadModal(true)}
-              className="gap-1.5 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10 self-start sm:self-auto"
+              className="gap-1.5 border-accent/30 text-accent hover:bg-accent/10 self-start sm:self-auto"
             >
               <Upload className="h-4 w-4" />
               Upload New Contacts
@@ -241,7 +241,7 @@ export function StepContacts({
 
         <CardBody className="space-y-4">
           {/* Filter Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-bg-subtle/70 p-3 rounded-xl border border-border-default">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-surface-subtle/70 p-3 rounded-xl border border-border">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-text-muted" />
@@ -302,17 +302,17 @@ export function StepContacts({
           </div>
 
           {/* Selection Banner & Bulk Controls */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-brand-primary/5 border border-brand-primary/20">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-accent/5 border border-accent/20">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleSelectAllMatchedToggle}
-                className="flex items-center gap-2 text-xs font-semibold text-brand-primary hover:underline"
+                className="flex items-center gap-2 text-xs font-semibold text-accent hover:underline"
               >
                 {selectAllMatched ? (
-                  <CheckSquare className="h-4 w-4 fill-current text-brand-primary" />
+                  <CheckSquare className="h-4 w-4 fill-current text-accent" />
                 ) : (
-                  <Square className="h-4 w-4 text-brand-primary" />
+                  <Square className="h-4 w-4 text-accent" />
                 )}
                 Select All Matched Contacts ({totalLeads.toLocaleString()})
               </button>
@@ -336,7 +336,7 @@ export function StepContacts({
           </div>
 
           {/* Leads Table */}
-          <div className="rounded-xl border border-border-default overflow-hidden bg-bg-surface">
+          <div className="rounded-xl border border-border overflow-hidden bg-surface">
             {loading ? (
               <div className="flex items-center justify-center py-16 gap-2 text-xs text-text-muted">
                 <Spinner size="md" />
@@ -366,13 +366,13 @@ export function StepContacts({
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-border-default bg-bg-subtle/50 text-text-secondary">
+                    <tr className="border-b border-border bg-surface-subtle/50 text-text-secondary">
                       <th className="py-2.5 px-3 w-10 text-center">
                         <input
                           type="checkbox"
                           checked={selectAllMatched || isAllCurrentPageSelected}
                           onChange={toggleSelectCurrentPage}
-                          className="rounded border-border-default text-brand-primary focus:ring-brand-primary cursor-pointer"
+                          className="rounded border-border text-accent focus:ring-accent cursor-pointer"
                         />
                       </th>
                       <th className="py-2.5 px-3 font-semibold">Contact</th>
@@ -381,7 +381,7 @@ export function StepContacts({
                       <th className="py-2.5 px-3 font-semibold">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-subtle">
+                  <tbody className="divide-y divide-border">
                     {leads.map((lead) => {
                       const isSelected =
                         selectAllMatched || selectedLeadIds.includes(lead.id);
@@ -407,8 +407,8 @@ export function StepContacts({
                           }}
                           className={`cursor-pointer transition-colors ${
                             isSelected
-                              ? "bg-brand-primary/5 hover:bg-brand-primary/10"
-                              : "hover:bg-bg-subtle/60"
+                              ? "bg-accent/5 hover:bg-accent/10"
+                              : "hover:bg-surface-subtle/60"
                           }`}
                         >
                           <td
@@ -430,7 +430,7 @@ export function StepContacts({
                                   onToggleLead(lead.id);
                                 }
                               }}
-                              className="rounded border-border-default text-brand-primary focus:ring-brand-primary cursor-pointer"
+                              className="rounded border-border text-accent focus:ring-accent cursor-pointer"
                             />
                           </td>
                           <td className="py-2.5 px-3">
@@ -459,7 +459,7 @@ export function StepContacts({
                                 {lead.tags.slice(0, 3).map((tag) => (
                                   <span
                                     key={tag}
-                                    className="bg-bg-subtle px-1.5 py-0.5 rounded text-[10px] text-text-secondary border border-border-default"
+                                    className="bg-surface-subtle px-1.5 py-0.5 rounded text-[10px] text-text-secondary border border-border"
                                   >
                                     #{tag}
                                   </span>
@@ -487,7 +487,7 @@ export function StepContacts({
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between p-3 border-t border-border-default bg-bg-subtle/30 text-xs">
+              <div className="flex items-center justify-between p-3 border-t border-border bg-surface-subtle/30 text-xs">
                 <span className="text-text-muted">
                   Page {page} of {totalPages} ({totalLeads.toLocaleString()} total)
                 </span>

@@ -196,8 +196,8 @@ export function InlineLeadUploadModal({
             onClick={() => fileRef.current?.click()}
             className={`flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
               dragOver
-                ? "border-brand-primary bg-brand-primary/5"
-                : "border-border-default bg-bg-surface hover:border-border-strong hover:bg-bg-subtle"
+                ? "border-accent bg-accent/5"
+                : "border-border bg-surface hover:border-border-strong hover:bg-surface-subtle"
             }`}
           >
             <input
@@ -207,7 +207,7 @@ export function InlineLeadUploadModal({
               className="hidden"
               onChange={(e) => handleFileSelect(e.target.files?.[0])}
             />
-            <Upload className="h-10 w-10 text-brand-primary mb-3" />
+            <Upload className="h-10 w-10 text-accent mb-3" />
             <p className="text-sm font-semibold text-text-primary">
               Click to select or drag and drop a file
             </p>
@@ -227,9 +227,9 @@ export function InlineLeadUploadModal({
         {/* Selected File & Mapping */}
         {file && preview && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-xl border border-border-default bg-bg-subtle">
+            <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-surface-subtle">
               <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-brand-primary" />
+                <FileText className="h-5 w-5 text-accent" />
                 <div>
                   <p className="text-xs font-semibold text-text-primary">{file.name}</p>
                   <p className="text-[11px] text-text-muted">
@@ -275,7 +275,7 @@ export function InlineLeadUploadModal({
                   Auto-mapped from headers
                 </span>
               </div>
-              <div className="max-h-56 overflow-y-auto rounded-lg border border-border-default divide-y divide-border-subtle bg-bg-surface">
+              <div className="max-h-56 overflow-y-auto rounded-lg border border-border divide-y divide-border bg-surface">
                 {preview.headers.map((header, idx) => {
                   const sampleVal = preview.sample_rows[0]?.[idx] ?? "";
                   const currentTarget = columnMapping[header] || "__skip__";
@@ -337,7 +337,7 @@ export function InlineLeadUploadModal({
         )}
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-default">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
           <Button type="button" variant="ghost" size="sm" onClick={handleClose}>
             Cancel
           </Button>

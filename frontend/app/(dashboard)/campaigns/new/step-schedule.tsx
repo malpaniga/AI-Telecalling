@@ -91,7 +91,7 @@ export function StepSchedule({
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary font-bold text-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent font-bold text-sm">
               3
             </div>
             <div>
@@ -133,7 +133,7 @@ export function StepSchedule({
                 <button
                   type="button"
                   onClick={onSetWeekdaysOnly}
-                  className="text-xs text-brand-primary hover:underline"
+                  className="text-xs text-accent hover:underline"
                 >
                   Weekdays
                 </button>
@@ -141,7 +141,7 @@ export function StepSchedule({
                 <button
                   type="button"
                   onClick={onSetAllDays}
-                  className="text-xs text-brand-primary hover:underline"
+                  className="text-xs text-accent hover:underline"
                 >
                   All Days
                 </button>
@@ -158,8 +158,8 @@ export function StepSchedule({
                     onClick={() => onToggleDay(day.value)}
                     className={`flex-1 min-w-[50px] py-2 px-3 rounded-xl border text-center text-xs font-semibold transition-all ${
                       isSelected
-                        ? "border-brand-primary bg-brand-primary text-white shadow-sm"
-                        : "border-border-default bg-bg-surface text-text-secondary hover:border-border-strong hover:bg-bg-subtle"
+                        ? "border-accent bg-accent text-white shadow-sm"
+                        : "border-border bg-surface text-text-secondary hover:border-border-strong hover:bg-surface-subtle"
                     }`}
                   >
                     {day.label}
@@ -203,8 +203,8 @@ export function StepSchedule({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-text-muted bg-bg-subtle p-3 rounded-lg">
-            <Info className="h-4 w-4 text-brand-primary flex-shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-text-muted bg-surface-subtle p-3 rounded-lg">
+            <Info className="h-4 w-4 text-accent flex-shrink-0" />
             <span>
               Calls outside these hours are automatically queued and paused until the next available window.
             </span>
@@ -216,7 +216,7 @@ export function StepSchedule({
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-brand-primary" />
+            <Layers className="h-5 w-5 text-accent" />
             <div>
               <h3 className="text-base font-semibold text-text-primary">
                 Call Concurrency & Retry Settings
