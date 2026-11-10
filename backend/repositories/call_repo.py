@@ -31,6 +31,7 @@ class CallRepository(BaseRepository):
         call_id: Optional[str] = None,
         credits_reserved: int = 0,
         qualification_schema: Optional[list[dict[str, Any]]] = None,
+        detect_voicemail: bool = True,
     ) -> Call:
         call = Call(
             _id=call_id or new_id(),
@@ -47,6 +48,7 @@ class CallRepository(BaseRepository):
             started_at=utcnow(),
             credits_reserved=credits_reserved,
             qualification_schema=qualification_schema or [],
+            detect_voicemail=detect_voicemail,
         )
         await self.insert(call)
         log.info("call created id=%s org=%s to=%s", call.id, organization_id, to_number)

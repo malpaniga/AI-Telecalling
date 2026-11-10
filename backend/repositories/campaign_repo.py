@@ -36,6 +36,7 @@ class CampaignRepository(BaseRepository):
         scheduled_at: Optional[datetime] = None,
         created_by: Optional[str] = None,
         qualification_schema: Optional[list[dict[str, Any]]] = None,
+        detect_voicemail: bool = True,
     ) -> Campaign:
         campaign = Campaign(
             _id=new_id(),
@@ -52,6 +53,7 @@ class CampaignRepository(BaseRepository):
             timezone=timezone,
             lead_filter=lead_filter or {},
             qualification_schema=qualification_schema or [],
+            detect_voicemail=detect_voicemail,
             calling_hours=CallingHours(**(calling_hours or {})),
             retry_policy=RetryPolicy(**(retry_policy or {})),
             scheduled_at=scheduled_at,

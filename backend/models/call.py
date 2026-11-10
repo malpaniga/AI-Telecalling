@@ -62,6 +62,7 @@ class Call(TimestampedModel):
     status: str = "initiating"
     outcome: Optional[str] = None
     direction: str = "outbound"            # outbound | inbound
+    detect_voicemail: bool = True
 
     # Provider linkage (internal — never exposed to customers)
     provider: str = "mock"

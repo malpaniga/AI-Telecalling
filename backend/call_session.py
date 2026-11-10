@@ -81,6 +81,58 @@ _CALL_RECORDING_PHRASES = {
     "this call will be recorded",
 }
 
+# Automated voicemail greetings, Apple Siri Live Voicemail, and Google Call Screen phrases
+_VOICEMAIL_PHRASES = [
+    # Apple Live Voicemail / Siri
+    "state your name and why you're calling",
+    "state your name and why you are calling",
+    "see if they're available",
+    "see if they are available",
+    "tell them who's calling",
+    "tell them who is calling",
+    "person you are trying to reach is not available",
+    "person you're trying to reach is not available",
+    "trying to reach is not available",
+    # Google Assistant Call Screen
+    "screening service from google",
+    "screening service",
+    "copy of this conversation",
+    "say why you're calling",
+    "say why you are calling",
+    # Standard Voicemail & Answering Machine
+    "leave a message",
+    "leave your message",
+    "after the tone",
+    "after the beep",
+    "record your message",
+    "record your name",
+    "record a message",
+    "not available to take your call",
+    "not available to take the call",
+    "cannot take your call",
+    "unable to take your call",
+    "at the tone",
+    "voicemail of",
+    "mailbox is full",
+    "reached the voicemail",
+    # Multilingual (Devanagari: Hindi / Marathi)
+    "संदेश छोड़ें",
+    "संदेश छोडें",
+    "संदेश ठेवा",
+    "उपलब्ध नहीं हैं",
+    "उपलब्ध नहीं है",
+    "उपलब्ध नाही",
+]
+
+
+def _is_voicemail_or_screening(text: str) -> bool:
+    """True if the utterance matches Siri Live Voicemail, Google Call Screen, or carrier voicemail greetings."""
+    if not text:
+        return False
+    t = text.strip().lower()
+    return any(p in t for p in _VOICEMAIL_PHRASES)
+
+
 # Conversational fillers played concurrently with LLM to mask response latency
 _FILLERS: dict[str, list[str]] = {
     "mr-IN": ["हं...", "बरोबर...", "अच्छा..."],
@@ -133,6 +185,7 @@ class CallSession:
         voice_id: str | None = None,
         call_id: str | None = None,
         qualification_schema: list[dict[str, Any]] | None = None,
+        detect_voicemail: bool = True,
     ):
         self.t = transport
         self.voice_id = voice_id
@@ -144,6 +197,8 @@ class CallSession:
         self.agent_name = agent_name
         self.variables = variables or {}
         self.qualification_schema = qualification_schema or []
+        self.detect_voicemail = detect_voicemail
+        self.turn_count = 0
         raw_greeting = custom_greeting or greeting
         self.custom_greeting = interpolate_template(raw_greeting, self.variables) if raw_greeting else None
         self.system_prompt = interpolate_template(system_prompt, self.variables) if system_prompt else None
@@ -442,6 +497,36 @@ class CallSession:
                 return
 
             self._last_user_text = user_text
+            self.turn_count += 1
+            if self.detect_voicemail and self.turn_count <= 2 and _is_voicemail_or_screening(user_text):
+                log.info("Voicemail/screening detected: %r on turn %d for call %s; closing call under 1 min",
+                         user_text, self.turn_count, self.call_id)
+                self._call_ending = True
+                self.state["output_variables"]["disposition"] = "voicemail"
+                await self.t.notify({"type": "hangup", "reason": "voicemail_detected", "outcome": "voicemail"})
+                if self.call_id:
+                    try:
+                        from backend.telephony.broadcaster import call_broadcaster
+                        await call_broadcaster.broadcast(str(self.call_id), {
+                            "type": "hangup",
+                            "reason": "voicemail_detected",
+                            "outcome": "voicemail",
+                            "status": "completed",
+                        })
+                    except Exception:
+                        pass
+                await self._persist_turn("user", user_text, "voicemail")
+                await self._save_session()
+                async def _close_voicemail_transport():
+                    await asyncio.sleep(0.5)
+                    if hasattr(self.t, "close"):
+                        try:
+                            await self.t.close()
+                        except Exception:
+                            pass
+                asyncio.create_task(_close_voicemail_transport())
+                return
+
             await self.t.notify({"type": "user", "text": user_text})
             await self._persist_turn("user", user_text, self.state["stage"])
             if self.call_id:
@@ -708,7 +793,9 @@ class CallSession:
                     lead_score = score_lead(
                         slots, flags, output_variables=output_vars, qualification_schema=self.qualification_schema
                     )
-                    outcome = call_outcome(flags, stage, output_variables=output_vars)
+                    outcome = "voicemail" if output_vars.get("disposition") == "voicemail" else call_outcome(flags, stage, output_variables=output_vars)
+                    if outcome == "voicemail":
+                        summary = "Call answered by automated voicemail / screening assistant. Disconnected under 1 minute."
                     summary = None
 
                     # Merge meaningful output variables into qualification
@@ -720,7 +807,7 @@ class CallSession:
                     # Run post-call evaluation on the transcript if turns took place
                     messages = self.state.get("messages", [])
                     user_turns = [m for m in messages if m.get("role") == "user"]
-                    if user_turns:
+                    if user_turns and self.state.get("output_variables", {}).get("disposition") != "voicemail":
                         try:
                             eval_res = await self._evaluate_call_transcript(messages)
                             if eval_res:

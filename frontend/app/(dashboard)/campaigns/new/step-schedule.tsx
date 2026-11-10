@@ -9,6 +9,7 @@ import {
   ArrowRight,
   ArrowLeft,
   Info,
+  ShieldCheck,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -43,7 +44,9 @@ interface StepScheduleProps {
   maxAttempts: string;
   retryDelayMinutes: string;
   scheduledAt: string;
+  detectVoicemail: boolean;
   onChange: (field: string, value: string) => void;
+  onToggleVoicemail: (val: boolean) => void;
   onToggleDay: (dayVal: number) => void;
   onSetWeekdaysOnly: () => void;
   onSetAllDays: () => void;
@@ -60,7 +63,9 @@ export function StepSchedule({
   maxAttempts,
   retryDelayMinutes,
   scheduledAt,
+  detectVoicemail,
   onChange,
+  onToggleVoicemail,
   onToggleDay,
   onSetWeekdaysOnly,
   onSetAllDays,
@@ -209,6 +214,51 @@ export function StepSchedule({
               Calls outside these hours are automatically queued and paused until the next available window.
             </span>
           </div>
+        </CardBody>
+      </Card>
+
+      {/* Voicemail & Call Screening Detection (AMD) Card */}
+      <Card className="border-accent/20 bg-gradient-to-r from-surface to-surface-subtle">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-accent" />
+              <div>
+                <h3 className="text-base font-semibold text-text-primary">
+                  Voicemail & Call Screening Detection (AMD)
+                </h3>
+                <p className="text-xs text-text-secondary">
+                  Automatically disconnect when Apple Siri, Google Call Screen, or carrier answering machines answer.
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              Credit Saver
+            </span>
+          </div>
+        </CardHeader>
+        <CardBody className="space-y-4">
+          <label className="flex items-start gap-3 p-3.5 rounded-xl border border-border bg-surface cursor-pointer hover:bg-surface-subtle transition-colors shadow-sm">
+            <input
+              type="checkbox"
+              checked={detectVoicemail}
+              onChange={(e) => onToggleVoicemail(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent"
+            />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-text-primary">
+                  Detect Voicemail & Siri/Google Screening (Recommended)
+                </span>
+                <span className="text-[11px] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded">
+                  Closes &le; 1 min
+                </span>
+              </div>
+              <p className="text-xs text-text-muted leading-relaxed">
+                When enabled, the AI stops talking immediately upon detecting Apple Live Voicemail, Google Call Screen, or carrier greetings. The call closes within seconds, bills only for actual talk time (&le; 1 min / 1 credit), and reschedules the lead for retry.
+              </p>
+            </div>
+          </label>
         </CardBody>
       </Card>
 

@@ -14,6 +14,7 @@ import {
   Save,
   Sparkles,
   AlertCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ interface StepReviewProps {
     max_attempts: string;
     retry_delay_minutes: string;
     scheduled_at: string;
+    detect_voicemail?: boolean;
   };
   selectedDays: number[];
   qualificationSlots: QualificationSlot[];

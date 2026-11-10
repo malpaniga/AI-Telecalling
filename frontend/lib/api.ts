@@ -353,6 +353,7 @@ export interface Campaign {
   max_concurrent_calls: number;
   timezone: string;
   status: string;
+  detect_voicemail?: boolean;
   qualification_schema?: QualificationSlot[];
   calling_hours?: CallingHoursConfig;
   retry_policy?: RetryPolicyConfig;
@@ -1089,6 +1090,7 @@ export const api = {
       calling_hours?: Record<string, unknown>;
       retry_policy?: Record<string, unknown>;
       scheduled_at?: string;
+      detect_voicemail?: boolean;
     }) => apiRequest<Campaign>("POST", "/api/v1/campaigns", body),
     update: (id: string, body: Partial<Campaign>) =>
       apiRequest<Campaign>("PATCH", `/api/v1/campaigns/${id}`, body),

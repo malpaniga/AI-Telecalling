@@ -172,6 +172,7 @@ class CampaignService:
         scheduled_at: Optional[datetime] = None,
         created_by: Optional[str] = None,
         qualification_schema: Optional[list[dict[str, Any]]] = None,
+        detect_voicemail: bool = True,
     ) -> Campaign:
         if qualification_schema is None or len(qualification_schema) == 0:
             qualification_schema = await self.get_agent_qualification_schema(
@@ -196,6 +197,7 @@ class CampaignService:
             retry_policy=retry_policy,
             scheduled_at=scheduled_at,
             created_by=created_by,
+            detect_voicemail=detect_voicemail,
         )
 
     async def start_campaign(

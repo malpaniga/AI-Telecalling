@@ -117,8 +117,19 @@ class CallService:
             except Exception as e:
                 log.warning("could not get agent qualification schema: %s", e)
 
+        # Detect voicemail preference from campaign
+        detect_voicemail = True
+        if campaign_id:
+            try:
+                camp_doc = await self.db.campaigns.find_one({"_id": campaign_id})
+                if camp_doc and "detect_voicemail" in camp_doc:
+                    detect_voicemail = bool(camp_doc["detect_voicemail"])
+            except Exception as e:
+                log.warning("could not get campaign detect_voicemail: %s", e)
+
         # Create call record
         call = await self.call_repo.create(
+            detect_voicemail=detect_voicemail,
             call_id=call_id,
             organization_id=organization_id,
             to_number=to_number,
@@ -361,6 +372,7 @@ class CallService:
                         "not_interested": "not_interested",
                         "callback": "callback",
                         "appointment_set": "qualified",
+                "voicemail": "callback",
                         "no_answer": "failed",
                         "failed": "failed",
                         "transferred": "contacted",
@@ -495,7 +507,13 @@ class CallService:
 
                     effective_outcome = outcome or status
                     next_attempt_at = None
-                    if status == "completed" or outcome in ("qualified", "appointment_set", "booked", "contacted", "not_interested"):
+                    if outcome == "voicemail" or effective_outcome in retry_on:
+                        if attempts < max_attempts:
+                            new_cl_status = "callback"
+                            next_attempt_at = utcnow() + timedelta(minutes=retry_delay)
+                        else:
+                            new_cl_status = "failed"
+                    elif status == "completed" or outcome in ("qualified", "appointment_set", "booked", "contacted", "not_interested"):
                         new_cl_status = "qualified" if outcome in ("qualified", "appointment_set", "booked") else ("not_interested" if outcome == "not_interested" else "contacted")
                     elif effective_outcome in retry_on and attempts < max_attempts:
                         new_cl_status = "callback"

@@ -400,12 +400,15 @@ async def ws_vobiz(ws: WebSocket):
                 direction = "outbound"
 
                 qualification_schema = []
+                detect_voicemail = True
                 # Lookup call record for direction and agent if available
                 if call_id and db is not None:
                     try:
                         call_doc = await db.calls.find_one({"_id": call_id})
                         if call_doc:
                             direction = call_doc.get("direction", "outbound")
+                            if "detect_voicemail" in call_doc:
+                                detect_voicemail = bool(call_doc["detect_voicemail"])
                             if call_doc.get("qualification_schema"):
                                 qualification_schema = call_doc.get("qualification_schema")
                             if not agent_id:

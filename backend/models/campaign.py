@@ -119,6 +119,7 @@ class Campaign(TimestampedModel):
 
     # Qualification criteria (dynamic slots to discover and qualify)
     qualification_schema: list[dict[str, Any]] = Field(default_factory=list)
+    detect_voicemail: bool = True
 
     # Concurrency / pace
     max_concurrent_calls: int = 1

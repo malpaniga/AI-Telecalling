@@ -46,6 +46,8 @@ class CreateCampaignRequest(BaseModel):
     retry_policy: Optional[dict[str, Any]] = None
     scheduled_at: Optional[datetime] = None
     qualification_schema: Optional[list[dict[str, Any]]] = None
+    detect_voicemail: Optional[bool] = None
+    detect_voicemail: bool = True
 
     @field_validator("max_concurrent_calls")
     @classmethod
@@ -75,6 +77,7 @@ class UpdateCampaignRequest(BaseModel):
     calling_number_id: Optional[str] = None
     calling_number: Optional[str] = None
     qualification_schema: Optional[list[dict[str, Any]]] = None
+    detect_voicemail: Optional[bool] = None
 
 
 # ---------------------------------------------------------------------------
@@ -114,6 +117,7 @@ def _campaign_response(c) -> dict:
         "calling_number": c.calling_number,
         "max_concurrent_calls": c.max_concurrent_calls,
         "timezone": c.timezone,
+        "detect_voicemail": getattr(c, "detect_voicemail", True),
         "calling_hours": calling_hours_data,
         "retry_policy": retry_policy_data,
         "status": c.status,
@@ -159,6 +163,7 @@ async def create_campaign(
         scheduled_at=body.scheduled_at,
         created_by=user.user_id,
         qualification_schema=body.qualification_schema,
+            detect_voicemail=body.detect_voicemail,
     )
     return _campaign_response(campaign)
 

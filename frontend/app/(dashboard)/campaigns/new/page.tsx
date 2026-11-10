@@ -50,6 +50,7 @@ export default function NewCampaignWizardPage() {
     max_attempts: "3",
     retry_delay_minutes: "60",
     scheduled_at: "",
+    detect_voicemail: true,
   });
 
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]);
@@ -201,6 +202,7 @@ export default function NewCampaignWizardPage() {
         },
         qualification_schema: qualificationSlots,
         scheduled_at: form.scheduled_at || undefined,
+        detect_voicemail: form.detect_voicemail,
       });
 
       // 2. Enroll contacts if selected
@@ -362,6 +364,8 @@ export default function NewCampaignWizardPage() {
           maxAttempts={form.max_attempts}
           retryDelayMinutes={form.retry_delay_minutes}
           scheduledAt={form.scheduled_at}
+          detectVoicemail={form.detect_voicemail}
+          onToggleVoicemail={(val) => setForm((f) => ({ ...f, detect_voicemail: val }))}
           onChange={handleFormChange}
           onToggleDay={toggleDay}
           onSetWeekdaysOnly={setWeekdaysOnly}
