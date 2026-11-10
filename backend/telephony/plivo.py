@@ -80,10 +80,12 @@ class PlivoTransport:
 
     async def notify(self, event: dict) -> None:
         if event.get("type") == "hangup":
-            # Schedule delayed websocket close to give time for final TTS sentence to be heard by caller
+            is_voicemail = event.get("reason") == "voicemail_detected" or event.get("outcome") == "voicemail"
+            delay = 0.2 if is_voicemail else 3.5
+            # Schedule websocket close (rapid for voicemail, delayed for normal calls to hear final TTS sentence)
             async def _close():
                 import asyncio
-                await asyncio.sleep(3.5)
+                await asyncio.sleep(delay)
                 await self.close()
             import asyncio
             asyncio.create_task(_close())
@@ -401,6 +403,19 @@ async def ws_plivo(ws: WebSocket):
         import asyncio
         hangup_sub_task = asyncio.create_task(_hangup_listener())
 
+    detect_voicemail = True
+    qualification_schema = []
+    if call_id and db is not None:
+        try:
+            call_doc = await db.calls.find_one({"_id": call_id})
+            if call_doc:
+                if "detect_voicemail" in call_doc:
+                    detect_voicemail = bool(call_doc["detect_voicemail"])
+                if call_doc.get("qualification_schema"):
+                    qualification_schema = call_doc.get("qualification_schema")
+        except Exception as e:
+            log.warning("failed looking up call_doc for plivo stream: %s", e)
+
     # Create CallSession
     session = CallSession(
         transport=transport,
@@ -417,6 +432,8 @@ async def ws_plivo(ws: WebSocket):
         barge_in_sensitivity=barge_in_sensitivity,
         voice_id=resolved_voice_id,
         call_id=call_id,
+        qualification_schema=qualification_schema,
+        detect_voicemail=detect_voicemail,
         db=db,
     )
 

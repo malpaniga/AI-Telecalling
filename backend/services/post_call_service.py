@@ -311,6 +311,10 @@ def _analyze_call(
     flags = call_state.get("flags", {})
     stage = call_state.get("stage", "unknown")
 
+    # If voicemail was detected during the call, preserve disposition and outcome
+    if (call_state.get("output_variables") or {}).get("disposition") == "voicemail" or getattr(call, "outcome", None) == "voicemail":
+        return {}, 0, "voicemail", "Call answered by automated voicemail / screening assistant. Disconnected under 1 minute."
+
     # Score
     score = _compute_score(qualification, flags)
 

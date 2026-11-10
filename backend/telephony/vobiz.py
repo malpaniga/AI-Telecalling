@@ -81,10 +81,12 @@ class VobizTransport:
 
     async def notify(self, event: dict) -> None:
         if event.get("type") == "hangup":
-            # Schedule delayed websocket close to give time for final TTS sentence to be heard by caller
+            is_voicemail = event.get("reason") == "voicemail_detected" or event.get("outcome") == "voicemail"
+            delay = 0.2 if is_voicemail else 3.5
+            # Schedule websocket close (rapid for voicemail, delayed for normal calls to hear final TTS sentence)
             async def _close():
                 import asyncio
-                await asyncio.sleep(3.5)
+                await asyncio.sleep(delay)
                 await self.close()
             import asyncio
             asyncio.create_task(_close())

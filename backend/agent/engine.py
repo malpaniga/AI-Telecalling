@@ -243,11 +243,12 @@ class ConversationEngine:
                 f"3. Answer the caller's latest question first, then ask at most one question. Do not repeat details they already provided.\n"
                 f"4. Treat a refusal in context: declining an offer is not necessarily ending the call. Respect explicit requests to stop or end the call immediately.\n"
                 f"5. Caller greetings, 'bola', and interruptions: When the caller says 'hello', 'hi', 'हा बोला', 'बोला', 'सांगा', 'बोलिए', 'yes', or asks who is calling ('who\\'s this?', 'कोण आहे?', 'kaun bol raha hai?'), or if the greeting was interrupted, they are asking why you called. ALWAYS state who you are and clearly deliver the core offer or purpose of the call in that turn. NEVER ask 'what do you want to ask?' or ask if they have questions about an offer before explaining it. If the caller interrupts with a specific question (e.g. price, location), answer that directly first before guiding back. NEVER skip ahead to asking for store visits or next steps if the caller has not yet heard the offer.\n"
+                f"6. Voicemail / Answering machine / Carrier IVR: If the other party is an automated carrier recording (e.g. 'not available', 'on another call', 'speaking to someone else', 'hold the line', 'beyond the line', 'busy'), or an answering machine asking to leave a message or wait for a tone/beep (e.g. 'after the tone', 'leave a message', 'record your message'), you MUST output '[HANGUP]' immediately and nothing else.\n"
             )
             if language_name and language_name != "English":
                 voice_guidelines += (
-                    f"6. The caller speaks {language_name}. Reply ONLY in natural, conversational {language_name}, "
-                    f"written in that language's NATIVE SCRIPT (e.g. Devanagari for Marathi/Hindi) — never romanized Latin text."
+                    f"7. The caller speaks {language_name}. Reply ONLY in natural, conversational {language_name}, "
+                    f"written in that language's NATIVE SCRIPT (e.g. Devanagari for Marathi/Hindi) — never romanized Latin text.\n"
                 )
             prompt = prompt + voice_guidelines
             reply_parts: list[str] = []

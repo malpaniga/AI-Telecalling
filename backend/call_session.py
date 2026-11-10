@@ -81,11 +81,12 @@ _CALL_RECORDING_PHRASES = {
     "this call will be recorded",
 }
 
-# Automated voicemail greetings, Apple Siri Live Voicemail, and Google Call Screen phrases
+# Automated voicemail greetings, Apple Siri Live Voicemail, Google Call Screen, and carrier IVR phrases
 _VOICEMAIL_PHRASES = [
     # Apple Live Voicemail / Siri
     "state your name and why you're calling",
     "state your name and why you are calling",
+    "state your name",
     "see if they're available",
     "see if they are available",
     "tell them who's calling",
@@ -93,35 +94,104 @@ _VOICEMAIL_PHRASES = [
     "person you are trying to reach is not available",
     "person you're trying to reach is not available",
     "trying to reach is not available",
+    "person you are calling is not available",
+    "person you're calling is not available",
+    "person is available",  # Common Whisper STT truncation/hallucination of "The person you are trying to reach is not available"
+    "not available to take your call",
+    "not available to take the call",
+    "is currently unavailable",
+    "is unavailable",
+    "cannot take your call",
+    "unable to take your call",
+    "call screening",
+    "live voicemail",
+
     # Google Assistant Call Screen
     "screening service from google",
     "screening service",
     "copy of this conversation",
     "say why you're calling",
     "say why you are calling",
+    "using a screening service",
+
+    # Carrier IVR / Busy / On Hold / Hold-Queue
+    "beyond the line",  # Common Whisper STT mishearing of "stay on the line" / "busy on the line"
+    "on the line",
+    "stay on the line",
+    "hold on the line",
+    "hold the line",
+    "busy on the line",
+    "speaking to someone else",
+    "on another call",
+    "busy on another call",
+    "is currently busy",
+    "currently busy",
+    "subscriber is busy",
+    "call is on hold",
+    "call waiting",
+    "switched off",
+    "out of coverage",
+    "cannot be reached",
+    "unreachable",
+    "subscriber is not available",
+    "subscriber you have dialed is currently busy",
+    "number you have dialed is currently busy",
+    "number you are calling is currently busy",
+
     # Standard Voicemail & Answering Machine
+    "after the tone",
+    "apply after the tone",  # Whisper STT hallucination
+    "at the tone",
+    "the tone",
+    "after the beep",
+    "at the beep",
+    "the beep",
     "leave a message",
     "leave your message",
-    "after the tone",
-    "after the beep",
+    "leave message",
+    "drop a message",
     "record your message",
     "record your name",
     "record a message",
-    "not available to take your call",
-    "not available to take the call",
-    "cannot take your call",
-    "unable to take your call",
-    "at the tone",
+    "record message",
+    "speak after the",
+    "please speak after",
     "voicemail of",
     "mailbox is full",
     "reached the voicemail",
+    "voice mailbox",
+    "answering machine",
+    "answering service",
+
     # Multilingual (Devanagari: Hindi / Marathi)
     "संदेश छोड़ें",
     "संदेश छोडें",
-    "संदेश ठेवा",
+    "संदेश रिकॉर्ड करें",
     "उपलब्ध नहीं हैं",
     "उपलब्ध नहीं है",
+    "उपलब्ध नहीं",
+    "व्यस्त है",
+    "व्यस्त हैं",
+    "दूसरी कॉल पर",
+    "अन्य कॉल पर",
+    "कॉल प्रतीक्षा",
+    "कवरेज क्षेत्र से बाहर",
+    "स्विच ऑफ",
+    "टोन के बाद",
+    "बीप के बाद",
+    "आवाज संदेश",
+
+    "संदेश ठेवा",
+    "संदेश रेकॉर्ड करा",
     "उपलब्ध नाही",
+    "उपलब्ध नाहीत",
+    "व्यस्त आहे",
+    "व्यस्त आहेत",
+    "दुसऱ्या कॉलवर",
+    "कवरेज क्षेत्राबाहेर",
+    "कवरेज क्षेत्राच्या बाहेर",
+    "टोन नंतर",
+    "बीप नंतर",
 ]
 
 
@@ -498,7 +568,8 @@ class CallSession:
 
             self._last_user_text = user_text
             self.turn_count += 1
-            if self.detect_voicemail and self.turn_count <= 2 and _is_voicemail_or_screening(user_text):
+            has_slots_filled = any(bool(v) for v in self.state.get("slots", {}).values())
+            if self.detect_voicemail and (self.turn_count <= 5 or not has_slots_filled) and _is_voicemail_or_screening(user_text):
                 log.info("Voicemail/screening detected: %r on turn %d for call %s; closing call under 1 min",
                          user_text, self.turn_count, self.call_id)
                 self._call_ending = True
@@ -518,7 +589,7 @@ class CallSession:
                 await self._persist_turn("user", user_text, "voicemail")
                 await self._save_session()
                 async def _close_voicemail_transport():
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(0.2)
                     if hasattr(self.t, "close"):
                         try:
                             await self.t.close()
@@ -794,9 +865,9 @@ class CallSession:
                         slots, flags, output_variables=output_vars, qualification_schema=self.qualification_schema
                     )
                     outcome = "voicemail" if output_vars.get("disposition") == "voicemail" else call_outcome(flags, stage, output_variables=output_vars)
+                    summary = None
                     if outcome == "voicemail":
                         summary = "Call answered by automated voicemail / screening assistant. Disconnected under 1 minute."
-                    summary = None
 
                     # Merge meaningful output variables into qualification
                     qualification = {k: v for k, v in slots.items() if v is not None}
