@@ -1,0 +1,76 @@
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongodata:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: telecalling_saas
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - /home/ubuntu/saas/backend/.env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/telecalling_saas}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-telecalling_saas}
+      PUBLIC_BASE_URL: https://${DOMAIN:-92.5.149.29.sslip.io}
+      DEMO_MODE: "false"
+      APP_PORT: "8080"
+      APP_HOST: 0.0.0.0
+    expose:
+      - "8080"
+    volumes:
+      - ./models:/app/models
+      - /home/ubuntu/saas/data/recordings:/app/data/recordings
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    restart: unless-stopped
+    env_file:
+      - /home/ubuntu/saas/backend/.env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/telecalling_saas}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-telecalling_saas}
+      PUBLIC_BASE_URL: https://${DOMAIN:-92.5.149.29.sslip.io}
+      DEMO_MODE: "false"
+    volumes:
+      - ./models:/app/models
+      - /home/ubuntu/saas/data/recordings:/app/data/recordings
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+volumes:
+  redisdata:
+  mongodata:
